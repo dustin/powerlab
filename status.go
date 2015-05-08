@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	statusLen = 147
+	statusLen = 149
 )
 
 // Status represents a Powerlab6 status response.
@@ -60,75 +60,106 @@ func (s *Status) SupplyVoltsWithCurrent() float64 {
 	return float64(s.read2(22)) * 46.96 / 4095 / 16
 }
 
+// SupplyVolts provides the voltage being input to the charger.
 func (s *Status) SupplyVolts() float64 {
 	return float64(s.read2(24)) * 46.96 / 4095.0
 }
 
+// CPUTemp is the current CPU temperature in °C
 func (s *Status) CPUTemp() float64 {
 	return (2.5*float64(s.read2(26))/4095 - 0.986) / 0.00355
 }
 
+// ChargeSec is the number of seconds in the current charge cycle.
+func (s *Status) ChargeSec() int {
+	return int(s.read2(28))
+}
+
+// FastAmps is the number of amps currently being fed to the
+// batteries.
+func (s *Status) FastAmps() float64 {
+	return float64(s.read2(30)) / 600
+}
+
+// OutPositive is the positive output voltage towards the batteries.
+func (s *Status) OutPositive() float64 {
+	return float64(s.read2(32)) / 4095.0
+}
+
+// MAHIn is the number of milliamp hours sent into the batteries.
+func (s *Status) MAHIn() int {
+	return int(s.read4(34)) / 2160
+}
+
+// AvgCell represents the current average cell fuel percentage.
+func (s *Status) AvgCell() float64 {
+	return float64(s.read2(38)) / 10.0
+}
+
+// StartAvg represents the starting average cell fuel percentage.
+func (s *Status) StartAvg() float64 {
+	return float64(s.read2(40)) / 10.0
+}
+
+// AvgAmps is the average current being fed into batteries as
+// displayed on the LCD.  Use this for reading pack current.
+func (s *Status) AvgAmps() float64 {
+	return float64(s.read2(42)) / 600
+}
+
+// bit uses 1-based bit sequences because that's how the stuff is spec'd
+func bit(b uint16, n int) bool {
+	return b&(1<<uint(16-n)) != 0
+}
+
+// statusFlags returns three bits indicating three statuses:
+// - Bit0 = Safety Charge
+// - Bit8 = Charge/Discharge Complete
+// - Bit11 = Reduce Amps
+func (s *Status) statusFlags() (safetyCharge bool, chargeComplete bool, reduceAmps bool) {
+	x := s.read2(44)
+	return bit(x, 1), bit(x, 8), bit(x, 11)
+}
+
+// - Bit1 = Discharge Running
+// - Bit4 = Regenerative Discharge
+// - Bit6 = Charge Running
+// - Bit7 = Balancers Running
+func (s *Status) rxStatus() (discharging bool, regenDischarge bool, charging bool, balancing bool) {
+	x := s.read2(46)
+	return bit(x, 1), bit(x, 4), bit(x, 6), bit(x, 7)
+}
+
+// HighTemp is true if the temperature has exceeded the limit.
+func (s *Status) HighTemp() bool {
+	return bit(s.read2(50), 2)
+}
+
+// IR returns the internal resistance for the given cell in milliohms.
+func (s *Status) IR(cell int) float64 {
+	if cell < 0 || cell > 8 {
+		panic("invalid cell number")
+	}
+
+	return float64(s.read2(50+(cell*2))) / 6.3984 / s.VRAmps()
+}
+
+// VRAmps is used as part of the internal resistance calculation.
+func (s *Status) VRAmps() float64 {
+	return float64(s.read2(68)) / 600.0
+}
+
+// Packs is the number of packs being charged.
+func (s *Status) Packs() int {
+	return int(s.read1(136))
+}
+
+// DetectedCellCount is the number of cells detected by the charger.
+func (s *Status) DetectedCellCount() int {
+	return int(s.read1(132))
+}
+
 type internalStatus struct {
-	// 28-29 -- 0 to 18*3600 (Use with charge minutes)
-
-	ChgSec uint16
-
-	// 30-31 -- Amps = 16bit signed / 600
-
-	FastAmps uint16
-
-	// 32-33 -- Volts = 46.96V / 4095
-
-	OutPositive uint16
-
-	// 34-37 -- mAh = 32bit / 2160
-
-	AHrIn uint32
-
-	// 38-39 -- Fuel% = 16bit / 10
-
-	AvgCell uint16
-
-	// 40-41 -- Fuel% = 16bit / 10
-
-	StartAvg uint16
-
-	// 42-43 -- Amps = 16bit signed / 600 (Shows on LCD) USE THIS
-	// READING FOR PACK CURRENT.
-
-	AvgAmps uint16
-
-	// 44-46
-	// - Bit0 = Safety Charge
-	// - Bit8 = Charge/Discharge Complete
-	// - Bit11 = Reduce Amps
-
-	StatusFlags uint16
-
-	// 42-47
-	// - Bit1 = Discharge Running
-	// - Bit4 = Regenerative Discharge
-	// - Bit6 = Charge Running
-	// - Bit7 = Balancers Running
-
-	RXStatus uint16
-
-	// 48-49
-
-	unused1 uint16
-
-	// 50-51 -- Bit2 = High Temp (140 deg F)
-
-	Status2 uint16
-
-	// 52-67 -- mOhm = ( 16bit / 6.3984 ) / VRAmps
-
-	IR1, IR2, IR3, IR4, IR5, IR6, IR7, IR8 uint16
-
-	// 68-69 -- Amps = 16bit / 600
-
-	VRAmps uint16
-
 	// 70-71 -- Volts = 16bit / 12797 - MaxCell
 
 	NiCdFallbackV uint16
@@ -218,10 +249,6 @@ type internalStatus struct {
 
 	Bal1PWM, Bal2PWM, Bal3PWM, Bal4PWM, Bal5PWM, Bal6PWM, Bal7PWM, Bal8PWM uint8
 
-	// 132 -- 1 – 8 (0 = no cells detected)
-
-	DetectedCellCount uint8
-
 	// 133
 	// - 0 = Charger Ready to Start
 	// - 1 = Detecting Pack
@@ -255,10 +282,6 @@ type internalStatus struct {
 	Chemistry uint8
 
 	// 136 -- Number of packs connected
-
-	Packs uint8
-
-	// 137 -- 0 – 24 (Zero based number)
 
 	Preset uint8
 
