@@ -51,23 +51,24 @@ func (s *Status) SyncPWMDrive() PWMType {
 	return PWMType(s.read2(18) >= 8192)
 }
 
+// ChargeCurrent represents the current flowing towards the batteries.
+func (s *Status) ChargeCurrent() float64 {
+	return float64(s.read2(20)) / 1666
+}
+
+func (s *Status) SupplyVoltsWithCurrent() float64 {
+	return float64(s.read2(22)) * 46.96 / 4095 / 16
+}
+
+func (s *Status) SupplyVolts() float64 {
+	return float64(s.read2(24)) * 46.96 / 4095.0
+}
+
+func (s *Status) CPUTemp() float64 {
+	return (2.5*float64(s.read2(26))/4095 - 0.986) / 0.00355
+}
+
 type internalStatus struct {
-	// 20-21 -- Amps = 16bit / 1666
-
-	ChargeCurrent uint16
-
-	// 22-23 -- Volts = 16bit * 46.96V / 4095 / 16
-
-	SupplyVoltsWithCurrent uint16
-
-	// 24-25 -- Volts = 16bit * 46.96V / 4095
-
-	SupplyVolts uint16
-
-	// 26-27 -- Tc = (2.5 * 16bit / 4095 - 0.986) / 0.00355
-
-	CPUTemp uint16
-
 	// 28-29 -- 0 to 18*3600 (Use with charge minutes)
 
 	ChgSec uint16
