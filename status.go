@@ -1,27 +1,57 @@
 package powerlab
 
+import (
+	"encoding/binary"
+	"fmt"
+)
+
 const (
 	statusLen = 147
 )
 
 // Status represents a Powerlab6 status response.
-type Status struct {
+type Status [statusLen]byte
+
+func (s *Status) read1(o int) uint8 {
+	return (*s)[o]
+}
+
+func (s *Status) read2(o int) uint16 {
+	return binary.BigEndian.Uint16((*s)[o : o+2])
+}
+
+func (s *Status) read4(o int) uint32 {
+	return binary.BigEndian.Uint32((*s)[o : o+4])
+}
+
+// The Version of the powerlab firmware.
+func (s *Status) Version() string {
+	v := s.read2(0)
+	return fmt.Sprintf("%d.%d", v/100, v%100)
+}
+
+// CellVoltage reports the voltage of the specified cell (1-8).
+func (s *Status) CellVoltage(n int) float64 {
+	if n < 0 || n > 8 {
+		panic("invalid cell number")
+	}
+
+	return float64(s.read2(2*n)) * 5.12 / 65535
+}
+
+type PWMType bool
+
+const (
+	Buck  = PWMType(false)
+	Boost = PWMType(true)
+)
+
+// SyncPWMDrive returns either Buck or Boost PWM drive.
+func (s *Status) SyncPWMDrive() PWMType {
+	return PWMType(s.read2(18) >= 8192)
 }
 
 type internalStatus struct {
-
-	// 0,1 -- 0 - 655.35
-
-	Version uint16
-
-	// 2-17 -- Volts = 16bit * 5.12V / 65536
-
-	Cell1, Cell2, Cell3, Cell4, Cell5, Cell6, Cell7, Cell8 uint16
-
-	// 18-19 -- 0-8191 is Buck, 8192-16383 is Boost
-
-	SyncPWMDrive uint16
-
 	// 20-21 -- Amps = 16bit / 1666
 
 	ChargeCurrent uint16
