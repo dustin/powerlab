@@ -22,10 +22,11 @@ func (p *Powerlab) Status(id int) (*Status, error) {
 		return nil, err
 	}
 
-	buf := make([]byte, statusLen)
-	if _, err := io.ReadFull(p.port, buf); err != nil {
+	rv := Status{}
+
+	if _, err := io.ReadFull(p.port, rv[:]); err != nil {
 		return nil, err
 	}
 
-	return &Status{}, nil
+	return &rv, nil
 }
