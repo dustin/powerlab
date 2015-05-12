@@ -159,15 +159,17 @@ func (s *Status) DetectedCellCount() int {
 	return int(s.read1(132))
 }
 
+// NiCdFallbackV is the fallback voltage for NiCad charging.
+func (s *Status) NiCdFallbackV() float64 {
+	return float64(s.read2(70))/12797 - s.MaxCell()
+}
+
+// MaxCell voltage.
+func (s *Status) MaxCell() float64 {
+	return float64(s.read2(74)) / 12797
+}
+
 type internalStatus struct {
-	// 70-71 -- Volts = 16bit / 12797 - MaxCell
-
-	NiCdFallbackV uint16
-
-	// 72-73
-
-	unused2 uint16
-
 	// 76-77
 	// - Bit4 = Constant Voltage
 	// - Bit5 = Preset is Valid and Runable

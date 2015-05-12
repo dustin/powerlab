@@ -32,9 +32,9 @@ var exemplar = &Status{
 	0, 0, 0, 0, // ir 5, ir 6
 	0, 0, 0, 0, // ir 7, ir 8
 	0x12, 0x48, // VRamps -- 68
-	0, 0, // NiCdFallbackV
+	0xee, 0xf5, // NiCdFallbackV
 	0, 0, // unused
-	0, 0, // MaxCell volts -- 74-75 -- Volts = 16bit / 12797
+	0xcd, 0x74, // MaxCell volts -- 74-75 -- Volts = 16bit / 12797
 	0, 0, // status6 -- 76-77
 	0, 0, // ChgMin -- 78-79
 	0, 0, // supply amps // 80-81
@@ -155,4 +155,7 @@ func TestReading(t *testing.T) {
 
 	assert(t, "detected cell count", s.DetectedCellCount(), 3)
 	assert(t, "packs", s.Packs(), 6)
+
+	assertEpsilon(t, "maxcell", s.MaxCell(), 4.11)
+	assertEpsilon(t, "NiCad fallback voltage", s.NiCdFallbackV(), 0.67)
 }
