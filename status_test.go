@@ -35,7 +35,7 @@ var exemplar = &Status{
 	0xee, 0xf5, // NiCdFallbackV
 	0, 0, // unused
 	0xcd, 0x74, // MaxCell volts -- 74-75 -- Volts = 16bit / 12797
-	0, 0, // status6 -- 76-77
+	0x11, 0, // status6 -- 76-77
 	0, 0, // ChgMin -- 78-79
 	0, 0, // supply amps // 80-81
 	0, 0, // battery pos // 82-83
@@ -158,4 +158,15 @@ func TestReading(t *testing.T) {
 
 	assertEpsilon(t, "maxcell", s.MaxCell(), 4.11)
 	assertEpsilon(t, "NiCad fallback voltage", s.NiCdFallbackV(), 0.67)
+
+	constantVoltage, presetRunnable, regenFailled := s.status6()
+	if !constantVoltage {
+		t.Errorf("Expected constant voltage")
+	}
+	if presetRunnable {
+		t.Errorf("Expected preset runnable")
+	}
+	if !regenFailled {
+		t.Errorf("Expected regen to have failed")
+	}
 }

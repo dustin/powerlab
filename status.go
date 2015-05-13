@@ -169,13 +169,15 @@ func (s *Status) MaxCell() float64 {
 	return float64(s.read2(74)) / 12797
 }
 
-type internalStatus struct {
-	// 76-77
-	// - Bit4 = Constant Voltage
-	// - Bit5 = Preset is Valid and Runable
-	// - Bit8 = Regenerative Discharge Failed
+// - Bit4 = Constant Voltage
+// - Bit5 = Preset is Valid and Runable
+// - Bit8 = Regenerative Discharge Failed
+func (s *Status) status6() (constantVoltage bool, presetRunnable bool, regenFailed bool) {
+	x := s.read2(76)
+	return bit(x, 4), bit(x, 5), bit(x, 8)
+}
 
-	Status6 uint16
+type internalStatus struct {
 
 	// 78-79
 	// For <18hr use ChgSec
