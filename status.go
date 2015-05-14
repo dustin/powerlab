@@ -2,7 +2,9 @@ package powerlab
 
 import (
 	"encoding/binary"
+	"encoding/json"
 	"fmt"
+	"math"
 )
 
 const (
@@ -12,15 +14,62 @@ const (
 // Status represents a Powerlab6 status response.
 type Status [statusLen]byte
 
+func (s *Status) MarshalJSON() ([]byte, error) {
+	m := map[string]interface{}{
+		"version":                   s.Version(),
+		"sync_pwm_drive":            s.SyncPWMDrive().String(),
+		"charge_current":            s.ChargeCurrent(),
+		"supply_volts_with_current": s.SupplyVoltsWithCurrent(),
+		"supply_volts":              s.SupplyVolts(),
+		"cpu_temp":                  s.CPUTemp(),
+		"charge_sec":                s.ChargeSec(),
+		"fast_amps":                 s.FastAmps(),
+		"out_pos":                   s.OutPositive(),
+		"mah_in":                    s.MAHIn(),
+		"avg_cell":                  s.AvgCell(),
+		"start_avg_cell":            s.StartAvg(),
+		"avg_amps":                  s.AvgAmps(),
+		"high_temp":                 s.HighTemp(),
+		"packs":                     s.Packs(),
+		"detected_cell_count":       s.DetectedCellCount(),
+		"nicd_fallback":             s.NiCdFallbackV(),
+		"max_cell":                  s.MaxCell(),
+	}
+	voltages := []float64{}
+	ir := []float64{}
+	for i := 0; i < 8; i++ {
+		voltages = append(voltages, s.CellVoltage(i+1))
+		ir = append(ir, s.IR(i+1))
+	}
+	m["voltage"] = voltages
+	m["ir"] = ir
+
+	safetyCharge, chargeComplete, reduceAmps := s.statusFlags()
+	m["safety_charge"] = safetyCharge
+	m["charge_complete"] = chargeComplete
+	m["reduce_amps"] = reduceAmps
+
+	discharging, regenDischarge, charging, balancing := s.rxStatus()
+	m["discharging"] = discharging
+	m["regen_discharge"] = regenDischarge
+	m["charging"] = charging
+	m["balancing"] = balancing
+
+	return json.Marshal(m)
+}
+
 func (s *Status) read1(o int) uint8 {
+	o += 4
 	return (*s)[o]
 }
 
 func (s *Status) read2(o int) uint16 {
+	o += 4
 	return binary.BigEndian.Uint16((*s)[o : o+2])
 }
 
 func (s *Status) read4(o int) uint32 {
+	o += 4
 	return binary.BigEndian.Uint32((*s)[o : o+4])
 }
 
@@ -45,6 +94,13 @@ const (
 	Buck  = PWMType(false)
 	Boost = PWMType(true)
 )
+
+func (p PWMType) String() string {
+	if p == Buck {
+		return "buck"
+	}
+	return "boost"
+}
 
 // SyncPWMDrive returns either Buck or Boost PWM drive.
 func (s *Status) SyncPWMDrive() PWMType {
@@ -141,7 +197,11 @@ func (s *Status) IR(cell int) float64 {
 		panic("invalid cell number")
 	}
 
-	return float64(s.read2(50+(cell*2))) / 6.3984 / s.VRAmps()
+	ir := float64(s.read2(50+(cell*2))) / 6.3984 / s.VRAmps()
+	if math.IsNaN(ir) {
+		ir = 0
+	}
+	return ir
 }
 
 // VRAmps is used as part of the internal resistance calculation.
