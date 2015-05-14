@@ -36,15 +36,25 @@ func (s *Status) MarshalJSON() ([]byte, error) {
 		"detected_cell_count":       s.DetectedCellCount(),
 		"nicd_fallback":             s.NiCdFallbackV(),
 		"max_cell":                  s.MaxCell(),
+		"supply_amps":               s.SupplyAmps(),
+		"battery_pos":               s.BatteryPos(),
+		"mah_out":                   s.MAhrOut(),
+		"discharge_amps_set":        s.DischAmpSet(),
+		"discharge_pwm":             s.DischargePWM(),
+		"battery_neg":               s.BatteryNeg(),
+		"mode":                      s.Mode().String(),
 	}
 	voltages := []float64{}
 	ir := []float64{}
+	balPwm := []int{}
 	for i := 0; i < 8; i++ {
 		voltages = append(voltages, s.CellVoltage(i+1))
 		ir = append(ir, s.IR(i+1))
+		balPwm = append(balPwm, s.BalancePWM(i+1))
 	}
 	m["voltage"] = voltages
 	m["ir"] = ir
+	m["bal_pwm"] = balPwm
 
 	safetyCharge, chargeComplete, reduceAmps := s.statusFlags()
 	m["safety_charge"] = safetyCharge
@@ -140,7 +150,10 @@ func (s *Status) chargeMin() int {
 	return int(s.read2(78)) * 60
 }
 
+// ChargeDuration reports how long the most recent charge took (or has
+// taken if still in progress).
 func (s *Status) ChargeDuration() time.Duration {
+	// TODO:  Include minutes
 	return time.Duration(time.Second * time.Duration(s.chargeSec()))
 }
 
@@ -250,48 +263,75 @@ func (s *Status) status6() (constantVoltage bool, presetRunnable bool, regenFail
 	return bit(x, 4), bit(x, 5), bit(x, 8)
 }
 
+func (s *Status) SupplyAmps() float64 {
+	return float64(s.read2(80)) / 150
+}
+
+func (s *Status) BatteryPos() float64 {
+	return float64(s.read2(82)) / 12797
+}
+
+func (s *Status) MAhrOut() int {
+	return int(s.read4(84)) / 2160
+}
+
+func (s *Status) DischAmpSet() float64 {
+	return float64(s.read2(92)) / 600
+}
+
+func (s *Status) DischargePWM() int {
+	return int(s.read2(94))
+}
+
+func (s *Status) BatteryNeg() float64 {
+	return float64(s.read2(100)) * 46.96 / 4095
+}
+
+func (s *Status) BalancePWM(cell int) int {
+	if cell < 0 || cell > 8 {
+		panic("invalid cell number")
+	}
+	return int(s.read1(124 + (cell * 2)))
+}
+
+type Mode int
+
+const (
+	Ready           = Mode(0)
+	DetectingPack   = Mode(1)
+	Charging        = Mode(6)
+	TrickleCharging = Mode(7)
+	Discharging     = Mode(8)
+	Monitoring      = Mode(9)
+	HaltForSafety   = Mode(10)
+	PackCoolDown    = Mode(11)
+	SystemStopError = Mode(99)
+)
+
+var modeNames = map[Mode]string{
+	Ready:           "ready",
+	DetectingPack:   "detecting pack",
+	Charging:        "charging",
+	TrickleCharging: "trickle charing",
+	Discharging:     "discharging",
+	Monitoring:      "monitorinng",
+	HaltForSafety:   "halt for safety",
+	PackCoolDown:    "pack cool down",
+	SystemStopError: "system stop",
+}
+
+func (s *Status) Mode() Mode {
+	return Mode(s.read1(133))
+}
+
+func (m Mode) String() string {
+	return modeNames[m]
+}
+
 type internalStatus struct {
-	ChgMin uint16
-
-	// 80-81 -- Amps = 16bit / 150
-
-	SupplyAmps uint16
-
-	// 82-83 -- Volts = 16bit / 12797
-
-	BatteryPos uint16
-
-	// 84-97 -- mAh = 32bit / 2160
-
-	AhrOut uint16
-
-	// 88-89
-
-	unused3 uint16
-
 	// 90-91 -- Volts = 16bit * 46.96V / 4095
 
 	RegenVoltSet uint16
-
-	// 92-93 -- Amps = 16bit / 600
-
-	DischAmpsSet uint16
-
-	// 94-95
-
-	DischargePWM uint16
-
-	// 96-99
-
-	unused4, unused5 uint16
-
-	// 100-101 -- Volts = 16bit * 46.96V / 4095
-
-	BattNeg uint16
-
-	// 102-103
-
-	unused6 uint16
 
 	// 104-105 -- Volts = 16bit * 46.96V / 4095
 
@@ -316,23 +356,6 @@ type internalStatus struct {
 	// 122-123
 
 	unused12 uint16
-
-	// 124-131 -- 0-31
-
-	Bal1PWM, Bal2PWM, Bal3PWM, Bal4PWM, Bal5PWM, Bal6PWM, Bal7PWM, Bal8PWM uint8
-
-	// 133
-	// - 0 = Charger Ready to Start
-	// - 1 = Detecting Pack
-	// - 6 = Charging
-	// - 7 = Trickle Charging
-	// - 8 = Discharging
-	// - 9 = Monitoring
-	// - 10 = Halt for Safety Screen
-	// - 11 = Pack Cool Down (when cycling)
-	// - 99 = System Stop Error Occurred
-
-	Mode uint8
 
 	// 134 -- (only valid in mode 99)
 
