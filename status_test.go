@@ -3,9 +3,11 @@ package powerlab
 import (
 	"math"
 	"testing"
+	"time"
 )
 
 var exemplar = &Status{
+	'R', 'a', 'm', 0,
 	1, 0x3a, // Version
 	0xd1, 0xff, 0xb8, 0xff, // cells 1, 2
 	0, 0, 0, 0, // cells 3, 4
@@ -113,7 +115,7 @@ func TestReading(t *testing.T) {
 	assertEpsilon(t, "supply volts with current", s.SupplyVoltsWithCurrent(), 12)
 	assertEpsilon(t, "supply volts", s.SupplyVolts(), 12)
 	assertEpsilon(t, "cpu temp", s.CPUTemp(), 37)
-	assert(t, "charge sec", s.ChargeSec(), 30*60)
+	assert(t, "charge sec", s.ChargeDuration(), time.Second*30*60)
 	assertEpsilon(t, "fast amps", s.FastAmps(), 1.3*6)
 	assertEpsilon(t, "output positive", s.OutPositive(), 4.2*3)
 	assert(t, "mAh in", s.MAHIn(), 1172)

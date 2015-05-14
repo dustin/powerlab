@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"time"
 )
 
 const (
@@ -12,7 +13,7 @@ const (
 )
 
 // Status represents a Powerlab6 status response.
-type Status [statusLen]byte
+type Status [statusLen + 4]byte
 
 func (s *Status) MarshalJSON() ([]byte, error) {
 	m := map[string]interface{}{
@@ -22,7 +23,8 @@ func (s *Status) MarshalJSON() ([]byte, error) {
 		"supply_volts_with_current": s.SupplyVoltsWithCurrent(),
 		"supply_volts":              s.SupplyVolts(),
 		"cpu_temp":                  s.CPUTemp(),
-		"charge_sec":                s.ChargeSec(),
+		"charge_sec":                s.ChargeDuration().Seconds(),
+		"charge_time":               s.ChargeDuration().String(),
 		"fast_amps":                 s.FastAmps(),
 		"out_pos":                   s.OutPositive(),
 		"mah_in":                    s.MAHIn(),
@@ -126,9 +128,20 @@ func (s *Status) CPUTemp() float64 {
 	return (2.5*float64(s.read2(26))/4095 - 0.986) / 0.00355
 }
 
-// ChargeSec is the number of seconds in the current charge cycle.
-func (s *Status) ChargeSec() int {
+// chargeSec is the number of seconds in the current charge cycle.
+func (s *Status) chargeSec() int {
 	return int(s.read2(28))
+}
+
+// 78-79
+// For <18hr use ChgSec
+// For >=18hr Seconds = ChgSec – 64800 + ChgMin * 60
+func (s *Status) chargeMin() int {
+	return int(s.read2(78)) * 60
+}
+
+func (s *Status) ChargeDuration() time.Duration {
+	return time.Duration(time.Second * time.Duration(s.chargeSec()))
 }
 
 // FastAmps is the number of amps currently being fed to the
@@ -238,11 +251,6 @@ func (s *Status) status6() (constantVoltage bool, presetRunnable bool, regenFail
 }
 
 type internalStatus struct {
-
-	// 78-79
-	// For <18hr use ChgSec
-	// For >=18hr Seconds = ChgSec – 64800 + ChgMin * 60
-
 	ChgMin uint16
 
 	// 80-81 -- Amps = 16bit / 150
