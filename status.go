@@ -43,6 +43,15 @@ func (s *Status) MarshalJSON() ([]byte, error) {
 		"discharge_pwm":             s.DischargePWM(),
 		"battery_neg":               s.BatteryNeg(),
 		"mode":                      s.Mode().String(),
+		"regen_volt_set":            s.RegenVoltSet(),
+		"start_supply_volts":        s.StartSupplyVolts(),
+		"slow_avg_amps":             s.SlowAvgAmps(),
+		"preset_set_amps":           s.PresetSetAmps(),
+		"slaves_found":              s.SlavesFound(),
+		"chemistry":                 s.Chemistry().String(),
+		"screen_num":                s.ScreenNum(),
+		"cycle_num":                 s.CycleNum(),
+		"power_reduction_reason":    s.PowerReductionReason().String(),
 	}
 	voltages := []float64{}
 	ir := []float64{}
@@ -328,100 +337,137 @@ func (m Mode) String() string {
 	return modeNames[m]
 }
 
-type internalStatus struct {
-	// 90-91 -- Volts = 16bit * 46.96V / 4095
+func (s *Status) RegenVoltSet() float64 {
+	return float64(s.read2(90)) * 46.96 / 4095
+}
 
-	RegenVoltSet uint16
+func (s *Status) StartSupplyVolts() float64 {
+	return float64(s.read2(104)) * 46.96 / 4095
+}
 
-	// 104-105 -- Volts = 16bit * 46.96V / 4095
+func (s *Status) SlowAvgAmps() float64 {
+	return float64(s.read2(116)) / 600
+}
 
-	StartSupplyVolts uint16
+func (s *Status) PresetSetAmps() float64 {
+	return float64(s.read2(118)) / 600
+}
 
-	// 106-115
+func (s *Status) SlavesFound() []int {
+	bits := s.read2(120)
+	slaves := []int{}
 
-	unused7, unused8, unused9, unused10, unused11 uint16
+	for i := 1; i <= 16; i++ {
+		if bit(bits, i) {
+			slaves = append(slaves, i)
+		}
+	}
 
-	// 116-117 -- Amps = 16bit signed / 600
+	return slaves
+}
 
-	SlowAvgAmps uint16
+// ErrorCode is only valid in mode 99.
+func (s *Status) ErrorCode() int {
+	return int(s.read1(134))
+}
 
-	// 118-119 -- Amps = 16bit / 600 (never changes with temp or power)
+type Chemistry int
 
-	PresetSetAmps uint16
+const (
+	_ = Chemistry(iota)
+	LiPo
+	LiIon
+	A123
+	LiMang
+	LiCo
+	NiCd
+	NiMh
+	Pb
+	LiFE
+	Primary
+	PowerSupply
+)
 
-	// 120-121 -- Each bit represents a slave charger that is found
+var chemistryNames = []string{"",
+	"Lithium Polymer",
+	"Lithium Ion",
+	"A123",
+	"Lithium Manganese",
+	"Lithium Cobalt",
+	"NiCd",
+	"NiMh",
+	"Lead Acid",
+	"LiFE",
+	"Primary",
+	"Power Supply",
+}
 
-	SlavesFound uint16
+func (c Chemistry) String() string {
+	return chemistryNames[c]
+}
 
-	// 122-123
+func (s *Status) Chemistry() Chemistry {
+	return Chemistry(s.read1(135))
+}
 
-	unused12 uint16
+func (s *Status) Preset() int {
+	return int(s.read1(137))
+}
 
-	// 134 -- (only valid in mode 99)
+func (s *Status) ScreenNum() int {
+	return int(s.read1(139))
+}
 
-	ErrorCode uint8
+func (s *Status) CycleNum() int {
+	return int(s.read1(142))
+}
 
-	// 135
-	// - 1 = Lithium Polymer
-	// - 2 = Lithium Ion
-	// - 3 = A123
-	// - 4 = Lithium Manganese
-	// - 5 = Lithium Cobalt
-	// - 6 = NiCd
-	// - 7 = NiMh
-	// - 8 = Lead Acid
-	// - 9 = LiFE
-	// - 10 = Primary
-	// - 11 = Power Supply
+type PowerReductionReason int
 
-	Chemistry uint8
+const (
+	FullPowerAllowed = PowerReductionReason(iota)
+	InputCurrentLimit
+	SixtyAmpInputCurrentLimitReached
+	CellSumErrorCharge
+	SupplyNoise
+	HighTemp
+	LowInputVoltage
+	ConstantVoltageOutput
+	InternalMax100WDischarge
+	HighTempDischarge
+	RegenMaxAmpsReached
+	HighTempDischarge11
+	CellSumErrorDischarge
+	RegenVoltLimitReached
+	DischargeReduced
+	Reduce
+	SupplyLow
+)
 
-	// 136 -- Number of packs connected
+var powerReductionReasons = []string{
+	"Full Power Allowed",
+	"Input Current Limit",
+	"60A Input Current Limit Reached",
+	"Cell Sum Error (Charge)",
+	"Supply Noise",
+	"High Temp",
+	"Low Input Voltage",
+	"Constant Voltage Output",
+	"Internal Max 100W Discharge",
+	"High Temp Discharge",
+	"Regen. Max Amps Reached",
+	"High Temp Discharge",
+	"Cell Sum Error (Discharge)",
+	"Regen. Volt Limit Reached",
+	"Discharge Reduced (Below Average Charger)",
+	"Reduce (Above Average Charger)",
+	"Supply Low for High Power",
+}
 
-	Preset uint8
+func (p PowerReductionReason) String() string {
+	return powerReductionReasons[p]
+}
 
-	// 138
-
-	unused13 uint8
-
-	// 139 -- Screen showing on LCD
-
-	ScreenNumber uint8
-
-	// 140, 141
-
-	unused14, unused15 uint8
-
-	// 142 -- 0 – 255 (A complete Charge/Discharge is one cycle)
-
-	CycleNumber uint8
-
-	// 143
-	// - 0 = Full Power Allowed
-	// - 1 = Input Current Limit
-	// - 2 = 60A Input Current Limit Reached
-	// - 3 = Cell Sum Error (Charge)
-	// - 4 = Supply Noise
-	// - 5 = High Temp
-	// - 6 = Low Input Voltage
-	// - 7 = Constant Voltage Output
-	// - 8 = Internal Max 100W Discharge
-	// - 9 = High Temp Discharge
-	// - 10 = Regen. Max Amps Reached
-	// - 11 = High Temp Discharge
-	// - 12 = Cell Sum Error (Discharge)
-	// - 13 = Regen. Volt Limit Reached
-	// - 14 = Discharge Reduced (Below Average Charger)
-	// - 15 = Reduce (Above Average Charger)
-	// - 16 = Supply Low for High Power
-
-	PowerReductionReason uint8
-
-	// 144-146
-
-	unused16, unused17, unused18 uint8
-
-	// 147-148
-
-	Checksum uint16
+func (s *Status) PowerReductionReason() PowerReductionReason {
+	return PowerReductionReason(s.read1(143))
 }
