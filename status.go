@@ -323,7 +323,7 @@ var modeNames = map[Mode]string{
 	Charging:        "charging",
 	TrickleCharging: "trickle charing",
 	Discharging:     "discharging",
-	Monitoring:      "monitorinng",
+	Monitoring:      "monitoring",
 	HaltForSafety:   "halt for safety",
 	PackCoolDown:    "pack cool down",
 	SystemStopError: "system stop",
