@@ -233,7 +233,7 @@ func (s *Status) IR(cell int) float64 {
 	}
 
 	ir := float64(s.read2(50+(cell*2))) / 6.3984 / s.VRAmps()
-	if math.IsNaN(ir) {
+	if math.IsNaN(ir) || math.IsInf(ir, 1) || math.IsInf(ir, -1) {
 		ir = 0
 	}
 	return ir
