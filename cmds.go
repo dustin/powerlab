@@ -1,7 +1,12 @@
 package powerlab
 
-import "github.com/dustin/go-rs232"
-import "io"
+import (
+	"errors"
+	"io"
+	"time"
+
+	"github.com/dustin/go-rs232"
+)
 
 type Powerlab struct {
 	port *rs232.SerialPort
@@ -13,7 +18,31 @@ func Open(port string) (*Powerlab, error) {
 	if err != nil {
 		return nil, err
 	}
+	if err := ser.SetNonblock(); err != nil {
+		ser.Close()
+		return nil, err
+	}
 	return &Powerlab{ser}, nil
+}
+
+var errTimeout = errors.New("timed out")
+
+func readFullTimeout(r io.Reader, buf []byte, timeout time.Duration) (n int, err error) {
+	until := time.Now().Add(timeout)
+	for n < len(buf) && err == nil {
+		var nn int
+		nn, err = r.Read(buf[n:])
+		n += nn
+		if time.Now().After(until) {
+			return n, errTimeout
+		}
+	}
+	if n >= len(buf) {
+		err = nil
+	} else if n > 0 && err == io.EOF {
+		err = io.ErrUnexpectedEOF
+	}
+	return
 }
 
 // Status requests status for the given powerlab on a bus (0 == master).
@@ -24,7 +53,7 @@ func (p *Powerlab) Status(id int) (*Status, error) {
 
 	rv := Status{}
 
-	if _, err := io.ReadFull(p.port, rv[:]); err != nil {
+	if _, err := readFullTimeout(p.port, rv[:], time.Second*5); err != nil {
 		return nil, err
 	}
 
