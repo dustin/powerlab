@@ -20,6 +20,10 @@ type logEntry struct {
 func main() {
 	log.SetFlags(log.Lmicroseconds)
 
+	if len(os.Args) < 2 {
+		log.Fatalf("Path to serial port required")
+	}
+
 	pl, err := powerlab.Open(os.Args[1])
 	if err != nil {
 		log.Fatalf("Error opening port: %v", err)
