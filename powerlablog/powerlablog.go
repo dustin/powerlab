@@ -36,8 +36,8 @@ func main() {
 			continue
 		}
 
-		log.Printf("Mode: %v, Avg=%.1f%%, amps=%.2fA, charge time=%v",
-			st.Mode(), st.AvgCell(), st.AvgAmps(), st.ChargeDuration())
+		log.Printf("%v %.1f%%, amps=%.2fA, mah_in=%v, charge time=%v",
+			st.Mode(), st.AvgCell(), st.AvgAmps(), st.MAHIn(), st.ChargeDuration())
 
 		j, err := json.Marshal(st)
 		if err != nil {
