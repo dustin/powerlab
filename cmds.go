@@ -8,6 +8,7 @@ import (
 	"github.com/dustin/go-rs232"
 )
 
+// Powerlab represents a connection to a Powerlab charger.
 type Powerlab struct {
 	port *rs232.SerialPort
 }
