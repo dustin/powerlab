@@ -15,6 +15,7 @@ const (
 // Status represents a Powerlab6 status response.
 type Status [statusLen + 4]byte
 
+// MarshalJSON satisfies json.Marshaler.
 func (s *Status) MarshalJSON() ([]byte, error) {
 	m := map[string]interface{}{
 		"version":                   s.Version(),
@@ -94,7 +95,7 @@ func (s *Status) read4(o int) uint32 {
 	return binary.BigEndian.Uint32((*s)[o : o+4])
 }
 
-// The Version of the powerlab firmware.
+// Version of the powerlab firmware.
 func (s *Status) Version() string {
 	v := s.read2(0)
 	return fmt.Sprintf("%d.%d", v/100, v%100)
@@ -109,10 +110,13 @@ func (s *Status) CellVoltage(n int) float64 {
 	return float64(s.read2(2*n)) * 5.12 / 65535
 }
 
+// PWMType represents the type of PWMDrive being used.
 type PWMType bool
 
 const (
-	Buck  = PWMType(false)
+	// Buck PWM type.
+	Buck = PWMType(false)
+	// Boost PWM Type.
 	Boost = PWMType(true)
 )
 
@@ -133,6 +137,7 @@ func (s *Status) ChargeCurrent() float64 {
 	return float64(s.read2(20)) / 1666
 }
 
+// SupplyVoltsWithCurrent is poorly documented in the PL6 documentation.
 func (s *Status) SupplyVoltsWithCurrent() float64 {
 	return float64(s.read2(22)) * 46.96 / 4095 / 16
 }
@@ -272,6 +277,7 @@ func (s *Status) status6() (constantVoltage bool, presetRunnable bool, regenFail
 	return bit(x, 4), bit(x, 5), bit(x, 8)
 }
 
+// SupplyAmps is the current (in amps) being consumed from the power supply.
 func (s *Status) SupplyAmps() float64 {
 	return float64(s.read2(80)) / 150
 }
