@@ -87,7 +87,9 @@ func powerlabReader() {
 	for t := range time.Tick(time.Second) {
 		st, err := pl.Status(0)
 		if err != nil {
-			log.Printf("Failed to read status: %v", err)
+			if err != powerlab.ErrTimeout {
+				log.Printf("Failed to read status: %v", err)
+			}
 			continue
 		}
 

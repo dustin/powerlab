@@ -27,13 +27,13 @@ func Open(port string) (*Powerlab, error) {
 	return &Powerlab{ser}, nil
 }
 
-var errTimeout = errors.New("timed out")
+var ErrTimeout = errors.New("timed out")
 
 func readFullTimeout(r io.Reader, buf []byte, timeout time.Duration) (n int, err error) {
 	until := time.Now().Add(timeout)
 	for n < len(buf) && err == nil {
 		if time.Now().After(until) {
-			return n, errTimeout
+			return n, ErrTimeout
 		}
 		var nn int
 		nn, err = r.Read(buf[n:])
