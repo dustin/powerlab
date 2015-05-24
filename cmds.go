@@ -3,6 +3,7 @@ package powerlab
 import (
 	"errors"
 	"io"
+	"strings"
 	"time"
 
 	"github.com/dustin/go-rs232"
@@ -31,11 +32,14 @@ var errTimeout = errors.New("timed out")
 func readFullTimeout(r io.Reader, buf []byte, timeout time.Duration) (n int, err error) {
 	until := time.Now().Add(timeout)
 	for n < len(buf) && err == nil {
+		if time.Now().After(until) {
+			return n, errTimeout
+		}
 		var nn int
 		nn, err = r.Read(buf[n:])
 		n += nn
-		if time.Now().After(until) {
-			return n, errTimeout
+		if err != nil && strings.Contains(err.Error(), "resource temporarily unavailable") {
+			err = nil
 		}
 	}
 	if n >= len(buf) {
