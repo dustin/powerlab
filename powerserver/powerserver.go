@@ -51,7 +51,7 @@ func logger(ch <-chan sample) {
 
 	for s := range ch {
 		if w == nil {
-			if s.st.Mode() != powerlab.Ready {
+			if s.st.Mode() != powerlab.Ready && !s.st.ChargeComplete() {
 				fn := fmt.Sprintf("%v/%v.json", *logpath,
 					time.Now().Format(time.RFC3339))
 				f, err := os.OpenFile(fn, os.O_RDWR|os.O_CREATE, 0666)
