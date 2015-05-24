@@ -25,6 +25,7 @@ var (
 	logpath      = flag.String("logpath", "log", "path to log files")
 	static       = flag.String("static", "static", "path to static content")
 	stateLogFreq = flag.Duration("logfreq", time.Minute, "state log frequency")
+	logTimeout   = flag.Duration("logtimeout", time.Minute*5, "how long to log after a charge is complete")
 
 	current = struct {
 		st *powerlab.Status
@@ -46,6 +47,7 @@ func getCurrent() *powerlab.Status {
 
 func logger(ch <-chan sample) {
 	var w io.WriteCloser
+	var logDeadline time.Time
 
 	for s := range ch {
 		if w == nil {
@@ -58,18 +60,27 @@ func logger(ch <-chan sample) {
 					continue
 				}
 				w = f
+				logDeadline = time.Now().Add(*logTimeout)
+				log.Printf("Starting log %v for charge", fn)
 			}
 		} else {
-			if s.st.Mode() == powerlab.Ready {
+			if s.st.Mode() == powerlab.Ready || time.Now().After(logDeadline) {
+				log.Printf("Closing logfile")
 				if err := w.Close(); err != nil {
 					log.Printf("Error closing logfile: %v", err)
 				}
 				w = nil
+				logDeadline = time.Time{}
 			}
 		}
 		if w != nil {
 			if err := s.st.Log(s.t, w); err != nil {
 				log.Printf("Error logging: %v", err)
+			}
+			// Stop logging a bit after we no longer see ourselves charging
+			if (s.st.Mode() == powerlab.Charging || s.st.Mode() == powerlab.Discharging) &&
+				!s.st.ChargeComplete() {
+				logDeadline = time.Now().Add(*logTimeout)
 			}
 		}
 	}

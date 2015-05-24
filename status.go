@@ -217,6 +217,12 @@ func (s *Status) statusFlags() (safetyCharge bool, chargeComplete bool, reduceAm
 	return bit(x, 1), bit(x, 8), bit(x, 11)
 }
 
+// ChargeComplete is true if the current charge (or discharge) is complete.
+func (s *Status) ChargeComplete() bool {
+	_, rv, _ := s.statusFlags()
+	return rv
+}
+
 // - Bit1 = Discharge Running
 // - Bit4 = Regenerative Discharge
 // - Bit6 = Charge Running
