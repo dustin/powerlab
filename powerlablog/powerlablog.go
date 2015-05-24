@@ -1,9 +1,7 @@
 package main
 
 import (
-	"bytes"
 	"encoding/hex"
-	"encoding/json"
 	"log"
 	"os"
 	"time"
@@ -39,22 +37,11 @@ func main() {
 		log.Printf("%v %.1f%%, amps=%.2fA, mah_in=%v, charge time=%v",
 			st.Mode(), st.AvgCell(), st.AvgAmps(), st.MAHIn(), st.ChargeDuration())
 
-		j, err := json.Marshal(st)
-		if err != nil {
-			log.Printf("Failed to marshal: %v", err)
+		if err := st.Log(t, os.Stdout); err != nil {
+			log.Printf("Failed to log: %v", err)
 			hex.Dumper(os.Stderr).Write(st[:])
 			os.Stderr.Write([]byte{'\n'})
 			log.Fatalf("exiting")
 		}
-
-		j2, err := json.Marshal(logEntry{t, j, st})
-		if err != nil {
-			log.Fatalf("Failed to marshal log entry: %v", err)
-		}
-
-		buf := &bytes.Buffer{}
-		json.Indent(buf, j2, "", "  ")
-		os.Stdout.Write(buf.Bytes())
-		os.Stdout.Write([]byte{'\n'})
 	}
 }
