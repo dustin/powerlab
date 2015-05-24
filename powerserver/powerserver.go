@@ -20,10 +20,11 @@ type sample struct {
 }
 
 var (
-	bind    = flag.String("bind", ":8080", "addr:port to bind to")
-	port    = flag.String("port", "/dev/ttyUSB0", "powerlab serial port")
-	logpath = flag.String("logpath", "log", "path to log files")
-	static  = flag.String("static", "static", "path to static content")
+	bind         = flag.String("bind", ":8080", "addr:port to bind to")
+	port         = flag.String("port", "/dev/ttyUSB0", "powerlab serial port")
+	logpath      = flag.String("logpath", "log", "path to log files")
+	static       = flag.String("static", "static", "path to static content")
+	stateLogFreq = flag.Duration("logfreq", time.Minute, "state log frequency")
 
 	current = struct {
 		st *powerlab.Status
@@ -100,7 +101,7 @@ func powerlabReader() {
 }
 
 func statusLogger() {
-	for range time.Tick(time.Minute) {
+	for range time.Tick(*stateLogFreq) {
 		st := getCurrent()
 		if st == nil {
 			continue
