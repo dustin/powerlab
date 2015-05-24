@@ -99,10 +99,22 @@ func powerlabReader() {
 	}
 }
 
+func statusLogger() {
+	for range time.Tick(time.Minute) {
+		st := getCurrent()
+		if st == nil {
+			continue
+		}
+		log.Printf("%v %.1f%%, amps=%.2fA, mah_in=%v, charge time=%v",
+			st.Mode(), st.AvgCell(), st.AvgAmps(), st.MAHIn(), st.ChargeDuration())
+	}
+}
+
 func main() {
 	flag.Parse()
 
 	go powerlabReader()
+	go statusLogger()
 
 	http.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
