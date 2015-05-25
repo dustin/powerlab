@@ -130,7 +130,7 @@ func main() {
 	flag.Parse()
 
 	if *useSyslog {
-		sl, err := syslog.New(syslog.LOG_INFO, "nging")
+		sl, err := syslog.New(syslog.LOG_INFO, "powerserver")
 		if err != nil {
 			log.Fatalf("Error initializing syslog")
 		}
