@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"log/syslog"
 	"net/http"
 	"os"
 	"sync"
@@ -26,6 +27,7 @@ var (
 	static       = flag.String("static", "static", "path to static content")
 	stateLogFreq = flag.Duration("logfreq", time.Minute, "state log frequency")
 	logTimeout   = flag.Duration("logtimeout", time.Minute*5, "how long to log after a charge is complete")
+	useSyslog    = flag.Bool("syslog", false, "Log to syslog")
 
 	current = struct {
 		st *powerlab.Status
@@ -126,6 +128,15 @@ func statusLogger() {
 
 func main() {
 	flag.Parse()
+
+	if *useSyslog {
+		sl, err := syslog.New(syslog.LOG_INFO, "nging")
+		if err != nil {
+			log.Fatalf("Error initializing syslog")
+		}
+		log.SetOutput(sl)
+		log.SetFlags(0)
+	}
 
 	go powerlabReader()
 	go statusLogger()
