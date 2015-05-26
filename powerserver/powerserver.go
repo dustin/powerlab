@@ -128,7 +128,7 @@ func powerlabReader() {
 func statusLogger() {
 	for range time.Tick(*stateLogFreq) {
 		st := getCurrent()
-		if st == nil {
+		if st == nil || st.Mode() == powerlab.Ready {
 			continue
 		}
 		log.Printf("%v %.1f%%, amps=%.2fA, mah_in=%v, charge time=%v",
