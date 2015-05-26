@@ -51,9 +51,20 @@ func logger(ch <-chan sample) {
 	var w io.WriteCloser
 	var logDeadline time.Time
 
+	var prevMode powerlab.Mode
+	prevComplete := false
+
 	for s := range ch {
+		mode := s.st.Mode()
+		complete := s.st.ChargeComplete()
+
+		if mode != prevMode || complete != prevComplete {
+			log.Printf("State change mode %v->%v, complete %v->%v",
+				prevMode, mode, prevComplete, complete)
+		}
+
 		if w == nil {
-			if s.st.Mode() != powerlab.Ready && !s.st.ChargeComplete() {
+			if mode != powerlab.Ready && !complete {
 				fn := fmt.Sprintf("%v/%v.json", *logpath,
 					time.Now().Format(time.RFC3339))
 				f, err := os.OpenFile(fn, os.O_RDWR|os.O_CREATE, 0666)
@@ -66,7 +77,7 @@ func logger(ch <-chan sample) {
 				log.Printf("Starting log %v for charge", fn)
 			}
 		} else {
-			if s.st.Mode() == powerlab.Ready || time.Now().After(logDeadline) {
+			if mode == powerlab.Ready || time.Now().After(logDeadline) {
 				log.Printf("Closing logfile")
 				if err := w.Close(); err != nil {
 					log.Printf("Error closing logfile: %v", err)
@@ -80,8 +91,7 @@ func logger(ch <-chan sample) {
 				log.Printf("Error logging: %v", err)
 			}
 			// Stop logging a bit after we no longer see ourselves charging
-			if (s.st.Mode() == powerlab.Charging || s.st.Mode() == powerlab.Discharging) &&
-				!s.st.ChargeComplete() {
+			if (mode == powerlab.Charging || mode == powerlab.Discharging) && !complete {
 				logDeadline = time.Now().Add(*logTimeout)
 			}
 		}
