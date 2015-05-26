@@ -126,13 +126,15 @@ func powerlabReader() {
 }
 
 func statusLogger() {
+	loggedReady := false
 	for range time.Tick(*stateLogFreq) {
 		st := getCurrent()
-		if st == nil || st.Mode() == powerlab.Ready {
+		if st == nil || (st.Mode() == powerlab.Ready && loggedReady) {
 			continue
 		}
 		log.Printf("%v %.1f%%, amps=%.2fA, mah_in=%v, charge time=%v",
 			st.Mode(), st.AvgCell(), st.AvgAmps(), st.MAHIn(), st.ChargeDuration())
+		loggedReady = st.Mode() == powerlab.Ready
 	}
 }
 
