@@ -63,7 +63,8 @@ func logger(ch <-chan sample) {
 			prevMode = mode
 		}
 		if complete != prevComplete {
-			log.Printf("Complete change %v->%v", prevComplete, complete)
+			log.Printf("Completed charge/discharge %v->%v",
+				prevComplete, complete)
 			prevComplete = complete
 		}
 
