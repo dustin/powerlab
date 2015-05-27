@@ -137,8 +137,28 @@ func statusLogger() {
 		if st == nil || (st.Mode() == powerlab.Ready && loggedReady) {
 			continue
 		}
-		log.Printf("%v %.1f%%, amps=%.2fA, mah_in=%v, charge time=%v",
-			st.Mode(), st.AvgCell(), st.AvgAmps(), st.MAHIn(), st.ChargeDuration())
+		volts := []string{}
+		ir := []string{}
+		for i := 0; i < st.DetectedCellCount(); i++ {
+			volts = append(volts, fmt.Sprintf("%.2f", s.CellVoltage(i+1)))
+			ir = append(ir, fmt.Sprintf("%.2f", s.IR(i+1)))
+		}
+
+		switch st.Mode() {
+		case powerlab.Charging, powerlab.TrickleCharging:
+			log.Printf("%v %.1f%%, amps=%.2fA, mah_in=%v, cells=%v, ir=%v, charge time=%v",
+				st.Mode(), st.AvgCell(), st.AvgAmps(), st.MAHIn(),
+				volts, ir, st.ChargeDuration())
+		case powerlab.Discharging:
+			log.Printf("%v %.1f%%, amps=%.2fA, mah_out=%v, cells=%v, charge time=%v",
+				st.Mode(), st.AvgCell(), st.AvgAmps(), st.MAHOut(),
+				volts, st.ChargeDuration())
+		case powerlab.Monitoring:
+			log.Printf("%v %.1f%%, volts=%v",
+				st.Mode(), st.AvgCell(), volts)
+		default:
+			log.Printf("%v", st.Mode())
+		}
 		loggedReady = st.Mode() == powerlab.Ready
 	}
 }
