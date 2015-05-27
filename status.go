@@ -323,6 +323,7 @@ func (s *Status) BalancePWM(cell int) int {
 type Mode int
 
 const (
+	Unknown         = Mode(-1)
 	Ready           = Mode(0)
 	DetectingPack   = Mode(1)
 	Charging        = Mode(6)
@@ -335,6 +336,7 @@ const (
 )
 
 var modeNames = map[Mode]string{
+	Unknown:         "unknown",
 	Ready:           "ready",
 	DetectingPack:   "detecting pack",
 	Charging:        "charging",

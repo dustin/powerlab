@@ -51,8 +51,10 @@ func logger(ch <-chan sample) {
 	var w io.WriteCloser
 	var logDeadline time.Time
 
-	var prevMode powerlab.Mode
+	prevMode := powerlab.Unknown
 	prevComplete := false
+
+	log.Printf("Started logger")
 
 	for s := range ch {
 		mode := s.st.Mode()
@@ -111,6 +113,8 @@ func powerlabReader() {
 
 	ch := make(chan sample, 1)
 	go logger(ch)
+
+	log.Printf("Started reader")
 
 	for t := range time.Tick(time.Second) {
 		st, err := pl.Status(0)
