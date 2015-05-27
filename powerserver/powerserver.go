@@ -140,18 +140,18 @@ func statusLogger() {
 		volts := []string{}
 		ir := []string{}
 		for i := 0; i < st.DetectedCellCount(); i++ {
-			volts = append(volts, fmt.Sprintf("%.2f", s.CellVoltage(i+1)))
-			ir = append(ir, fmt.Sprintf("%.2f", s.IR(i+1)))
+			volts = append(volts, fmt.Sprintf("%.2f", st.CellVoltage(i+1)))
+			ir = append(ir, fmt.Sprintf("%.2f", st.IR(i+1)))
 		}
 
 		switch st.Mode() {
 		case powerlab.Charging, powerlab.TrickleCharging:
 			log.Printf("%v %.1f%%, amps=%.2fA, mah_in=%v, cells=%v, ir=%v, charge time=%v",
-				st.Mode(), st.AvgCell(), st.AvgAmps(), st.MAHIn(),
+				st.Mode(), st.AvgCell(), st.AvgAmps(), st.MAhIn(),
 				volts, ir, st.ChargeDuration())
 		case powerlab.Discharging:
 			log.Printf("%v %.1f%%, amps=%.2fA, mah_out=%v, cells=%v, charge time=%v",
-				st.Mode(), st.AvgCell(), st.AvgAmps(), st.MAHOut(),
+				st.Mode(), st.AvgCell(), st.AvgAmps(), st.MAhOut(),
 				volts, st.ChargeDuration())
 		case powerlab.Monitoring:
 			log.Printf("%v %.1f%%, volts=%v",

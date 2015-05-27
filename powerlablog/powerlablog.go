@@ -35,7 +35,7 @@ func main() {
 		}
 
 		log.Printf("%v %.1f%%, amps=%.2fA, mah_in=%v, charge time=%v",
-			st.Mode(), st.AvgCell(), st.AvgAmps(), st.MAHIn(), st.ChargeDuration())
+			st.Mode(), st.AvgCell(), st.AvgAmps(), st.MAhIn(), st.ChargeDuration())
 
 		if err := st.Log(t, os.Stdout); err != nil {
 			log.Printf("Failed to log: %v", err)

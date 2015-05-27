@@ -28,7 +28,7 @@ func (s *Status) MarshalJSON() ([]byte, error) {
 		"charge_time":               s.ChargeDuration().String(),
 		"fast_amps":                 s.FastAmps(),
 		"out_pos":                   s.OutPositive(),
-		"mah_in":                    s.MAHIn(),
+		"mah_in":                    s.MAhIn(),
 		"avg_cell":                  s.AvgCell(),
 		"start_avg_cell":            s.StartAvg(),
 		"avg_amps":                  s.AvgAmps(),
@@ -39,7 +39,7 @@ func (s *Status) MarshalJSON() ([]byte, error) {
 		"max_cell":                  s.MaxCell(),
 		"supply_amps":               s.SupplyAmps(),
 		"battery_pos":               s.BatteryPos(),
-		"mah_out":                   s.MAhrOut(),
+		"mah_out":                   s.MAhOut(),
 		"discharge_amps_set":        s.DischAmpSet(),
 		"discharge_pwm":             s.DischargePWM(),
 		"battery_neg":               s.BatteryNeg(),
@@ -187,8 +187,8 @@ func (s *Status) OutPositive() float64 {
 	return float64(s.read2(32)) / 4095.0
 }
 
-// MAHIn is the number of milliamp hours sent into the batteries.
-func (s *Status) MAHIn() int {
+// MAhIn is the number of milliamp hours sent into the batteries.
+func (s *Status) MAhIn() int {
 	return int(s.read4(34)) / 2160
 }
 
@@ -297,7 +297,7 @@ func (s *Status) BatteryPos() float64 {
 	return float64(s.read2(82)) / 12797
 }
 
-func (s *Status) MAhrOut() int {
+func (s *Status) MAhOut() int {
 	return int(s.read4(84)) / 2160
 }
 
