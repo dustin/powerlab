@@ -58,9 +58,13 @@ func logger(ch <-chan sample) {
 		mode := s.st.Mode()
 		complete := s.st.ChargeComplete()
 
-		if mode != prevMode || complete != prevComplete {
-			log.Printf("State change mode %v->%v, complete %v->%v",
-				prevMode, mode, prevComplete, complete)
+		if mode != prevMode {
+			log.Printf("State change mode %v->%v", prevMode, mode)
+			prevMode = mode
+		}
+		if complete != prevComplete {
+			log.Printf("Complete change %v->%v", prevComplete, complete)
+			prevComplete = complete
 		}
 
 		if w == nil {
