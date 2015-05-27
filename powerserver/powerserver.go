@@ -151,11 +151,11 @@ func statusLogger() {
 
 		switch st.Mode() {
 		case powerlab.Charging, powerlab.TrickleCharging:
-			log.Printf("%v%s %.1f%%, amps=%.2fA, mah_in=%v, cells=%v, ir=%v, charge time=%v",
+			log.Printf("%v%s %.1f%%, current=%.2fA, in=%vmA, cells=%v, ir=%v, charge time=%v",
 				st.Mode(), complete, st.AvgCell(), st.AvgAmps(), st.MAhIn(),
 				volts, ir, st.ChargeDuration())
 		case powerlab.Discharging:
-			log.Printf("%v%s %.1f%%, amps=%.2fA, mah_out=%v, cells=%v, discharge time=%v",
+			log.Printf("%v%s %.1f%%, current=%.2fA, out=%vmA, cells=%v, discharge time=%v",
 				st.Mode(), complete, st.AvgCell(), st.AvgAmps(), st.MAhOut(),
 				volts, st.ChargeDuration())
 		case powerlab.Monitoring:
