@@ -79,7 +79,7 @@ func logger(ch <-chan sample) {
 				}
 				w = f
 				logDeadline = time.Now().Add(*logTimeout)
-				log.Printf("Starting log %v for charge", fn)
+				log.Printf("Starting log %v for mode %q", fn, mode)
 			}
 		} else {
 			if mode == powerlab.Ready || time.Now().After(logDeadline) {
