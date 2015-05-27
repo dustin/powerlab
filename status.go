@@ -90,6 +90,11 @@ func (s *Status) read2(o int) uint16 {
 	return binary.BigEndian.Uint16((*s)[o : o+2])
 }
 
+func (s *Status) read2s(o int) int16 {
+	o += 4
+	return int16(binary.BigEndian.Uint16((*s)[o : o+2]))
+}
+
 func (s *Status) read4(o int) uint32 {
 	o += 4
 	return binary.BigEndian.Uint32((*s)[o : o+4])
@@ -174,7 +179,7 @@ func (s *Status) ChargeDuration() time.Duration {
 // FastAmps is the number of amps currently being fed to the
 // batteries.
 func (s *Status) FastAmps() float64 {
-	return float64(s.read2(30)) / 600
+	return float64(s.read2s(30)) / 600
 }
 
 // OutPositive is the positive output voltage towards the batteries.
@@ -200,7 +205,7 @@ func (s *Status) StartAvg() float64 {
 // AvgAmps is the average current being fed into batteries as
 // displayed on the LCD.  Use this for reading pack current.
 func (s *Status) AvgAmps() float64 {
-	return float64(s.read2(42)) / 600
+	return float64(s.read2s(42)) / 600
 }
 
 // bit uses 1-based bit sequences because that's how the stuff is spec'd
@@ -358,7 +363,7 @@ func (s *Status) StartSupplyVolts() float64 {
 }
 
 func (s *Status) SlowAvgAmps() float64 {
-	return float64(s.read2(116)) / 600
+	return float64(s.read2s(116)) / 600
 }
 
 func (s *Status) PresetSetAmps() float64 {
