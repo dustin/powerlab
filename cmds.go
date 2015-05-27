@@ -24,6 +24,10 @@ func Open(port string) (*Powerlab, error) {
 		ser.Close()
 		return nil, err
 	}
+	if err := ser.SetInputAttr(1, time.Second*5); err != nil {
+		ser.Close()
+		return nil, err
+	}
 	return &Powerlab{ser}, nil
 }
 
@@ -38,7 +42,9 @@ func readFullTimeout(r io.Reader, buf []byte, timeout time.Duration) (n int, err
 		var nn int
 		nn, err = r.Read(buf[n:])
 		n += nn
-		if err != nil && strings.Contains(err.Error(), "resource temporarily unavailable") {
+		if err == io.EOF ||
+			(err != nil && strings.Contains(err.Error(), "resource temporarily unavailable")) {
+			time.Sleep(time.Millisecond * 100)
 			err = nil
 		}
 	}
