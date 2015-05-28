@@ -14,6 +14,7 @@ import (
 
 	"expvar"
 
+	"github.com/dustin/httputil"
 	"github.com/dustin/powerlab"
 )
 
@@ -185,6 +186,8 @@ func statusLogger() {
 
 func main() {
 	flag.Parse()
+
+	expvar.Publish("httpclients", httputil.InitHTTPTracker(false))
 
 	if *useSyslog {
 		sl, err := syslog.New(syslog.LOG_INFO, "powerserver")
