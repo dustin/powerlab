@@ -71,6 +71,7 @@ func logger(ch <-chan sample) {
 		if mode != prevMode {
 			log.Printf("State change mode %v->%v", prevMode, mode)
 			stateChanges.Add(mode.String(), 1)
+			currentState.Set(mode.String())
 			prevMode = mode
 		}
 		if complete != prevComplete {
