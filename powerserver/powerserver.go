@@ -12,6 +12,8 @@ import (
 	"sync"
 	"time"
 
+	"expvar"
+
 	"github.com/dustin/powerlab"
 )
 
@@ -33,6 +35,11 @@ var (
 		st *powerlab.Status
 		mu sync.Mutex
 	}{}
+
+	statusErrors = expvar.NewInt("status_errors")
+	currentLog   = expvar.NewString("current_log")
+	currentState = expvar.NewString("state")
+	stateChanges = expvar.NewMap("states")
 )
 
 func setCurrent(st *powerlab.Status) {
@@ -62,6 +69,7 @@ func logger(ch <-chan sample) {
 
 		if mode != prevMode {
 			log.Printf("State change mode %v->%v", prevMode, mode)
+			stateChanges.Add(mode.String(), 1)
 			prevMode = mode
 		}
 		if complete != prevComplete {
@@ -82,6 +90,7 @@ func logger(ch <-chan sample) {
 				w = f
 				logDeadline = time.Now().Add(*logTimeout)
 				log.Printf("Starting log %v for mode %q", fn, mode)
+				currentLog.Set(fn)
 			}
 		} else {
 			if mode == powerlab.Ready || time.Now().After(logDeadline) {
@@ -89,6 +98,7 @@ func logger(ch <-chan sample) {
 				if err := w.Close(); err != nil {
 					log.Printf("Error closing logfile: %v", err)
 				}
+				currentLog.Set("")
 				w = nil
 				logDeadline = time.Time{}
 			}
@@ -119,6 +129,7 @@ func powerlabReader() {
 	for t := range time.Tick(time.Second) {
 		st, err := pl.Status(0)
 		if err != nil {
+			statusErrors.Add(1)
 			if err != powerlab.ErrTimeout {
 				log.Printf("Failed to read status: %v", err)
 			}
