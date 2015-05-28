@@ -20,6 +20,10 @@ func Open(port string) (*Powerlab, error) {
 	if err != nil {
 		return nil, err
 	}
+	if err := ser.SetNonblock(); err != nil {
+		ser.Close()
+		return nil, err
+	}
 	if err := ser.SetInputAttr(1, time.Second*5); err != nil {
 		ser.Close()
 		return nil, err
