@@ -72,13 +72,13 @@ func notify(st *powerlab.Status) {
 	msg := ""
 	switch st.Mode() {
 	case powerlab.Charging, powerlab.TrickleCharging:
-		msg = fmt.Sprintf("%v %vS%vP %.1f%%, current=%.2fA, in=%vmA, cells=%v, ir=%v, charge time=%v",
-			st.Mode(), st.DetectedCellCount(), st.Packs(), st.AvgCell(),
-			st.AvgAmps(), st.MAhIn(), volts, ir, st.ChargeDuration())
+		msg = fmt.Sprintf("%vS%vP %.1f%%, in=%vmA, cells=%v, ir=%v, charge time=%v",
+			st.DetectedCellCount(), st.Packs(), st.AvgCell(),
+			st.MAhIn(), volts, ir, st.ChargeDuration())
 	case powerlab.Discharging:
-		msg = fmt.Sprintf("%v %vS%vP %.1f%%, current=%.2fA, out=%vmA, cells=%v, discharge time=%v",
-			st.Mode(), st.DetectedCellCount(), st.Packs(), st.AvgCell(),
-			st.AvgAmps(), st.MAhOut(), volts, st.ChargeDuration())
+		msg = fmt.Sprintf("%vS%vP %.1f%%, out=%vmA, cells=%v, discharge time=%v",
+			st.DetectedCellCount(), st.Packs(), st.AvgCell(),
+			st.MAhOut(), volts, st.ChargeDuration())
 	}
 
 	n := nma.New(*nmaKey)
