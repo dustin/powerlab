@@ -152,7 +152,11 @@ func logger(ch <-chan sample) {
 				log.Printf("Error logging: %v", err)
 			}
 			// Stop logging a bit after we no longer see ourselves charging
-			if (mode == powerlab.Charging || mode == powerlab.Discharging) && !complete {
+			if (mode == powerlab.Charging ||
+				mode == powerlab.Discharging ||
+				mode == powerlab.PackCoolDown ||
+				mode == powerlab.TrickleCharging ||
+				mode == powerlab.DetectingPack) && !complete {
 				logDeadline = time.Now().Add(*logTimeout)
 			}
 		}
