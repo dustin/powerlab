@@ -14,6 +14,7 @@ import (
 
 	"expvar"
 
+	"github.com/dustin/go-nma"
 	"github.com/dustin/httputil"
 	"github.com/dustin/powerlab"
 )
@@ -31,6 +32,7 @@ var (
 	stateLogFreq = flag.Duration("logfreq", time.Minute, "state log frequency")
 	logTimeout   = flag.Duration("logtimeout", time.Minute*5, "how long to log after a charge is complete")
 	useSyslog    = flag.Bool("syslog", false, "Log to syslog")
+	nmaKey       = flag.String("nmakey", "", "notify my android key")
 
 	current = struct {
 		st *powerlab.Status
@@ -53,6 +55,43 @@ func getCurrent() *powerlab.Status {
 	current.mu.Lock()
 	defer current.mu.Unlock()
 	return current.st
+}
+
+func notify(st *powerlab.Status) {
+	if *nmaKey == "" {
+		return
+	}
+
+	volts := []string{}
+	ir := []string{}
+	for i := 0; i < st.DetectedCellCount(); i++ {
+		volts = append(volts, fmt.Sprintf("%.2f", st.CellVoltage(i+1)))
+		ir = append(ir, fmt.Sprintf("%.2f", st.IR(i+1)))
+	}
+
+	msg := ""
+	switch st.Mode() {
+	case powerlab.Charging, powerlab.TrickleCharging:
+		msg = fmt.Sprintf("%v %vS%vP %.1f%%, current=%.2fA, in=%vmA, cells=%v, ir=%v, charge time=%v",
+			st.Mode(), st.DetectedCellCount(), st.Packs(), st.AvgCell(),
+			st.AvgAmps(), st.MAhIn(), volts, ir, st.ChargeDuration())
+	case powerlab.Discharging:
+		msg = fmt.Sprintf("%v %vS%vP %.1f%%, current=%.2fA, out=%vmA, cells=%v, discharge time=%v",
+			st.Mode(), st.DetectedCellCount(), st.Packs(), st.AvgCell(),
+			st.AvgAmps(), st.MAhOut(), volts, st.ChargeDuration())
+	}
+
+	n := nma.New(*nmaKey)
+	nmamsg := &nma.Notification{
+		Application: "powerlab",
+		Description: msg,
+		Event:       st.Mode().String(),
+	}
+
+	if err := n.Notify(nmamsg); err != nil {
+		log.Printf("Problem notifying: %v", err)
+	}
+
 }
 
 func logger(ch <-chan sample) {
@@ -78,6 +117,9 @@ func logger(ch <-chan sample) {
 			log.Printf("Completed charge/discharge %v->%v",
 				prevComplete, complete)
 			prevComplete = complete
+			if complete {
+				notify(s.st)
+			}
 		}
 
 		if w == nil {
