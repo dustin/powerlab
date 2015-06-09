@@ -1,6 +1,7 @@
 package main
 
 import (
+	"compress/gzip"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -91,7 +92,35 @@ func notify(st *powerlab.Status) {
 	if err := n.Notify(nmamsg); err != nil {
 		log.Printf("Problem notifying: %v", err)
 	}
+}
 
+type gzwriter struct {
+	w io.WriteCloser
+	g *gzip.Writer
+}
+
+func (g *gzwriter) Write(b []byte) (int, error) {
+	return g.g.Write(b)
+}
+
+func (g *gzwriter) Close() error {
+	err := g.g.Close()
+	if err != nil {
+		defer g.w.Close()
+		return err
+	}
+	return g.w.Close()
+}
+
+func openGzWriter(fn string) (io.WriteCloser, error) {
+	f, err := os.OpenFile(fn, os.O_RDWR|os.O_CREATE, 0666)
+	if err != nil {
+		return nil, err
+	}
+	return &gzwriter{
+		w: f,
+		g: gzip.NewWriter(f),
+	}, nil
 }
 
 func logger(ch <-chan sample) {
@@ -124,9 +153,9 @@ func logger(ch <-chan sample) {
 
 		if w == nil {
 			if mode != powerlab.Ready && !complete {
-				fn := fmt.Sprintf("%v/%v.json", *logpath,
+				fn := fmt.Sprintf("%v/%v.json.gz", *logpath,
 					time.Now().Format(time.RFC3339))
-				f, err := os.OpenFile(fn, os.O_RDWR|os.O_CREATE, 0666)
+				f, err := openGzWriter(fn)
 				if err != nil {
 					log.Printf("Error creating log file: %v", err)
 					continue
