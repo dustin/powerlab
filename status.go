@@ -115,6 +115,24 @@ func (s *Status) CellVoltage(n int) float64 {
 	return float64(s.read2(2*n)) * 5.12 / 65535
 }
 
+// CellVoltages reports voltages across all detected cells.
+func (s *Status) CellVoltages() []float64 {
+	volts := []float64{}
+	for i := 0; i < st.DetectedCellCount(); i++ {
+		volts = append(volts, st.CellVoltage(i+1))
+	}
+	return volts
+}
+
+// IRs returns the internal resistance of all detected cells.
+func (s *Status) IRs() []float64 {
+	irs := []float64{}
+	for i := 0; i < st.DetectedCellCount(); i++ {
+		irs = append(irs, st.IR(i+1))
+	}
+	return irs
+}
+
 // PWMType represents the type of PWMDrive being used.
 type PWMType bool
 
