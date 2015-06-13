@@ -58,17 +58,21 @@ func getCurrent() *powerlab.Status {
 	return current.st
 }
 
+func strfloats(fs []float64) []string {
+	rv := []string{}
+	for _, f := range fs {
+		rv = append(rv, fmt.Sprintf("%.2f", f))
+	}
+	return rv
+}
+
 func notify(st *powerlab.Status) {
 	if *nmaKey == "" {
 		return
 	}
 
-	volts := []string{}
-	ir := []string{}
-	for i := 0; i < st.DetectedCellCount(); i++ {
-		volts = append(volts, fmt.Sprintf("%.2f", st.CellVoltage(i+1)))
-		ir = append(ir, fmt.Sprintf("%.2f", st.IR(i+1)))
-	}
+	volts := strfloats(st.CellVoltages())
+	ir := strfloats(st.IRs())
 
 	msg := ""
 	switch st.Mode() {
@@ -229,12 +233,8 @@ func statusLogger() {
 		if st == nil || (st.Mode() == powerlab.Ready && loggedReady) {
 			continue
 		}
-		volts := []string{}
-		ir := []string{}
-		for i := 0; i < st.DetectedCellCount(); i++ {
-			volts = append(volts, fmt.Sprintf("%.2f", st.CellVoltage(i+1)))
-			ir = append(ir, fmt.Sprintf("%.2f", st.IR(i+1)))
-		}
+		volts := strfloats(st.CellVoltages())
+		ir := strfloats(st.IRs())
 
 		complete := ""
 		if st.ChargeComplete() {
