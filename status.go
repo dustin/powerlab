@@ -118,8 +118,8 @@ func (s *Status) CellVoltage(n int) float64 {
 // CellVoltages reports voltages across all detected cells.
 func (s *Status) CellVoltages() []float64 {
 	volts := []float64{}
-	for i := 0; i < st.DetectedCellCount(); i++ {
-		volts = append(volts, st.CellVoltage(i+1))
+	for i := 0; i < s.DetectedCellCount(); i++ {
+		volts = append(volts, s.CellVoltage(i+1))
 	}
 	return volts
 }
@@ -127,8 +127,8 @@ func (s *Status) CellVoltages() []float64 {
 // IRs returns the internal resistance of all detected cells.
 func (s *Status) IRs() []float64 {
 	irs := []float64{}
-	for i := 0; i < st.DetectedCellCount(); i++ {
-		irs = append(irs, st.IR(i+1))
+	for i := 0; i < s.DetectedCellCount(); i++ {
+		irs = append(irs, s.IR(i+1))
 	}
 	return irs
 }
