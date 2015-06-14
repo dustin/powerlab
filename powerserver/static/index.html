@@ -1,0 +1,49 @@
+<html>
+  <head>
+    <title>PowerServer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"
+            charset="utf-8"></script>
+    <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="powerserver.js"></script>
+    <style type="text/css">
+      html {
+        font-family: 'verdana';
+      }
+
+      .error {
+        background-color: red;
+      }
+
+      .complete {
+        color: green;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Mode: <span id="mode"></span></h1>
+
+    <div class="modesec" style="display: none" id="charging">
+      <h2>Chemistry:  <span id="charging-chemistry"></span></h2>
+      <p>
+        Amps: <span id="charging-amps"></span><br/>
+        Voltages: <span id="charging-volts"></span><br/>
+        IR: <span id="charging-ir"></span><br/>
+        Time: <span id="charging-time"></span><br/>
+      </p>
+    </div>
+
+    <div class="modesec" style="display: none" id="discharging">
+      <h2>Chemistry:  <span id="charging-chemistry"></span></h2>
+      <p>
+        Amps: <span id="charging-amps"></span><br/>
+        Voltages: <span id="charging-volts"></span><br/>
+        Time: <span id="charging-time"></span><br/>
+      </p>
+    </div>
+  </body>
+
+  <script type="text/javascript">
+    $(powerInit);
+  </script>
+</html>
