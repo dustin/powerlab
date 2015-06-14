@@ -160,7 +160,7 @@ func logger(ch <-chan sample) {
 		}
 
 		if w == nil {
-			if mode != powerlab.Ready && !complete {
+			if mode != powerlab.Ready && !complete && *logpath != "" {
 				fn := fmt.Sprintf("%v/%v.json.gz", *logpath,
 					time.Now().Format(time.RFC3339))
 				f, err := openGzWriter(fn)
