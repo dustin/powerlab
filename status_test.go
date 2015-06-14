@@ -131,7 +131,7 @@ func TestReading(t *testing.T) {
 	assert(t, "charge sec", s.ChargeDuration(), time.Second*30*60)
 	assertEpsilon(t, "fast amps", s.FastAmps(), 1.3*6)
 	assertEpsilon(t, "output positive", s.OutPositive(), 4.2*3)
-	assert(t, "mAh in", s.MAHIn(), 1172)
+	assert(t, "mAh in", s.MAhIn(), 1172)
 	assertEpsilon(t, "avg cell", s.AvgCell(), 50)
 	assertEpsilon(t, "start avg", s.StartAvg(), 30)
 	assertEpsilon(t, "avg amps", s.AvgAmps(), 1.3*6)
