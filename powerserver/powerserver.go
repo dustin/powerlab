@@ -10,6 +10,7 @@ import (
 	"log/syslog"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -18,6 +19,7 @@ import (
 	"github.com/dustin/go-nma"
 	"github.com/dustin/httputil"
 	"github.com/dustin/powerlab"
+	"github.com/dustin/replaykit"
 )
 
 type sample struct {
@@ -34,6 +36,8 @@ var (
 	logTimeout   = flag.Duration("logtimeout", time.Minute*5, "how long to log after a charge is complete")
 	useSyslog    = flag.Bool("syslog", false, "Log to syslog")
 	nmaKey       = flag.String("nmakey", "", "notify my android key")
+	replayFile   = flag.String("replayfile", "", "log to play back")
+	replaySpeed  = flag.Float64("replayspeed", 1.0, "log playback time factor")
 
 	current = struct {
 		st *powerlab.Status
@@ -226,6 +230,52 @@ func powerlabReader() {
 	}
 }
 
+type logEvent struct {
+	le *powerlab.LogEntry
+}
+
+func (l logEvent) TS() time.Time { return l.le.Timestamp }
+
+func powerlabPlayback() {
+	lf, err := os.Open(*replayFile)
+	if err != nil {
+		log.Fatalf("Error opening replay file: %v", err)
+	}
+
+	r := io.Reader(lf)
+	if strings.HasSuffix(*replayFile, ".gz") {
+		gzr, err := gzip.NewReader(r)
+		if err != nil {
+			log.Fatalf("Error ungzipping: %v", err)
+		}
+		r = gzr
+	}
+	j := json.NewDecoder(r)
+
+	src := replay.FunctionSource(func() replay.Event {
+		le := &powerlab.LogEntry{}
+		if err := j.Decode(le); err != nil {
+			log.Printf("Error unmarshaling entry: %v", err)
+			return nil
+		}
+		setCurrent(le.Data)
+		return logEvent{le}
+	})
+
+	ch := make(chan sample)
+	go logger(ch)
+
+	log.Printf("Started replay on %v", *replayFile)
+
+	rpl := replay.New(*replaySpeed)
+	rpl.Run(src, replay.FunctionAction(func(event replay.Event) {
+		le := event.(logEvent)
+		ch <- sample{le.le.Timestamp, le.le.Data}
+	}))
+
+	log.Printf("Completed replay")
+}
+
 func statusLogger() {
 	loggedReady := false
 	for range time.Tick(*stateLogFreq) {
@@ -274,7 +324,11 @@ func main() {
 		log.SetFlags(0)
 	}
 
-	go powerlabReader()
+	if *replayFile == "" {
+		go powerlabReader()
+	} else {
+		go powerlabPlayback()
+	}
 	go statusLogger()
 
 	http.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
