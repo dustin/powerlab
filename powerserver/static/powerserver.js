@@ -37,6 +37,7 @@ function updateStatus(d) {
     }
     d3.select("#" + d.mode + "-chemistry").text(d.chemistry);
     d3.select("#" + d.mode + "-amps").text(d.fast_amps.toFixed(2));
+    d3.select("#" + d.mode + "-mah").text(d.mah_in);
     d3.select("#" + d.mode + "-volts").text(farray(d.voltage.splice(0, d.detected_cell_count)));
     d3.select("#" + d.mode + "-ir").text(farray(d.ir.splice(0, d.detected_cell_count)));
     d3.select("#" + d.mode + "-time").text(d.charge_time);
