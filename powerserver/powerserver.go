@@ -332,8 +332,7 @@ func main() {
 	go statusLogger()
 
 	http.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(getCurrent())
+		serveJSON(w, r, getCurrent())
 	})
 
 	http.Handle("/", http.FileServer(http.Dir(*static)))
