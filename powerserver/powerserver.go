@@ -27,6 +27,20 @@ type sample struct {
 	st *powerlab.Status
 }
 
+const maxReadings = 3600
+
+type markedStatus struct {
+	TS time.Time
+	ST *powerlab.Status
+}
+
+type readings struct {
+	vals []markedStatus
+	head int
+
+	mu sync.Mutex
+}
+
 var (
 	bind         = flag.String("bind", ":8080", "addr:port to bind to")
 	port         = flag.String("port", "/dev/ttyUSB0", "powerlab serial port")
@@ -39,10 +53,7 @@ var (
 	replayFile   = flag.String("replayfile", "", "log to play back")
 	replaySpeed  = flag.Float64("replayspeed", 1.0, "log playback time factor")
 
-	current = struct {
-		st *powerlab.Status
-		mu sync.Mutex
-	}{}
+	current readings
 
 	statusErrors = expvar.NewInt("status_errors")
 	currentLog   = expvar.NewString("current_log")
@@ -53,13 +64,46 @@ var (
 func setCurrent(st *powerlab.Status) {
 	current.mu.Lock()
 	defer current.mu.Unlock()
-	current.st = st
+
+	now := time.Now()
+	if len(current.vals) >= maxReadings {
+		current.head++
+		if current.head >= maxReadings {
+			current.head = 0
+		}
+		current.vals[current.head] = markedStatus{now, st}
+	} else {
+		current.vals = append(current.vals, markedStatus{now, st})
+		current.head = len(current.vals) - 1
+	}
 }
 
 func getCurrent() *powerlab.Status {
 	current.mu.Lock()
 	defer current.mu.Unlock()
-	return current.st
+	if len(current.vals) == 0 {
+		return nil
+	}
+	return current.vals[current.head].ST
+}
+
+func resetCurrent() {
+	current.mu.Lock()
+	defer current.mu.Unlock()
+	current.vals[0] = current.vals[current.head]
+	current.vals = current.vals[:1]
+	current.head = 0
+}
+
+func allReadings() []markedStatus {
+	current.mu.Lock()
+	defer current.mu.Unlock()
+
+	if len(current.vals) == 0 {
+		return nil
+	}
+
+	return append(current.vals[current.head:], current.vals[:current.head]...)
 }
 
 func strfloats(fs []float64) []string {
@@ -161,6 +205,7 @@ func logger(ch <-chan sample) {
 
 		if w == nil {
 			if mode != powerlab.Ready && !complete && *logpath != "" {
+				resetCurrent()
 				fn := fmt.Sprintf("%v/%v.json.gz", *logpath,
 					time.Now().Format(time.RFC3339))
 				f, err := openGzWriter(fn)
@@ -333,6 +378,9 @@ func main() {
 
 	http.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
 		serveJSON(w, r, getCurrent())
+	})
+	http.HandleFunc("/statuses", func(w http.ResponseWriter, r *http.Request) {
+		serveJSON(w, r, allReadings())
 	})
 
 	http.Handle("/", http.FileServer(http.Dir(*static)))
