@@ -48,7 +48,6 @@ func (s *Status) MarshalJSON() ([]byte, error) {
 		"start_supply_volts":        s.StartSupplyVolts(),
 		"slow_avg_amps":             s.SlowAvgAmps(),
 		"preset_set_amps":           s.PresetSetAmps(),
-		"slaves_found":              s.SlavesFound(),
 		"chemistry":                 s.Chemistry().String(),
 		"screen_num":                s.ScreenNum(),
 		"cycle_num":                 s.CycleNum(),
@@ -57,7 +56,7 @@ func (s *Status) MarshalJSON() ([]byte, error) {
 	voltages := []float64{}
 	ir := []float64{}
 	balPwm := []int{}
-	for i := 0; i < 8; i++ {
+	for i := 0; i < s.DetectedCellCount(); i++ {
 		voltages = append(voltages, s.CellVoltage(i+1))
 		ir = append(ir, s.IR(i+1))
 		balPwm = append(balPwm, s.BalancePWM(i+1))
@@ -65,6 +64,10 @@ func (s *Status) MarshalJSON() ([]byte, error) {
 	m["voltage"] = voltages
 	m["ir"] = ir
 	m["bal_pwm"] = balPwm
+
+	if sl := s.SlavesFound(); len(sl) > 0 {
+		m["slaves_found"] = sl
+	}
 
 	safetyCharge, chargeComplete, reduceAmps := s.statusFlags()
 	m["safety_charge"] = safetyCharge
