@@ -25,7 +25,7 @@ function farray(a) {
 function updateStatus(d) {
     $(".modesec").hide();
 
-    if (d.mode == 'charging' || d.mode == 'discharging' || 'pack cool down') {
+    if (d.mode == 'charging' || d.mode == 'discharging' || d.mode == 'pack cool down') {
         d3.select("#mode").text(d.mode + " " + sp(d) + " " + d.avg_cell.toFixed(1) + "%");
         if (d.charge_complete) {
             $("#mode").addClass('complete');
