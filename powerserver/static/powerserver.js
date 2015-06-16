@@ -132,7 +132,12 @@ function makeCellChart() {
 
     cellchart = function() {
         var values = [];
-        for (var i = 0; i < statuses.length; i++) {
+        var start = 0;
+        var end = statuses.length;
+        if (end > 300) {
+            start = end - 300;
+        }
+        for (var i = start; i < end; i++) {
             var st = statuses[i].ST;
             for (var j = 0; j < st.voltage.length; j++) {
                 var val = {
@@ -150,7 +155,7 @@ function makeCellChart() {
 
         seriesData = values;
 
-        x.domain(statuses.map(function (d) { return d.TS; }));
+        x.domain(values[0].values.map(function (d) { return d.label; }));
         y.domain([
           d3.min(seriesData, function (c) { 
             return d3.min(c.values, function (d) { return d.value; });
