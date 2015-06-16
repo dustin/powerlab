@@ -70,6 +70,13 @@ function updateStatus(dees) {
                                              function(x) { return d3.format(".3s")(x / 1000) + "Ω";}));
     d3.select("#" + mode + "-time").text(d.charge_time);
 
+    d3.select("#cycle-num").text(d.cycle_num);
+    if (d.cycle_num > 0) {
+        $(".cycle-info").show();
+    } else {
+        $(".cycle-info").hide();
+    }
+
     $("#" + mode).show();
 
     batterygauge.redraw(d.avg_cell);
