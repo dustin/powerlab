@@ -65,9 +65,9 @@ function updateStatus(dees) {
     d3.select("#" + mode + "-mah").text(d3.format(".3s")(d.mah_in / 1000) + "Ah");
     d3.select("#" + mode + "-mahout").text(d3.format(".3s")(d.mah_out / 1000) + "Ah");
     d3.select("#" + mode + "-volts").text(farray(d.voltage.splice(0, d.detected_cell_count),
-                                                function(x) { return d3.format(".2s")(x) + "V";}));
+                                                function(x) { return d3.format(".3s")(x) + "V";}));
     d3.select("#" + mode + "-ir").text(farray(d.ir.splice(0, d.detected_cell_count),
-                                             function(x) { return d3.format(".2s")(x / 1000) + "Ω";}));
+                                             function(x) { return d3.format(".3s")(x / 1000) + "Ω";}));
     d3.select("#" + mode + "-time").text(d.charge_time);
 
     $("#" + mode).show();
