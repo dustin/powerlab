@@ -54,8 +54,10 @@ function updateStatus(dees) {
         } else {
             $("#mode").removeClass('complete');
         }
+        $(".chart").show();
     } else {
         d3.select("#mode").text(d.mode);
+        $(".chart").hide();
     }
     d3.select("#" + d.mode + "-chemistry").text(d.chemistry);
     d3.select("#" + d.mode + "-amps").text(d.fast_amps.toFixed(2));
@@ -158,7 +160,7 @@ function makeCellChart() {
 
         var series = svg.selectAll(".line").transition()
             .attr("d", function (d) { return line(d.values); })
-            .duration(1000);
+            .duration(500);
          
         svg.selectAll(".line").data(seriesData).enter().append("path")
             .attr("class", "line")

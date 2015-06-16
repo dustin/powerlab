@@ -42,9 +42,9 @@
 
   <body>
     <h1>Mode: <span id="mode"></span></h1>
+    <div class="chart" id="chargeGauge"></div>
 
     <div class="modesec" style="display: none" id="charging">
-      <div id="chargeGauge"></div>
 
       <h2>Chemistry:  <span id="charging-chemistry"></span></h2>
       <p>
@@ -55,7 +55,6 @@
         Time: <span id="charging-time"></span><br/>
       </p>
 
-      <div id="cellChart"></div>
     </div>
 
     <div class="modesec" style="display: none" id="discharging">
@@ -67,6 +66,8 @@
         Time: <span id="discharging-time"></span><br/>
       </p>
     </div>
+
+    <div class="chart" id="cellChart"></div>
   </body>
 
   <script type="text/javascript">
