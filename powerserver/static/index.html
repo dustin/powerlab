@@ -4,6 +4,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"
             charset="utf-8"></script>
     <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="gauge.js"></script>
     <script src="powerserver.js"></script>
     <style type="text/css">
       html {
@@ -17,6 +18,25 @@
       .complete {
         color: green;
       }
+
+      #charging {
+        max-width: 600px;
+      }
+
+      #chargeGauge {
+        float: right;
+      }
+
+      .axis path,
+      .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+      }
+
+      .browser text {
+        text-anchor: end;
+      }
     </style>
   </head>
 
@@ -24,6 +44,8 @@
     <h1>Mode: <span id="mode"></span></h1>
 
     <div class="modesec" style="display: none" id="charging">
+      <div id="chargeGauge"></div>
+
       <h2>Chemistry:  <span id="charging-chemistry"></span></h2>
       <p>
         Amps: <span id="charging-amps"></span><br/>
@@ -32,6 +54,8 @@
         IR: <span id="charging-ir"></span><br/>
         Time: <span id="charging-time"></span><br/>
       </p>
+
+      <div id="cellChart"></div>
     </div>
 
     <div class="modesec" style="display: none" id="discharging">
