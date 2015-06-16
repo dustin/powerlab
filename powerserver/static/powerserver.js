@@ -105,7 +105,7 @@ function makeGauge() {
 
 function makeCellChart() {
     var margin = {top: 20, right: 55, bottom: 30, left: 40},
-    width  = 1000 - margin.left - margin.right,
+    width  = 600 - margin.left - margin.right,
     height = 200  - margin.top  - margin.bottom;
 
     var x = d3.scale.ordinal()
