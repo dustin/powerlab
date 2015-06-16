@@ -55,6 +55,13 @@
       .axis text {
         font-size: small;
       }
+
+      .modeimg {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        width: 320px;
+      }
     </style>
   </head>
 
@@ -73,6 +80,7 @@
         Time: <span id="charging-time"></span><br/>
       </p>
 
+      <img class="modeimg" src="charging.jpg" alt="charging" />
     </div>
 
     <div class="modesec" style="display: none" id="discharging">
@@ -83,6 +91,8 @@
         Voltages: <span id="discharging-volts"></span><br/>
         Time: <span id="discharging-time"></span><br/>
       </p>
+
+      <img class="modeimg" src="discharging.jpg" alt="discharging" />
     </div>
 
     <div class="modesec" style="display: none" id="pack-cool-down">
