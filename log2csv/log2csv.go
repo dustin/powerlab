@@ -117,7 +117,12 @@ func long(c *csv.Writer, e logEntry) {
 			i := f[len(f)-1] - '0' - 1
 
 			if val, ok := e.Data[k]; ok {
-				row = append(row, k, fmt.Sprint(i+1), fmt.Sprint((val.([]interface{}))[i]))
+				s := val.([]interface{})
+				if len(s) > int(i) {
+					row = append(row, k, fmt.Sprint(i+1), fmt.Sprint(s[i]))
+				} else {
+					row = append(row, k, fmt.Sprint(i+1), "0")
+				}
 			} else {
 				log.Fatalf("Failed to find %q", k)
 			}
