@@ -20,6 +20,7 @@ import (
 	"github.com/dustin/httputil"
 	"github.com/dustin/powerlab"
 	"github.com/dustin/replaykit"
+	"github.com/dustin/seriesly/timelib"
 )
 
 type sample struct {
@@ -380,7 +381,17 @@ func main() {
 		serveJSON(w, r, getCurrent())
 	})
 	http.HandleFunc("/statuses", func(w http.ResponseWriter, r *http.Request) {
-		serveJSON(w, r, allReadings())
+		after, err := timelib.ParseTime(r.FormValue("after"))
+		if err != nil {
+			after = time.Time{}
+		}
+		rv := []markedStatus{}
+		for _, ms := range allReadings() {
+			if ms.TS.After(after) {
+				rv = append(rv, ms)
+			}
+		}
+		serveJSON(w, r, rv)
 	})
 
 	http.Handle("/", http.FileServer(http.Dir(*static)))
