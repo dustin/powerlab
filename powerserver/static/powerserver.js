@@ -61,7 +61,7 @@ function updateStatus(dees) {
         $(".chart").hide();
     }
     d3.select("#" + mode + "-chemistry").text(d.chemistry);
-    d3.select("#" + mode + "-amps").text(d.fast_amps.toFixed(2));
+    d3.select("#" + mode + "-amps").text(d3.format(".3s")(d.fast_amps) + "A");
     d3.select("#" + mode + "-mah").text(d.mah_in);
     d3.select("#" + mode + "-mahout").text(d.mah_out);
     d3.select("#" + mode + "-volts").text(farray(d.voltage.splice(0, d.detected_cell_count)));
