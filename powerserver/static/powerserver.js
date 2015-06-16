@@ -173,6 +173,7 @@ function makeCellChart() {
 
 function powerInit() {
     d3.select("#mode").text("init");
+    $(".chart").hide();
     batterygauge = makeGauge();
     makeCellChart();
     updateStatusNow();
