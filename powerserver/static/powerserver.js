@@ -115,6 +115,12 @@ function makeCellChart() {
     var y = d3.scale.linear()
         .rangeRound([height, 0]);
 
+    var yAxis = d3.svg.axis()
+        .scale(y)
+        .tickSize(width)
+        .tickFormat(function(x) { return d3.format(".3s")(x) + "V";})
+        .orient("right");
+
     var line = d3.svg.line()
         .interpolate("cardinal")
         .x(function (d, i) { return x(i); })
@@ -128,6 +134,17 @@ function makeCellChart() {
         .attr("height", height + margin.top  + margin.bottom)
       .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    var gy = svg.append("g")
+        .attr("class", "y axis")
+        .call(yAxis);
+
+    gy.selectAll("g").filter(function(d) { return d; })
+        .classed("minor", true);
+
+    gy.selectAll("text")
+        .attr("x", 4)
+        .attr("dy", -4);
 
     cellchart = function() {
         var values = [];
@@ -161,6 +178,11 @@ function makeCellChart() {
             return d3.max(c.values, function (d) { return d.value; });
           })
         ]);
+
+        var gy = svg.select(".y.axis").call(yAxis);
+
+        gy.selectAll("g").filter(function(d) { return d; })
+            .classed("minor", true);
 
         var series = svg.selectAll(".line").transition()
             .attr("d", function (d) { return line(d.values); })
