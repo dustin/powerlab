@@ -31,7 +31,6 @@ function farray(a) {
 
 function updateStatus(dees) {
     if (dees.length == 0) {
-        console.log("Returning with empty input");
         return;
     }
 
@@ -47,10 +46,10 @@ function updateStatus(dees) {
     var d = last.ST;
     lastStatus = last.TS;
 
-    var mode = d.mode.replace(' ', '-');
+    var mode = d.mode.replace(/ /g, '-');
 
-    if (mode == 'charging' || mode == 'discharging' || mode == 'pack cool down') {
-        d3.select("#mode").text(mode + " " + sp(d) + " " + d.avg_cell.toFixed(1) + "%");
+    if (mode == 'charging' || mode == 'discharging' || mode == 'pack-cool-down') {
+        d3.select("#mode").text(d.mode + " " + sp(d) + " " + d.avg_cell.toFixed(1) + "%");
         if (d.charge_complete) {
             $("#mode").addClass('complete');
         } else {
@@ -58,7 +57,7 @@ function updateStatus(dees) {
         }
         $(".chart").show();
     } else {
-        d3.select("#mode").text(mode);
+        d3.select("#mode").text(d.mode);
         $(".chart").hide();
     }
     d3.select("#" + mode + "-chemistry").text(d.chemistry);
@@ -110,15 +109,15 @@ function makeCellChart() {
     width  = 600 - margin.left - margin.right,
     height = 200  - margin.top  - margin.bottom;
 
-    var x = d3.scale.ordinal()
-        .rangeRoundBands([0, width], .1);
+    var x = d3.scale.linear()
+        .rangeRound([0, width], .1);
 
     var y = d3.scale.linear()
         .rangeRound([height, 0]);
 
     var line = d3.svg.line()
         .interpolate("cardinal")
-        .x(function (d) { return x(d.label) + x.rangeBand() / 2; })
+        .x(function (d, i) { return x(i); })
         .y(function (d) { return y(d.value); });
 
     var color = d3.scale.ordinal()
@@ -132,13 +131,11 @@ function makeCellChart() {
 
     cellchart = function() {
         var values = [];
-        var start = 0;
-        var end = statuses.length;
-        if (end > 300) {
-            start = end - 300;
-        }
-        for (var i = start; i < end; i++) {
+        for (var i = 0; i < statuses.length; i++) {
             var st = statuses[i].ST;
+            if (st.mode == 'detecting pack') {
+                continue;
+            }
             for (var j = 0; j < st.voltage.length; j++) {
                 var val = {
                     name: 'cell' + (1+j),
@@ -155,7 +152,7 @@ function makeCellChart() {
 
         seriesData = values;
 
-        x.domain(values[0].values.map(function (d) { return d.label; }));
+        x.domain([0, d3.max([600, seriesData[0].values.length])]);
         y.domain([
           d3.min(seriesData, function (c) { 
             return d3.min(c.values, function (d) { return d.value; });
