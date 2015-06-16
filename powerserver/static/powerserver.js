@@ -11,10 +11,10 @@ function sp(d) {
     return d.detected_cell_count + "S" + d.packs + "P";
 }
 
-function farray(a) {
+function farray(a, f) {
     var rv = [];
     for (var i = 0; i < a.length; i++) {
-        rv.push(a[i].toFixed(2));
+        rv.push(f(a[i]));
     }
     return rv.join(" ");
 }
@@ -62,10 +62,12 @@ function updateStatus(dees) {
     }
     d3.select("#" + mode + "-chemistry").text(d.chemistry);
     d3.select("#" + mode + "-amps").text(d3.format(".3s")(d.fast_amps) + "A");
-    d3.select("#" + mode + "-mah").text(d.mah_in);
-    d3.select("#" + mode + "-mahout").text(d.mah_out);
-    d3.select("#" + mode + "-volts").text(farray(d.voltage.splice(0, d.detected_cell_count)));
-    d3.select("#" + mode + "-ir").text(farray(d.ir.splice(0, d.detected_cell_count)));
+    d3.select("#" + mode + "-mah").text(d3.format(".3s")(d.mah_in / 1000) + "Ah");
+    d3.select("#" + mode + "-mahout").text(d3.format(".3s")(d.mah_out / 1000) + "Ah");
+    d3.select("#" + mode + "-volts").text(farray(d.voltage.splice(0, d.detected_cell_count),
+                                                function(x) { return d3.format(".2s")(x) + "V";}));
+    d3.select("#" + mode + "-ir").text(farray(d.ir.splice(0, d.detected_cell_count),
+                                             function(x) { return d3.format(".2s")(x / 1000) + "Ω";}));
     d3.select("#" + mode + "-time").text(d.charge_time);
 
     $("#" + mode).show();
