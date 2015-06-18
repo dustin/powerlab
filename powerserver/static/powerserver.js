@@ -48,7 +48,7 @@ function updateStatus(dees) {
 
     var mode = d.mode.replace(/ /g, '-');
 
-    if (mode == 'charging' || mode == 'discharging' || mode == 'pack-cool-down') {
+    if (mode == 'charging' || mode == 'discharging' || mode == 'pack-cool-down' || mode == 'monitoring') {
         d3.select("#mode").text(d.mode + " " + sp(d) + " " + d.avg_cell.toFixed(1) + "%");
         if (d.charge_complete) {
             $("#mode").addClass('complete');
@@ -64,6 +64,7 @@ function updateStatus(dees) {
     d3.select("#" + mode + "-amps").text(d3.format(".3s")(d.fast_amps) + "A");
     d3.select("#" + mode + "-mah").text(d3.format(".3s")(d.mah_in / 1000) + "Ah");
     d3.select("#" + mode + "-mahout").text(d3.format(".3s")(d.mah_out / 1000) + "Ah");
+    d3.select("#" + mode + "-maxcell").text(d3.format(".3s")(d.max_cell) + "V");
     d3.select("#" + mode + "-volts").text(farray(d.voltage.splice(0, d.detected_cell_count),
                                                 function(x) { return d3.format(".3s")(x) + "V";}));
     d3.select("#" + mode + "-ir").text(farray(d.ir.splice(0, d.detected_cell_count),
