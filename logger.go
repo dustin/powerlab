@@ -1,7 +1,6 @@
 package powerlab
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -38,14 +37,7 @@ func (l *LogEntry) UnmarshalJSON(data []byte) error {
 
 // Log this status to a stream.
 func (s *Status) Log(t time.Time, w io.Writer) error {
-	j, err := json.Marshal(LogEntry{t, (*s)[:], s})
-	if err != nil {
-		return err
-	}
-
-	buf := &bytes.Buffer{}
-	json.Indent(buf, j, "", "  ")
-	if _, err := w.Write(buf.Bytes()); err != nil {
+	if err := json.NewEncoder(w).Encode(LogEntry{t, (*s)[:], s}); err != nil {
 		return err
 	}
 	if _, err := w.Write([]byte{'\n'}); err != nil {
