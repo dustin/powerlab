@@ -394,6 +394,10 @@ func main() {
 		serveJSON(w, r, rv)
 	})
 
+	if *logpath != "" {
+		http.Handle("/logs/", http.StripPrefix("/logs/",
+			http.FileServer(http.Dir(*logpath))))
+	}
 	http.Handle("/", http.FileServer(http.Dir(*static)))
 
 	log.Fatal(http.ListenAndServe(*bind, nil))
