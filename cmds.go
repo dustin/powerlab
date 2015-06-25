@@ -31,6 +31,7 @@ func Open(port string) (*Powerlab, error) {
 	return &Powerlab{ser}, nil
 }
 
+// ErrTimeout is returned when a read times out.
 var ErrTimeout = errors.New("timed out")
 
 func readFullTimeout(r io.Reader, buf []byte, timeout time.Duration) (n int, err error) {

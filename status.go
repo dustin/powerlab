@@ -318,10 +318,12 @@ func (s *Status) BatteryPos() float64 {
 	return float64(s.read2(82)) / 12797
 }
 
+// MAhOut is the amount of power pulled from a battery during discharge.
 func (s *Status) MAhOut() int {
 	return int(s.read4(84)) / 2160
 }
 
+// DischAmpSet is the discharge current specified by the config.
 func (s *Status) DischAmpSet() float64 {
 	return float64(s.read2(92)) / 600
 }
@@ -341,8 +343,10 @@ func (s *Status) BalancePWM(cell int) int {
 	return int(s.read1(124 + (cell * 2)))
 }
 
+// Mode represents an operating mode of the charger.
 type Mode int
 
+// Known operating modes.
 const (
 	Unknown         = Mode(-1)
 	Ready           = Mode(0)
@@ -369,6 +373,7 @@ var modeNames = map[Mode]string{
 	SystemStopError: "system stop",
 }
 
+// Mode returns the current mode the charger is in.
 func (s *Status) Mode() Mode {
 	return Mode(s.read1(133))
 }

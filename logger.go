@@ -14,6 +14,8 @@ type LogEntry struct {
 	Data      *Status
 }
 
+// UnmarshalJSON pulls the binary data and timestamp out of the log to
+// recreate the log entry.
 func (l *LogEntry) UnmarshalJSON(data []byte) error {
 	led := &struct {
 		Timestamp time.Time
