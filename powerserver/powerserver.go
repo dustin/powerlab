@@ -247,25 +247,37 @@ func logger(ch <-chan sample) {
 }
 
 func powerlabReader() {
+	ch := make(chan sample, 1)
+	go logger(ch)
+
+	// This prevents too many fast restarts on fast failure
+	for range time.Tick(time.Second) {
+		err := powerLabReaderLoop(ch)
+		log.Printf("Closed reader loop (retrying): %v", err)
+	}
+}
+
+func powerLabReaderLoop(ch chan sample) error {
 	pl, err := powerlab.Open(*port)
 	if err != nil {
 		log.Fatalf("Error opening powerlab: %v", err)
 	}
-
-	ch := make(chan sample, 1)
-	go logger(ch)
+	defer pl.Close()
 
 	log.Printf("Started reader")
 
 	hardErrors := 0
-	for t := range time.Tick(time.Second) {
+	heart := time.NewTicker(time.Second)
+	defer heart.Stop()
+	for t := range heart.C {
 		st, err := pl.Status(0)
 		if err != nil {
 			statusErrors.Add(1)
 			if err != powerlab.ErrTimeout {
 				hardErrors++
 				if hardErrors > 5 {
-					log.Fatalf("Too many errors getting status")
+					log.Printf("Too many errors getting status.")
+					return err
 				}
 				log.Printf("Failed to read status: %v", err)
 			}
@@ -280,6 +292,7 @@ func powerlabReader() {
 		default:
 		}
 	}
+	panic("unreachable")
 }
 
 type logEvent struct {
