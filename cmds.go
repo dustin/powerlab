@@ -31,6 +31,11 @@ func Open(port string) (*Powerlab, error) {
 	return &Powerlab{ser}, nil
 }
 
+// Close the port.
+func (p *Powerlab) Close() error {
+	return p.port.Close()
+}
+
 // ErrTimeout is returned when a read times out.
 var ErrTimeout = errors.New("timed out")
 
