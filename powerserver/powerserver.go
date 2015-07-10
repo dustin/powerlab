@@ -260,7 +260,7 @@ func powerlabReader() {
 func powerLabReaderLoop(ch chan sample) error {
 	pl, err := powerlab.Open(*port)
 	if err != nil {
-		log.Fatalf("Error opening powerlab: %v", err)
+		return err
 	}
 	defer pl.Close()
 
