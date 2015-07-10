@@ -257,15 +257,21 @@ func powerlabReader() {
 
 	log.Printf("Started reader")
 
+	hardErrors := 0
 	for t := range time.Tick(time.Second) {
 		st, err := pl.Status(0)
 		if err != nil {
 			statusErrors.Add(1)
 			if err != powerlab.ErrTimeout {
+				hardErrors++
+				if hardErrors > 5 {
+					log.Fatalf("Too many errors getting status")
+				}
 				log.Printf("Failed to read status: %v", err)
 			}
 			continue
 		}
+		hardErrors = 0
 
 		setCurrent(st)
 
