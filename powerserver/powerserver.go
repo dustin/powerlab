@@ -239,6 +239,7 @@ func logger(ch <-chan sample) {
 				mode == powerlab.Discharging ||
 				mode == powerlab.PackCoolDown ||
 				mode == powerlab.TrickleCharging ||
+				mode == powerlab.Monitoring ||
 				mode == powerlab.DetectingPack) && !complete {
 				logDeadline = time.Now().Add(*logTimeout)
 			}
