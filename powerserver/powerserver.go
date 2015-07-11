@@ -265,6 +265,7 @@ func powerLabReaderLoop(ch chan sample) error {
 	defer pl.Close()
 
 	log.Printf("Started reader")
+	defer log.Printf("Closing reader")
 
 	hardErrors := 0
 	heart := time.NewTicker(time.Second)
