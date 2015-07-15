@@ -3,29 +3,24 @@ package powerlab
 import (
 	"errors"
 	"io"
-	"strings"
 	"time"
 
-	"github.com/dustin/go-rs232"
+	"github.com/tarm/serial"
 )
 
 // Powerlab represents a connection to a Powerlab charger.
 type Powerlab struct {
-	port *rs232.SerialPort
+	port *serial.Port
 }
 
 // Open a connection to a powerlab.
 func Open(port string) (*Powerlab, error) {
-	ser, err := rs232.OpenPort(port, 19200, rs232.S_8N1)
+	ser, err := serial.OpenPort(&serial.Config{
+		Name:        port,
+		Baud:        19200,
+		ReadTimeout: time.Second * 5,
+	})
 	if err != nil {
-		return nil, err
-	}
-	if err := ser.SetNonblock(); err != nil {
-		ser.Close()
-		return nil, err
-	}
-	if err := ser.SetInputAttr(1, time.Second*5); err != nil {
-		ser.Close()
 		return nil, err
 	}
 	return &Powerlab{ser}, nil
@@ -39,29 +34,6 @@ func (p *Powerlab) Close() error {
 // ErrTimeout is returned when a read times out.
 var ErrTimeout = errors.New("timed out")
 
-func readFullTimeout(r io.Reader, buf []byte, timeout time.Duration) (n int, err error) {
-	until := time.Now().Add(timeout)
-	for n < len(buf) && err == nil {
-		if time.Now().After(until) {
-			return n, ErrTimeout
-		}
-		var nn int
-		nn, err = r.Read(buf[n:])
-		n += nn
-		if err == io.ErrUnexpectedEOF ||
-			(err != nil && strings.Contains(err.Error(), "resource temporarily unavailable")) {
-			time.Sleep(time.Millisecond * 100)
-			err = nil
-		}
-	}
-	if n >= len(buf) {
-		err = nil
-	} else if n > 0 && err == io.EOF {
-		err = io.ErrUnexpectedEOF
-	}
-	return
-}
-
 // Status requests status for the given powerlab on a bus (0 == master).
 func (p *Powerlab) Status(id int) (*Status, error) {
 	if _, err := p.port.Write([]byte{'R', 'a', 'm', byte(id)}); err != nil {
@@ -70,7 +42,10 @@ func (p *Powerlab) Status(id int) (*Status, error) {
 
 	rv := Status{}
 
-	if _, err := readFullTimeout(p.port, rv[:], time.Second*5); err != nil {
+	if _, err := io.ReadFull(p.port, rv[:]); err != nil {
+		if err == io.EOF {
+			err = ErrTimeout
+		}
 		return nil, err
 	}
 
