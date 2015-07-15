@@ -37,6 +37,15 @@ func (l *LogEntry) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// MarshalBinary provides a compact binary marshaler for LogEntries.
+func (l *LogEntry) MarshalBinary() (data []byte, err error) {
+	tb, err := l.Timestamp.MarshalBinary()
+	if err != nil {
+		return nil, err
+	}
+	return append(tb, l.Raw...), nil
+}
+
 // Log this status to a stream.
 func (s *Status) Log(t time.Time, w io.Writer) error {
 	if err := json.NewEncoder(w).Encode(LogEntry{t, (*s)[:], s}); err != nil {
