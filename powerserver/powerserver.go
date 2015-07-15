@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"log/syslog"
 	"net/http"
 	"os"
 	"strings"
@@ -382,14 +381,7 @@ func main() {
 
 	expvar.Publish("httpclients", httputil.InitHTTPTracker(false))
 
-	if *useSyslog {
-		sl, err := syslog.New(syslog.LOG_INFO, "powerserver")
-		if err != nil {
-			log.Fatalf("Error initializing syslog")
-		}
-		log.SetOutput(sl)
-		log.SetFlags(0)
-	}
+	initLogging(*useSyslog)
 
 	if *replayFile == "" {
 		go powerlabReader()
