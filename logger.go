@@ -73,12 +73,31 @@ func (l *LogEntry) UnmarshalBinary(data []byte) error {
 	return nil
 }
 
-// log this status to a stream.
-func (s *Status) Log(t time.Time, w io.Writer) error {
-	if err := json.NewEncoder(w).Encode(LogEntry{t, (*s)[:], s}); err != nil {
+// StatusLogger provides logging for logging status records.
+type StatusLogger interface {
+	Log(*Status, time.Time) error
+	Close() error
+}
+
+// JSONStatusLogger logs status in JSON format.
+type JSONStatusLogger struct {
+	w io.WriteCloser
+}
+
+func NewJSONStatusLogger(w io.WriteCloser) *JSONStatusLogger {
+	return &JSONStatusLogger{w}
+}
+
+func (l JSONStatusLogger) Close() error {
+	return l.w.Close()
+}
+
+// Log this status to a stream.
+func (l *JSONStatusLogger) Log(s *Status, t time.Time) error {
+	if err := json.NewEncoder(l.w).Encode(LogEntry{t, (*s)[:], s}); err != nil {
 		return err
 	}
-	if _, err := w.Write([]byte{'\n'}); err != nil {
+	if _, err := l.w.Write([]byte{'\n'}); err != nil {
 		return err
 	}
 

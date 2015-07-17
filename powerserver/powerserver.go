@@ -176,7 +176,7 @@ func openGzWriter(fn string) (io.WriteCloser, error) {
 }
 
 func logger(ch <-chan sample) {
-	var w io.WriteCloser
+	var l powerlab.StatusLogger
 	var logDeadline time.Time
 
 	prevMode := powerlab.Unknown
@@ -203,7 +203,7 @@ func logger(ch <-chan sample) {
 			}
 		}
 
-		if w == nil {
+		if l == nil {
 			if mode != powerlab.Ready && !complete && *logpath != "" {
 				resetCurrent()
 				fn := fmt.Sprintf("%v/%v.json.gz", *logpath,
@@ -213,7 +213,7 @@ func logger(ch <-chan sample) {
 					log.Printf("Error creating log file: %v", err)
 					continue
 				}
-				w = f
+				l = powerlab.NewJSONStatusLogger(f)
 				logDeadline = time.Now().Add(*logTimeout)
 				log.Printf("Starting log %v for mode %q", fn, mode)
 				currentLog.Set(fn)
@@ -221,16 +221,16 @@ func logger(ch <-chan sample) {
 		} else {
 			if mode == powerlab.Ready || time.Now().After(logDeadline) {
 				log.Printf("Closing logfile")
-				if err := w.Close(); err != nil {
+				if err := l.Close(); err != nil {
 					log.Printf("Error closing logfile: %v", err)
 				}
 				currentLog.Set("")
-				w = nil
+				l = nil
 				logDeadline = time.Time{}
 			}
 		}
-		if w != nil {
-			if err := s.st.Log(s.t, w); err != nil {
+		if l != nil {
+			if err := l.Log(s.st, s.t); err != nil {
 				log.Printf("Error logging: %v", err)
 			}
 			// Stop logging a bit after we no longer see ourselves charging
