@@ -1,6 +1,7 @@
 package powerlab
 
 import (
+	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -102,4 +103,24 @@ func (l *JSONStatusLogger) Log(s *Status, t time.Time) error {
 	}
 
 	return nil
+}
+
+// GobStatusLogger logs status in binary gob format.
+type GobStatusLogger struct {
+	w io.WriteCloser
+	e *gob.Encoder
+}
+
+func NewGobStatusLogger(w io.WriteCloser) *GobStatusLogger {
+	return &GobStatusLogger{w, gob.NewEncoder(w)}
+}
+
+func (l GobStatusLogger) Close() error {
+	l.e = nil
+	return l.w.Close()
+}
+
+// Log this status to a stream.
+func (l *GobStatusLogger) Log(s *Status, t time.Time) error {
+	return l.e.Encode(LogEntry{t, (*s)[:], s})
 }
