@@ -2,22 +2,20 @@ package main
 
 import (
 	"encoding/csv"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
 	"log"
 	"os"
 	"time"
+
+	"github.com/dustin/powerlab"
 )
 
-var wideFormat = flag.Bool("wide", false, "emit wide format csv")
-
-type logEntry struct {
-	Timestamp time.Time
-	Raw       []byte
-	Data      map[string]interface{}
-}
+var (
+	wideFormat = flag.Bool("wide", false, "emit wide format csv")
+	logFmt     = flag.String("format", "json", "log format -- (gob or json)")
+)
 
 var fields = []string{
 	"avg_amps",
@@ -86,18 +84,44 @@ var fields = []string{
 	"voltage_8",
 }
 
-func wide(c *csv.Writer, e logEntry) {
-	row := []string{e.Timestamp.Format(time.RFC3339)}
+func sliceVal(i interface{}) []interface{} {
+	rv := []interface{}{}
+
+	switch v := i.(type) {
+	case []interface{}:
+		return v
+	case []int:
+		for _, x := range v {
+			rv = append(rv, x)
+		}
+	case []float64:
+		for _, x := range v {
+			rv = append(rv, x)
+		}
+	default:
+		log.Panicf("Unhandled type: %T", v)
+	}
+
+	return rv
+}
+
+func wide(c *csv.Writer, t time.Time, m map[string]interface{}) {
+	row := []string{t.Format(time.RFC3339)}
 
 	for _, f := range fields {
-		if val, ok := e.Data[f]; ok {
+		if val, ok := m[f]; ok {
 			row = append(row, fmt.Sprint(val))
 		} else {
 			k := f[:len(f)-2]
 			i := f[len(f)-1] - '0' - 1
 
-			if val, ok := e.Data[k]; ok {
-				row = append(row, fmt.Sprint((val.([]interface{}))[i]))
+			if val, ok := m[k]; ok {
+				s := sliceVal(val)
+				if len(s) > int(i) {
+					row = append(row, fmt.Sprint(s[i]))
+				} else {
+					row = append(row, "0")
+				}
 			} else {
 				log.Fatalf("Failed to find %q", k)
 			}
@@ -106,18 +130,18 @@ func wide(c *csv.Writer, e logEntry) {
 	c.Write(row)
 }
 
-func long(c *csv.Writer, e logEntry) {
+func long(c *csv.Writer, t time.Time, m map[string]interface{}) {
 	for _, f := range fields {
-		row := []string{e.Timestamp.Format(time.RFC3339)}
+		row := []string{t.Format(time.RFC3339)}
 
-		if val, ok := e.Data[f]; ok {
+		if val, ok := m[f]; ok {
 			row = append(row, f, "0", fmt.Sprint(val))
 		} else {
 			k := f[:len(f)-2]
 			i := f[len(f)-1] - '0' - 1
 
-			if val, ok := e.Data[k]; ok {
-				s := val.([]interface{})
+			if val, ok := m[k]; ok {
+				s := sliceVal(val)
 				if len(s) > int(i) {
 					row = append(row, k, fmt.Sprint(i+1), fmt.Sprint(s[i]))
 				} else {
@@ -132,7 +156,12 @@ func long(c *csv.Writer, e logEntry) {
 }
 
 func main() {
-	j := json.NewDecoder(os.Stdin)
+	flag.Parse()
+
+	ls, err := powerlab.NewLogReaderStream(os.Stdin, *logFmt)
+	if err != nil {
+		log.Fatalf("Couldn't open log reader: %v", err)
+	}
 
 	c := csv.NewWriter(os.Stdout)
 	defer c.Flush()
@@ -146,8 +175,7 @@ func main() {
 	}
 
 	for {
-		e := logEntry{}
-		err := j.Decode(&e)
+		e, err := ls.Next()
 		if err == io.EOF {
 			break
 		}
@@ -155,6 +183,6 @@ func main() {
 			log.Fatalf("Decode error: %v", err)
 		}
 
-		convert(c, e)
+		convert(c, e.Timestamp, e.Data.Map())
 	}
 }

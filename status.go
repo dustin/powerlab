@@ -15,8 +15,9 @@ const (
 // Status represents a Powerlab6 status response.
 type Status [statusLen + 4]byte
 
-// MarshalJSON satisfies json.Marshaler.
-func (s *Status) MarshalJSON() ([]byte, error) {
+// Map converts the Status struture to a map[string]interface{}
+// suitable for JSON encoding.
+func (s *Status) Map() map[string]interface{} {
 	m := map[string]interface{}{
 		"version":                   s.Version(),
 		"sync_pwm_drive":            s.SyncPWMDrive().String(),
@@ -80,7 +81,12 @@ func (s *Status) MarshalJSON() ([]byte, error) {
 	m["charging"] = charging
 	m["balancing"] = balancing
 
-	return json.Marshal(m)
+	return m
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (s *Status) MarshalJSON() ([]byte, error) {
+	return json.Marshal(s.Map())
 }
 
 func (s *Status) read1(o int) uint8 {

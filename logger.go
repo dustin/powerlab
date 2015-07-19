@@ -148,6 +148,23 @@ func (l *LogSource) Next() (*LogEntry, error) {
 	return rv, l.d.Decode(rv)
 }
 
+// NewLogReaderStream returns a log reader pulling log entries out of
+// the given stream.
+func NewLogReaderStream(r io.ReadCloser, f string) (*LogSource, error) {
+
+	rv := &LogSource{Closer: r}
+	switch f {
+	case "gob":
+		rv.d = gob.NewDecoder(r)
+	case "json":
+		rv.d = json.NewDecoder(r)
+	default:
+		return nil, fmt.Errorf("Unknown file format (not json or gob): %v", f)
+	}
+
+	return rv, nil
+}
+
 // NewLogReader opens the given filename as a powerlab log and
 // commenses to emit reccords.
 func NewLogReader(fn string) (*LogSource, error) {
@@ -156,7 +173,7 @@ func NewLogReader(fn string) (*LogSource, error) {
 		log.Fatalf("Error opening replay file: %v", err)
 	}
 
-	r := io.Reader(lf)
+	var r io.ReadCloser = lf
 	if strings.HasSuffix(fn, ".gz") {
 		gzr, err := gzip.NewReader(r)
 		if err != nil {
@@ -165,17 +182,13 @@ func NewLogReader(fn string) (*LogSource, error) {
 		r = gzr
 	}
 
-	rv := &LogSource{Closer: lf}
 	switch {
 	case strings.Contains(fn, ".gob"):
-		rv.d = gob.NewDecoder(r)
+		return NewLogReaderStream(r, "gob")
 	case strings.Contains(fn, ".json"):
-		rv.d = json.NewDecoder(r)
-	default:
-		lf.Close()
-		return nil, fmt.Errorf("Unknown file format (not json or gob)")
+		return NewLogReaderStream(r, "json")
 	}
 
-	return rv, nil
-
+	lf.Close()
+	return nil, fmt.Errorf("Unknown file format (not json or gob)")
 }
