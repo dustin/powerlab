@@ -1,10 +1,14 @@
 package powerlab
 
 import (
+	"compress/gzip"
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
+	"os"
+	"strings"
 	"time"
 )
 
@@ -128,4 +132,50 @@ func (l GobStatusLogger) Close() error {
 func (l *GobStatusLogger) Log(s *Status, t time.Time) error {
 	le := LogEntry{t, (*s)[:], s}
 	return l.e.Encode(&le)
+}
+
+// LogSource is a source of Log entries.
+type LogSource struct {
+	io.Closer
+	d interface {
+		Decode(interface{}) error
+	}
+}
+
+// Next returns the next log entry.
+func (l *LogSource) Next() (*LogEntry, error) {
+	rv := &LogEntry{}
+	return rv, l.d.Decode(rv)
+}
+
+// NewLogReader opens the given filename as a powerlab log and
+// commenses to emit reccords.
+func NewLogReader(fn string) (*LogSource, error) {
+	lf, err := os.Open(fn)
+	if err != nil {
+		log.Fatalf("Error opening replay file: %v", err)
+	}
+
+	r := io.Reader(lf)
+	if strings.HasSuffix(fn, ".gz") {
+		gzr, err := gzip.NewReader(r)
+		if err != nil {
+			log.Fatalf("Error ungzipping: %v", err)
+		}
+		r = gzr
+	}
+
+	rv := &LogSource{Closer: lf}
+	switch {
+	case strings.Contains(fn, ".gob"):
+		rv.d = gob.NewDecoder(r)
+	case strings.Contains(fn, ".json"):
+		rv.d = json.NewDecoder(r)
+	default:
+		lf.Close()
+		return nil, fmt.Errorf("Unknown file format (not json or gob)")
+	}
+
+	return rv, nil
+
 }

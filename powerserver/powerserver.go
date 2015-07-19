@@ -2,14 +2,12 @@ package main
 
 import (
 	"compress/gzip"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
-	"strings"
 	"sync"
 	"time"
 
@@ -306,24 +304,15 @@ type logEvent struct {
 func (l logEvent) TS() time.Time { return l.le.Timestamp }
 
 func powerlabPlayback() {
-	lf, err := os.Open(*replayFile)
+	ls, err := powerlab.NewLogReader(*replayFile)
 	if err != nil {
 		log.Fatalf("Error opening replay file: %v", err)
 	}
-
-	r := io.Reader(lf)
-	if strings.HasSuffix(*replayFile, ".gz") {
-		gzr, err := gzip.NewReader(r)
-		if err != nil {
-			log.Fatalf("Error ungzipping: %v", err)
-		}
-		r = gzr
-	}
-	j := json.NewDecoder(r)
+	defer ls.Close()
 
 	src := replay.FunctionSource(func() replay.Event {
-		le := &powerlab.LogEntry{}
-		if err := j.Decode(le); err != nil {
+		le, err := ls.Next()
+		if err != nil {
 			log.Printf("Error unmarshaling entry: %v", err)
 			return nil
 		}
