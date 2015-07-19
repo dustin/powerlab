@@ -52,8 +52,11 @@ var (
 	nmaKey       = flag.String("nmakey", "", "notify my android key")
 	replayFile   = flag.String("replayfile", "", "log to play back")
 	replaySpeed  = flag.Float64("replayspeed", 1.0, "log playback time factor")
+	logFormat    = flag.String("logformat", "json", "json|gob")
 
 	current readings
+
+	newLogger = powerlab.NewJSONStatusLogger
 
 	statusErrors = expvar.NewInt("status_errors")
 	currentLog   = expvar.NewString("current_log")
@@ -206,14 +209,14 @@ func logger(ch <-chan sample) {
 		if l == nil {
 			if mode != powerlab.Ready && !complete && *logpath != "" {
 				resetCurrent()
-				fn := fmt.Sprintf("%v/%v.json.gz", *logpath,
-					time.Now().Format(time.RFC3339))
+				fn := fmt.Sprintf("%v/%v.%s.gz", *logpath,
+					time.Now().Format(time.RFC3339), *logFormat)
 				f, err := openGzWriter(fn)
 				if err != nil {
 					log.Printf("Error creating log file: %v", err)
 					continue
 				}
-				l = powerlab.NewJSONStatusLogger(f)
+				l = newLogger(f)
 				logDeadline = time.Now().Add(*logTimeout)
 				log.Printf("Starting log %v for mode %q", fn, mode)
 				currentLog.Set(fn)
@@ -378,6 +381,14 @@ func statusLogger() {
 
 func main() {
 	flag.Parse()
+	switch *logFormat {
+	case "json":
+		newLogger = powerlab.NewJSONStatusLogger
+	case "gob":
+		newLogger = powerlab.NewGobStatusLogger
+	default:
+		log.Fatalf("invalid log format: %v (must be either json or gob)", *logFormat)
+	}
 
 	expvar.Publish("httpclients", httputil.InitHTTPTracker(false))
 

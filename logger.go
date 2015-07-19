@@ -17,6 +17,10 @@ type LogEntry struct {
 	Data      *Status
 }
 
+func init() {
+	gob.Register(&LogEntry{})
+}
+
 // UnmarshalJSON pulls the binary data and timestamp out of the log to
 // recreate the log entry.
 func (l *LogEntry) UnmarshalJSON(data []byte) error {
@@ -85,7 +89,7 @@ type JSONStatusLogger struct {
 	w io.WriteCloser
 }
 
-func NewJSONStatusLogger(w io.WriteCloser) *JSONStatusLogger {
+func NewJSONStatusLogger(w io.WriteCloser) StatusLogger {
 	return &JSONStatusLogger{w}
 }
 
@@ -111,7 +115,7 @@ type GobStatusLogger struct {
 	e *gob.Encoder
 }
 
-func NewGobStatusLogger(w io.WriteCloser) *GobStatusLogger {
+func NewGobStatusLogger(w io.WriteCloser) StatusLogger {
 	return &GobStatusLogger{w, gob.NewEncoder(w)}
 }
 
@@ -122,5 +126,6 @@ func (l GobStatusLogger) Close() error {
 
 // Log this status to a stream.
 func (l *GobStatusLogger) Log(s *Status, t time.Time) error {
-	return l.e.Encode(LogEntry{t, (*s)[:], s})
+	le := LogEntry{t, (*s)[:], s}
+	return l.e.Encode(&le)
 }
