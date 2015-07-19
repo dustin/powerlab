@@ -27,6 +27,8 @@ func main() {
 		log.Fatalf("Error opening port: %v", err)
 	}
 
+	lw := powerlab.NewJSONStatusLogger(os.Stdout)
+
 	for t := range time.Tick(time.Second) {
 		st, err := pl.Status(0)
 		if err != nil {
@@ -37,7 +39,7 @@ func main() {
 		log.Printf("%v %.1f%%, amps=%.2fA, mah_in=%v, charge time=%v",
 			st.Mode(), st.AvgCell(), st.AvgAmps(), st.MAhIn(), st.ChargeDuration())
 
-		if err := st.Log(t, os.Stdout); err != nil {
+		if err := lw.Log(st, t); err != nil {
 			log.Printf("Failed to log: %v", err)
 			hex.Dumper(os.Stderr).Write(st[:])
 			os.Stderr.Write([]byte{'\n'})
