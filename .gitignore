@@ -1,5 +1,6 @@
 *~
-/status/status
-/powerlablog/powerlablog
 /log2csv/log2csv
+/logconvert/logconvert
+/powerlablog/powerlablog
 /powerserver/powerserver
+/status/status
