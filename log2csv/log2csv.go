@@ -14,7 +14,7 @@ import (
 
 var (
 	wideFormat = flag.Bool("wide", false, "emit wide format csv")
-	logFmt     = flag.String("format", "json", "log format -- (gob or json)")
+	logFmt     = flag.String("format", "gob", "log format -- (gob or json)")
 )
 
 var fields = []string{
