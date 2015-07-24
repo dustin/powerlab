@@ -2,6 +2,7 @@ package powerlab
 
 import (
 	"compress/gzip"
+	"encoding/csv"
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
@@ -191,4 +192,184 @@ func NewLogReader(fn string) (*LogSource, error) {
 
 	lf.Close()
 	return nil, fmt.Errorf("Unknown file format (not json or gob)")
+}
+
+var csvFields = []string{
+	"avg_amps",
+	"avg_cell",
+	"bal_pwm_1",
+	"bal_pwm_2",
+	"bal_pwm_3",
+	"bal_pwm_4",
+	"bal_pwm_5",
+	"bal_pwm_6",
+	"bal_pwm_7",
+	"bal_pwm_8",
+	"balancing",
+	"battery_neg",
+	"battery_pos",
+	"charge_complete",
+	"charge_current",
+	"charge_sec",
+	"charging",
+	"chemistry",
+	"cpu_temp",
+	"cycle_num",
+	"detected_cell_count",
+	"discharge_amps_set",
+	"discharge_pwm",
+	"discharging",
+	"fast_amps",
+	"high_temp",
+	"ir_1",
+	"ir_2",
+	"ir_3",
+	"ir_4",
+	"ir_5",
+	"ir_6",
+	"ir_7",
+	"ir_8",
+	"mah_in",
+	"mah_out",
+	"max_cell",
+	"mode",
+	"nicd_fallback",
+	"out_pos",
+	"packs",
+	"power_reduction_reason",
+	"preset_set_amps",
+	"reduce_amps",
+	"regen_discharge",
+	"regen_volt_set",
+	"safety_charge",
+	"screen_num",
+	"slow_avg_amps",
+	"start_avg_cell",
+	"start_supply_volts",
+	"supply_amps",
+	"supply_volts",
+	"supply_volts_with_current",
+	"sync_pwm_drive",
+	"version",
+	"voltage_1",
+	"voltage_2",
+	"voltage_3",
+	"voltage_4",
+	"voltage_5",
+	"voltage_6",
+	"voltage_7",
+	"voltage_8",
+}
+
+func sliceVal(i interface{}) []interface{} {
+	rv := []interface{}{}
+
+	switch v := i.(type) {
+	case []interface{}:
+		return v
+	case []int:
+		for _, x := range v {
+			rv = append(rv, x)
+		}
+	case []float64:
+		for _, x := range v {
+			rv = append(rv, x)
+		}
+	default:
+		log.Panicf("Unhandled type: %T", v)
+	}
+
+	return rv
+}
+
+func wideCSVFormat(c *csv.Writer, t time.Time, m map[string]interface{}) error {
+	row := []string{t.Format(time.RFC3339)}
+
+	for _, f := range csvFields {
+		if val, ok := m[f]; ok {
+			row = append(row, fmt.Sprint(val))
+		} else {
+			k := f[:len(f)-2]
+			i := f[len(f)-1] - '0' - 1
+
+			if val, ok := m[k]; ok {
+				s := sliceVal(val)
+				if len(s) > int(i) {
+					row = append(row, fmt.Sprint(s[i]))
+				} else {
+					row = append(row, "0")
+				}
+			} else {
+				log.Fatalf("Failed to find %q", k)
+			}
+		}
+	}
+	return c.Write(row)
+}
+
+func longCSVFormat(c *csv.Writer, t time.Time, m map[string]interface{}) error {
+	for _, f := range csvFields {
+		row := []string{t.Format(time.RFC3339)}
+
+		if val, ok := m[f]; ok {
+			row = append(row, f, "0", fmt.Sprint(val))
+		} else {
+			k := f[:len(f)-2]
+			i := f[len(f)-1] - '0' - 1
+
+			if val, ok := m[k]; ok {
+				s := sliceVal(val)
+				if len(s) > int(i) {
+					row = append(row, k, fmt.Sprint(i+1), fmt.Sprint(s[i]))
+				} else {
+					row = append(row, k, fmt.Sprint(i+1), "0")
+				}
+			} else {
+				log.Fatalf("Failed to find %q", k)
+			}
+		}
+		if err := c.Write(row); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func csvReader(r *LogSource, hdr []string, conv func(c *csv.Writer, t time.Time, m map[string]interface{}) error) io.ReadCloser {
+	pr, pw := io.Pipe()
+	c := csv.NewWriter(pw)
+
+	go func() {
+		if err := c.Write(hdr); err != nil {
+			pw.CloseWithError(err)
+			return
+		}
+
+		for {
+			e, err := r.Next()
+			if err == io.EOF {
+				c.Flush()
+				pw.Close()
+				return
+			}
+			if err != nil {
+				log.Fatalf("Decode error: %v", err)
+			}
+
+			if err := conv(c, e.Timestamp, e.Data.Map()); err != nil {
+				pw.CloseWithError(err)
+				return
+			}
+		}
+	}()
+
+	return pr
+}
+
+func NewWideCSVReader(r *LogSource) io.ReadCloser {
+	return csvReader(r, append([]string{"ts"}, csvFields...), wideCSVFormat)
+}
+
+func NewLongCSVReader(r *LogSource) io.ReadCloser {
+	return csvReader(r, []string{"ts", "field", "cell", "value"}, longCSVFormat)
 }
