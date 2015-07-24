@@ -366,10 +366,17 @@ func csvReader(r *LogSource, hdr []string, conv func(c *csv.Writer, t time.Time,
 	return pr
 }
 
+// NewWideCSVReader provides a simple conversion from a LogSource to a CSV io.Reader.
+//
+// This version adds a column for every field.
 func NewWideCSVReader(r *LogSource) io.ReadCloser {
 	return csvReader(r, append([]string{"ts"}, csvFields...), wideCSVFormat)
 }
 
+// NewLongCSVReader provides a sipmle conversion from LogSource to a CSV io.Reader.
+//
+// This version has a fixed number of columns, with a row for each
+// field at a given timestamp.  (This is really useful for long-form analysis in R).
 func NewLongCSVReader(r *LogSource) io.ReadCloser {
 	return csvReader(r, []string{"ts", "field", "cell", "value"}, longCSVFormat)
 }
