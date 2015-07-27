@@ -2,6 +2,7 @@ package main
 
 import (
 	"compress/gzip"
+	"expvar"
 	"flag"
 	"fmt"
 	"html/template"
@@ -10,11 +11,10 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"sort"
 	"strings"
 	"sync"
 	"time"
-
-	"expvar"
 
 	"github.com/dustin/go-nma"
 	"github.com/dustin/httputil"
@@ -451,6 +451,12 @@ func showLog(w http.ResponseWriter, r *http.Request) {
 	io.Copy(g, lr)
 }
 
+type dsfio []os.FileInfo
+
+func (d dsfio) Len() int           { return len(d) }
+func (d dsfio) Less(i, j int) bool { return d[i].Name() > d[j].Name() }
+func (d dsfio) Swap(i, j int)      { d[i], d[j] = d[j], d[i] }
+
 func (logHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f, err := os.Open(*logpath)
 	if err != nil {
@@ -469,6 +475,7 @@ func (logHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
+	sort.Sort(dsfio(o))
 
 	w.Header().Set("Content-type", "text/html")
 
