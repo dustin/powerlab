@@ -10,6 +10,7 @@ import (
 	"path"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/dustin/powerlab"
 )
@@ -100,6 +101,12 @@ func (d dsfio) Len() int           { return len(d) }
 func (d dsfio) Less(i, j int) bool { return d[i].Name() > d[j].Name() }
 func (d dsfio) Swap(i, j int)      { d[i], d[j] = d[j], d[i] }
 
+type jfio struct {
+	Name    string    `json:"name"`
+	Size    int64     `json:"size"`
+	ModTime time.Time `json:"mtime"`
+}
+
 func (logHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f, err := os.Open(*logpath)
 	if err != nil {
@@ -120,10 +127,25 @@ func (logHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	sort.Sort(dsfio(o))
 
-	w.Header().Set("Content-type", "text/html")
-
 	g := newGzippingWriter(w, r)
 	defer g.Close()
+
+	if r.FormValue("format") == "json" {
+		oe := []jfio{}
+		for _, e := range o {
+			oe = append(oe, jfio{e.Name(), e.Size(), e.ModTime()})
+		}
+		currentLog := currentLog.String()
+		currentLog = currentLog[1 : len(currentLog)-1]
+		currentLog = path.Base(currentLog)
+		serveJSON(w, r, map[string]interface{}{
+			"current": currentLog,
+			"entries": oe,
+		})
+		return
+	}
+
+	w.Header().Set("Content-type", "text/html")
 
 	if err := tmpl.Execute(g, o); err != nil {
 		log.Printf("Error rendering template: %v", err)
