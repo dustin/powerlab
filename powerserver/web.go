@@ -137,7 +137,9 @@ func (logHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		currentLog := currentLog.String()
 		currentLog = currentLog[1 : len(currentLog)-1]
-		currentLog = path.Base(currentLog)
+		if currentLog != "" {
+			currentLog = path.Base(currentLog)
+		}
 		serveJSON(w, r, map[string]interface{}{
 			"current": currentLog,
 			"entries": oe,
