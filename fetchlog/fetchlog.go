@@ -15,7 +15,10 @@ import (
 	"github.com/dustin/httputil"
 )
 
-var concurrency = flag.Int("concurrency", 4, "Maximum concurrent number of fetches.")
+var (
+	concurrency = flag.Int("concurrency", 4, "Maximum concurrent number of fetches.")
+	httpTimeout = flag.Duration("timeout", time.Minute, "HTTP timeout")
+)
 
 func listRemote(baseurl string) (map[string]int64, error) {
 	u, err := url.Parse(baseurl + "/logs/?format=json")
@@ -73,8 +76,6 @@ func listLocal(logdir string) (map[string]int64, error) {
 }
 
 func process(dest, baseurl string, local, remote map[string]int64) error {
-	httputil.InitHTTPTracker(false)
-
 	g := wait.Group{}
 
 	sem := make(chan bool, *concurrency)
@@ -83,6 +84,7 @@ func process(dest, baseurl string, local, remote map[string]int64) error {
 		Transport: &http.Transport{
 			DisableCompression: true,
 		},
+		Timeout: *httpTimeout,
 	}
 
 	for k, v := range remote {
@@ -104,22 +106,31 @@ func process(dest, baseurl string, local, remote map[string]int64) error {
 
 			req, err := http.NewRequest("GET", u.String(), nil)
 			if err != nil {
+				log.Printf("Error fetching %v: %v", u, err)
 				return err
 			}
 
 			res, err := client.Do(req)
 			if err != nil || res.StatusCode != 200 {
-				return httputil.HTTPError(res)
+				if err == nil {
+					err = httputil.HTTPError(res)
+				}
+				log.Printf("Error fetching %v: %v", u, err)
+				return err
 			}
 			defer res.Body.Close()
 
 			f, err := os.Create(path.Join(dest, k))
 			if err != nil {
+				log.Printf("Error creating output file %v: %v", k, err)
 				return err
 			}
 			defer f.Close()
 
 			_, err = io.Copy(f, res.Body)
+			if err != nil {
+				log.Printf("Error copying data for %v: %v", k, err)
+			}
 			return err
 		})
 	}
@@ -132,6 +143,9 @@ func main() {
 	if flag.NArg() < 2 {
 		log.Fatalf("Usage: %v baseurl destdir", os.Args[0])
 	}
+
+	http.DefaultClient.Timeout = *httpTimeout
+	httputil.InitHTTPTracker(false)
 
 	baseurl := flag.Arg(0)
 	dest := flag.Arg(1)
