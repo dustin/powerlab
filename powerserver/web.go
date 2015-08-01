@@ -61,6 +61,11 @@ func showLog(w http.ResponseWriter, r *http.Request) {
 	}
 	defer f.Close()
 
+	if !strings.HasPrefix(r.FormValue("fmt"), "csv") {
+		io.Copy(w, f)
+		return
+	}
+
 	gzr, err := gzip.NewReader(f)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
@@ -70,28 +75,24 @@ func showLog(w http.ResponseWriter, r *http.Request) {
 	lr := io.ReadCloser(gzr)
 	defer lr.Close()
 
-	if strings.HasPrefix(r.FormValue("fmt"), "csv") {
-		w.Header().Set("Content-type", "text/csv")
+	w.Header().Set("Content-type", "text/csv")
 
-		ls, err := powerlab.NewLogReaderStream(gzr, *logFormat)
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-		defer ls.Close()
+	ls, err := powerlab.NewLogReaderStream(gzr, *logFormat)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	defer ls.Close()
 
-		switch r.FormValue("fmt") {
-		case "csv":
-			lr = powerlab.NewWideCSVReader(ls)
-		case "csvlong":
-			lr = powerlab.NewLongCSVReader(ls)
-		}
-
+	switch r.FormValue("fmt") {
+	case "csv":
+		lr = powerlab.NewWideCSVReader(ls)
+	case "csvlong":
+		lr = powerlab.NewLongCSVReader(ls)
 	}
 
 	g := newGzippingWriter(w, r)
 	defer g.Close()
-
 	io.Copy(g, lr)
 }
 
