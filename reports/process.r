@@ -7,7 +7,7 @@ powerlab.nums$value <- as.numeric(powerlab.nums$value)
 powerlab.nums$cell <- factor(powerlab.nums$cell)
 
 ## Example plot
-# ggplot(powerlab.nums[powerlab.nums$field == 'voltage' & powerlab.nums$cell < 4 & powerlab.nums$value > 0,], aes(ts, value)) + geom_line(alpha=0.2) + theme_bw() + facet_wrap(~cell) + stat_smooth() + labs(y='V')
+# ggplot(powerlab.nums[powerlab.nums$field == 'voltage' & powerlab.nums$value > 0,], aes(ts, value)) + geom_line(alpha=0.2) + theme_bw() + facet_wrap(~cell) + stat_smooth() + labs(y='V')
 
 
 ## Showing IR over charge cycles
