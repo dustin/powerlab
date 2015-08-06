@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -17,6 +18,7 @@ import (
 
 var (
 	concurrency = flag.Int("concurrency", 4, "Maximum concurrent number of fetches.")
+	noop        = flag.Bool("n", false, "Don't download, just report")
 	httpTimeout = flag.Duration("timeout", time.Minute, "HTTP timeout")
 )
 
@@ -119,6 +121,11 @@ func process(dest, baseurl string, local, remote map[string]int64) error {
 				return err
 			}
 			defer res.Body.Close()
+
+			if *noop {
+				_, err := io.Copy(ioutil.Discard, res.Body)
+				return err
+			}
 
 			f, err := os.Create(path.Join(dest, k))
 			if err != nil {
