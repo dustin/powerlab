@@ -60,6 +60,7 @@ function updateStatus(dees) {
         d3.select("#mode").text(d.mode);
         $(".chart").hide();
     }
+    d3.select("title").text("PowerServer - " + d3.select("#mode").text());
     d3.select("#" + mode + "-chemistry").text(d.chemistry);
     d3.select("#" + mode + "-amps").text(d3.format(".3s")(d.fast_amps) + "A");
     d3.select("#" + mode + "-mah").text(d3.format(".3s")(d.mah_in / 1000) + "Ah");
