@@ -386,6 +386,9 @@ func (s *Status) Mode() Mode {
 }
 
 func (m Mode) String() string {
+	if int(m) >= len(modeNames) {
+		return fmt.Sprintf("Unknown mode (#%d)", m)
+	}
 	return modeNames[m]
 }
 
@@ -455,7 +458,7 @@ var chemistryNames = []string{"",
 }
 
 func (c Chemistry) String() string {
-	if int(c) > len(chemistryNames) {
+	if int(c) >= len(chemistryNames) {
 		return fmt.Sprintf("Unknown (#%d)", c)
 	}
 	return chemistryNames[c]
@@ -520,7 +523,7 @@ var powerReductionReasons = []string{
 }
 
 func (p PowerReductionReason) String() string {
-	if int(p) > len(powerReductionReasons) {
+	if int(p) >= len(powerReductionReasons) {
 		return fmt.Sprintf("Unknown (#%d)", p)
 	}
 	return powerReductionReasons[p]
