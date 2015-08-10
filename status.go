@@ -520,6 +520,9 @@ var powerReductionReasons = []string{
 }
 
 func (p PowerReductionReason) String() string {
+	if int(p) > len(powerReductionReasons) {
+		return fmt.Sprintf("Unknown (#%d)", p)
+	}
 	return powerReductionReasons[p]
 }
 
