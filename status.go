@@ -454,6 +454,9 @@ var chemistryNames = []string{"",
 }
 
 func (c Chemistry) String() string {
+	if int(c) > len(chemistryNames) {
+		return fmt.Sprintf("Unknown (#%d)", c)
+	}
 	return chemistryNames[c]
 }
 
