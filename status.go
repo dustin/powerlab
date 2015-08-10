@@ -49,6 +49,7 @@ func (s *Status) Map() map[string]interface{} {
 		"start_supply_volts":        s.StartSupplyVolts(),
 		"slow_avg_amps":             s.SlowAvgAmps(),
 		"preset_set_amps":           s.PresetSetAmps(),
+		"preset_num":                s.Preset(),
 		"chemistry":                 s.Chemistry().String(),
 		"screen_num":                s.ScreenNum(),
 		"cycle_num":                 s.CycleNum(),
