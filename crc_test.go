@@ -20,11 +20,8 @@ func TestCRC16(t *testing.T) {
 }
 
 func TestExemplarCRC(t *testing.T) {
-	t.Skipf("Either this doesn't work, or I'm doing it wrong.")
-	input := capturedExemplar[:statusLen+4-2]
-	const exp = 0
-	got := crc16(input)
-	if got != exp {
-		t.Errorf("Expected %x, got %x", exp, got)
+	if err := capturedExemplar.ValidateCRC(); err != nil {
+		t.Errorf("%v: got %x, expected %x", err,
+			capturedExemplar.CRC(), capturedExemplar.ComputeCRC())
 	}
 }
