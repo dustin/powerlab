@@ -532,3 +532,18 @@ func (p PowerReductionReason) String() string {
 func (s *Status) PowerReductionReason() PowerReductionReason {
 	return PowerReductionReason(s.read1(143))
 }
+
+func (s *Status) CRC() uint16 {
+	return s.read2(147)
+}
+
+func (s *Status) ComputeCRC() uint16 {
+	return crc16(s[4 : 4+147])
+}
+
+func (s *Status) ValidateCRC() error {
+	if s.ComputeCRC() != s.CRC() {
+		return ErrCRC
+	}
+	return nil
+}

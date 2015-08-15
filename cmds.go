@@ -49,5 +49,5 @@ func (p *Powerlab) Status(id int) (*Status, error) {
 		return nil, err
 	}
 
-	return &rv, nil
+	return &rv, rv.ValidateCRC()
 }

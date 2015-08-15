@@ -327,6 +327,10 @@ func powerlabPlayback() {
 	rpl := replay.New(*replaySpeed)
 	rpl.Run(src, replay.FunctionAction(func(event replay.Event) {
 		le := event.(logEvent)
+		if err := le.le.Data.ValidateCRC(); err != nil {
+			log.Print(err)
+			return
+		}
 		ch <- sample{le.le.Timestamp, le.le.Data}
 	}))
 
