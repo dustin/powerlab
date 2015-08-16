@@ -65,6 +65,7 @@ func (p *Powerlab) Status(id int) (*Status, error) {
 	}
 
 	rv := Status{}
+	copy(rv[:], cmd)
 
 	if err := readPrefix(p.port, cmd); err != nil {
 		return nil, err
