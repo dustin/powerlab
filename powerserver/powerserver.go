@@ -45,6 +45,7 @@ var (
 	static       = flag.String("static", "static", "path to static content")
 	stateLogFreq = flag.Duration("logfreq", time.Minute, "state log frequency")
 	logTimeout   = flag.Duration("logtimeout", time.Minute*5, "how long to log after a charge is complete")
+	sampleFreq   = flag.Duration("samplefreq", time.Second, "how often to sample status")
 	useSyslog    = flag.Bool("syslog", false, "Log to syslog")
 	nmaKey       = flag.String("nmakey", "", "notify my android key")
 	replayFile   = flag.String("replayfile", "", "log to play back")
@@ -251,7 +252,7 @@ func powerlabReader() {
 	go logger(ch)
 
 	// This prevents too many fast restarts on fast failure
-	for range time.Tick(time.Second) {
+	for range time.Tick(5 * time.Second) {
 		err := powerLabReaderLoop(ch)
 		log.Printf("Closed reader loop (retrying): %v", err)
 	}
@@ -269,7 +270,7 @@ func powerLabReaderLoop(ch chan sample) error {
 	defer log.Printf("Closing reader")
 
 	hardErrors := 0
-	heart := time.NewTicker(time.Second)
+	heart := time.NewTicker(*sampleFreq)
 	defer heart.Stop()
 	for t := range heart.C {
 		st, err := pl.Status(0)
