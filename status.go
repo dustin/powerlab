@@ -534,11 +534,11 @@ func (s *Status) PowerReductionReason() PowerReductionReason {
 }
 
 func (s *Status) CRC() uint16 {
-	return s.read2(147)
+	return s.read2(statusLen - 2)
 }
 
 func (s *Status) ComputeCRC() uint16 {
-	return crc16(s[4 : 4+147])
+	return crc16(s[4 : 4+statusLen-2])
 }
 
 func (s *Status) ValidateCRC() error {
