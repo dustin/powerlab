@@ -24,7 +24,10 @@ type sample struct {
 	st *powerlab.Status
 }
 
-const maxReadings = 3600
+const (
+	maxReadings = 3600
+	maxCRCFails = 5
+)
 
 type markedStatus struct {
 	TS time.Time
@@ -250,10 +253,20 @@ func logger(ch <-chan sample) {
 func powerlabReader() {
 	ch := make(chan sample, 1)
 	go logger(ch)
+	crcFails := 0
 
 	// This prevents too many fast restarts on fast failure
 	for range time.Tick(5 * time.Second) {
 		err := powerLabReaderLoop(ch)
+		if err == powerlab.ErrCRC {
+			crcFails++
+			if crcFails > maxCRCFails {
+				log.Printf("Exiting after too many CRC failures")
+				os.Exit(1)
+			}
+		} else {
+			crcFails = 0
+		}
 		log.Printf("Closed reader loop (retrying): %v", err)
 	}
 }
