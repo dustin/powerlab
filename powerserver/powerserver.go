@@ -401,6 +401,8 @@ func main() {
 
 	initLogging(*useSyslog)
 
+	log.Printf("Starting powerserver.")
+
 	if *replayFile == "" {
 		go powerlabReader()
 	} else {
