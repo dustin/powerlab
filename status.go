@@ -386,10 +386,10 @@ func (s *Status) Mode() Mode {
 }
 
 func (m Mode) String() string {
-	if int(m) >= len(modeNames) {
-		return fmt.Sprintf("Unknown mode (#%d)", m)
+	if n, ok := modeNames[m]; ok {
+		return n
 	}
-	return modeNames[m]
+	return fmt.Sprintf("Unknown mode (#%d)", m)
 }
 
 func (s *Status) RegenVoltSet() float64 {
