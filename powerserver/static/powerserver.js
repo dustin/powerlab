@@ -116,46 +116,24 @@ function makeGauge() {
 }
 
 function makeCellChart() {
-    var margin = {top: 20, right: 55, bottom: 30, left: 40},
-    width  = 600 - margin.left - margin.right,
-    height = 200  - margin.top  - margin.bottom;
+    var chart;
 
-    var x = d3.scale.linear()
-        .rangeRound([0, width], .1);
+    nv.addGraph(function() {
+        chart = nv.models.lineChart()
+            .useInteractiveGuideline(true);
 
-    var y = d3.scale.linear()
-        .rangeRound([height, 0]);
+        chart.xAxis
+            .axisLabel('Charge Time (s)')
+            .tickFormat(d3.format(',r'));
 
-    var yAxis = d3.svg.axis()
-        .scale(y)
-        .tickSize(width)
-        .tickFormat(function(x) { return d3.format(".3s")(x) + "V";})
-        .orient("right");
+        chart.yAxis
+            .axisLabel('Voltage (v)')
+            .tickFormat(d3.format('.02f'));
 
-    var line = d3.svg.line()
-        .interpolate("cardinal")
-        .x(function (d, i) { return x(i); })
-        .y(function (d) { return y(d.value); });
+        nv.utils.windowResize(chart.update);
 
-    var color = d3.scale.ordinal()
-        .range(["#001c9c","#101b4d","#475003","#9c8305","#d3c47c"]);
-
-    var svg = d3.select("#cellChart").append("svg")
-        .attr("width",  width  + margin.left + margin.right)
-        .attr("height", height + margin.top  + margin.bottom)
-      .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-    var gy = svg.append("g")
-        .attr("class", "y axis")
-        .call(yAxis);
-
-    gy.selectAll("g").filter(function(d) { return d; })
-        .classed("minor", true);
-
-    gy.selectAll("text")
-        .attr("x", 4)
-        .attr("dy", -4);
+        return chart;
+    });
 
     cellchart = function() {
         var values = [];
@@ -164,47 +142,24 @@ function makeCellChart() {
             if (st.mode == 'detecting pack') {
                 continue;
             }
+
             for (var j = 0; j < st.voltage.length; j++) {
-                var val = {
-                    name: 'cell' + (1+j),
-                    label: statuses[i].TS,
-                    value: st.voltage[j],
-                };
-                var prev = values[j] ? values[j].values : [];
-                prev.push(val);
-                values[j] = {name: 'cell' + (j+1), values: prev};
+                if (j >= values.length) {
+                    values.push({
+                        key: 'Cell ' + (1+j),
+                        values: [],
+                    });
+                }
+                values[j].values.push({x: st.charge_sec, y: st.voltage[j]});
             }
         }
-
-        color.domain(values.map(function(d) { return d.name; }));
-
         seriesData = values;
+        console.log("Drawing", seriesData);
 
-        x.domain([0, d3.max([600, seriesData[0].values.length])]);
-        y.domain([
-          d3.min(seriesData, function (c) { 
-            return d3.min(c.values, function (d) { return d.value; });
-          }),
-          d3.max(seriesData, function (c) { 
-            return d3.max(c.values, function (d) { return d.value; });
-          })
-        ]);
-
-        var gy = svg.select(".y.axis").call(yAxis);
-
-        gy.selectAll("g").filter(function(d) { return d; })
-            .classed("minor", true);
-
-        var series = svg.selectAll(".line").transition()
-            .attr("d", function (d) { return line(d.values); })
-            .duration(500);
-         
-        svg.selectAll(".line").data(seriesData).enter().append("path")
-            .attr("class", "line")
-            .style("stroke", function (d) { return color(d.name); })
-            .style("stroke-width", "1px")
-            .style("fill", "none")
-            .attr("d", function (d) { return line(d.values); });
+        d3.select('#cellChart svg')
+            .datum(seriesData)
+            .transition().duration(500)
+            .call(chart);
     };
 }
 
