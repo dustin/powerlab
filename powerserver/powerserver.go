@@ -173,9 +173,14 @@ func openGzWriter(fn string) (io.WriteCloser, error) {
 	if err != nil {
 		return nil, err
 	}
+	g, err := gzip.NewWriterLevel(f, gzip.BestSpeed)
+	if err != nil {
+		// This can't reasonably fail.
+		panic(err)
+	}
 	return &gzwriter{
 		w: f,
-		g: gzip.NewWriter(f),
+		g: g,
 	}, nil
 }
 
