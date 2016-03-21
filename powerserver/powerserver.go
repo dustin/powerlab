@@ -25,8 +25,9 @@ type sample struct {
 }
 
 const (
-	maxReadings = 3600
-	maxCRCFails = 5
+	maxReadings     = 3600
+	maxCRCFails     = 5
+	watchdogTimeout = time.Minute * 30
 )
 
 type markedStatus struct {
@@ -191,9 +192,25 @@ func logger(ch <-chan sample) {
 	prevMode := powerlab.Unknown
 	prevComplete := false
 
+	wdch := make(chan sample)
+	go func() {
+		timeout := time.NewTimer(watchdogTimeout)
+		for {
+			select {
+			case <-wdch:
+				timeout.Reset(watchdogTimeout)
+			case <-timeout.C:
+				log.Printf("Watchdog failure:  too long since last log message")
+				os.Exit(1)
+			}
+		}
+	}()
+
 	log.Printf("Started logger")
 
 	for s := range ch {
+		wdch <- s // feed the watchdog
+
 		mode := s.st.Mode()
 		complete := s.st.ChargeComplete()
 
