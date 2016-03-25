@@ -122,17 +122,15 @@ func (s *Status) MarshalJSON() ([]byte, error) {
 		}
 		needComma = true
 
-		fmt.Fprintf(b, "%q: ", k)
+		b.WriteByte('"')
+		b.WriteString(k)
+		b.WriteString(`": `)
 
 		switch tv := v.(type) {
 		case bool:
-			if tv {
-				b.WriteString("true")
-			} else {
-				b.WriteString("false")
-			}
+			b.WriteString(strconv.FormatBool(tv))
 		case string:
-			fmt.Fprintf(b, "%q", tv)
+			b.WriteString(strconv.Quote(tv))
 		case float64:
 			fbuf = strconv.AppendFloat(fbuf, tv, 'g', -1, 64)
 			b.Write(fbuf)
