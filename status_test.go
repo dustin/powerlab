@@ -196,3 +196,24 @@ func TestJSON(t *testing.T) {
 	}
 	t.Logf("%s", b)
 }
+
+func BenchmarkJSONMarshaling(b *testing.B) {
+	ls, err := NewLogReader("sample/2015-07-17T21:35:36-07:00.gob.gz")
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer ls.Close()
+
+	e, err := ls.Next()
+	if err != nil {
+		b.Fatal(err)
+	}
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		_, err := e.Data.MarshalJSON()
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
