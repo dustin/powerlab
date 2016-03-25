@@ -1,10 +1,12 @@
 package powerlab
 
 import (
+	"bytes"
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"math"
+	"strconv"
 	"time"
 )
 
@@ -15,79 +17,161 @@ const (
 // Status represents a Powerlab6 status response.
 type Status [statusLen + 4]byte
 
+var statusFieldMap = map[string]func(s *Status) interface{}{
+	"version":                   func(s *Status) interface{} { return s.Version() },
+	"sync_pwm_drive":            func(s *Status) interface{} { return s.SyncPWMDrive().String() },
+	"charge_current":            func(s *Status) interface{} { return s.ChargeCurrent() },
+	"supply_volts_with_current": func(s *Status) interface{} { return s.SupplyVoltsWithCurrent() },
+	"supply_volts":              func(s *Status) interface{} { return s.SupplyVolts() },
+	"cpu_temp":                  func(s *Status) interface{} { return s.CPUTemp() },
+	"charge_sec":                func(s *Status) interface{} { return s.ChargeDuration().Seconds() },
+	"charge_time":               func(s *Status) interface{} { return s.ChargeDuration().String() },
+	"fast_amps":                 func(s *Status) interface{} { return s.FastAmps() },
+	"out_pos":                   func(s *Status) interface{} { return s.OutPositive() },
+	"mah_in":                    func(s *Status) interface{} { return s.MAhIn() },
+	"avg_cell":                  func(s *Status) interface{} { return s.AvgCell() },
+	"start_avg_cell":            func(s *Status) interface{} { return s.StartAvg() },
+	"avg_amps":                  func(s *Status) interface{} { return s.AvgAmps() },
+	"high_temp":                 func(s *Status) interface{} { return s.HighTemp() },
+	"packs":                     func(s *Status) interface{} { return s.Packs() },
+	"detected_cell_count":       func(s *Status) interface{} { return s.DetectedCellCount() },
+	"nicd_fallback":             func(s *Status) interface{} { return s.NiCdFallbackV() },
+	"max_cell":                  func(s *Status) interface{} { return s.MaxCell() },
+	"supply_amps":               func(s *Status) interface{} { return s.SupplyAmps() },
+	"battery_pos":               func(s *Status) interface{} { return s.BatteryPos() },
+	"mah_out":                   func(s *Status) interface{} { return s.MAhOut() },
+	"discharge_amps_set":        func(s *Status) interface{} { return s.DischAmpSet() },
+	"discharge_pwm":             func(s *Status) interface{} { return s.DischargePWM() },
+	"battery_neg":               func(s *Status) interface{} { return s.BatteryNeg() },
+	"mode":                      func(s *Status) interface{} { return s.Mode().String() },
+	"regen_volt_set":            func(s *Status) interface{} { return s.RegenVoltSet() },
+	"start_supply_volts":        func(s *Status) interface{} { return s.StartSupplyVolts() },
+	"slow_avg_amps":             func(s *Status) interface{} { return s.SlowAvgAmps() },
+	"preset_set_amps":           func(s *Status) interface{} { return s.PresetSetAmps() },
+	"preset_num":                func(s *Status) interface{} { return s.Preset() },
+	"chemistry":                 func(s *Status) interface{} { return s.Chemistry().String() },
+	"screen_num":                func(s *Status) interface{} { return s.ScreenNum() },
+	"cycle_num":                 func(s *Status) interface{} { return s.CycleNum() },
+	"power_reduction_reason":    func(s *Status) interface{} { return s.PowerReductionReason().String() },
+	"voltage": func(s *Status) interface{} {
+		var v []float64
+		for i := 0; i < s.DetectedCellCount(); i++ {
+			v = append(v, s.CellVoltage(i+1))
+		}
+		return v
+	},
+	"ir": func(s *Status) interface{} {
+		var v []float64
+		for i := 0; i < s.DetectedCellCount(); i++ {
+			v = append(v, s.IR(i+1))
+		}
+		return v
+	},
+	"bal_pwm": func(s *Status) interface{} {
+		var v []int
+		for i := 0; i < s.DetectedCellCount(); i++ {
+			v = append(v, s.BalancePWM(i+1))
+		}
+		return v
+	},
+	"slaves_found": func(s *Status) interface{} {
+		if sl := s.SlavesFound(); len(sl) > 0 {
+			return sl
+		}
+		return nil
+	},
+	"safety_charge":   func(s *Status) interface{} { x, _, _ := s.statusFlags(); return x },
+	"charge_complete": func(s *Status) interface{} { _, x, _ := s.statusFlags(); return x },
+	"reduce_amps":     func(s *Status) interface{} { _, _, x := s.statusFlags(); return x },
+	"discharging":     func(s *Status) interface{} { x, _, _, _ := s.rxStatus(); return x },
+	"regen_discharge": func(s *Status) interface{} { _, x, _, _ := s.rxStatus(); return x },
+	"charging":        func(s *Status) interface{} { _, _, x, _ := s.rxStatus(); return x },
+	"balancing":       func(s *Status) interface{} { _, _, _, x := s.rxStatus(); return x },
+}
+
 // Map converts the Status struture to a map[string]interface{}
 // suitable for JSON encoding.
 func (s *Status) Map() map[string]interface{} {
-	m := map[string]interface{}{
-		"version":                   s.Version(),
-		"sync_pwm_drive":            s.SyncPWMDrive().String(),
-		"charge_current":            s.ChargeCurrent(),
-		"supply_volts_with_current": s.SupplyVoltsWithCurrent(),
-		"supply_volts":              s.SupplyVolts(),
-		"cpu_temp":                  s.CPUTemp(),
-		"charge_sec":                s.ChargeDuration().Seconds(),
-		"charge_time":               s.ChargeDuration().String(),
-		"fast_amps":                 s.FastAmps(),
-		"out_pos":                   s.OutPositive(),
-		"mah_in":                    s.MAhIn(),
-		"avg_cell":                  s.AvgCell(),
-		"start_avg_cell":            s.StartAvg(),
-		"avg_amps":                  s.AvgAmps(),
-		"high_temp":                 s.HighTemp(),
-		"packs":                     s.Packs(),
-		"detected_cell_count":       s.DetectedCellCount(),
-		"nicd_fallback":             s.NiCdFallbackV(),
-		"max_cell":                  s.MaxCell(),
-		"supply_amps":               s.SupplyAmps(),
-		"battery_pos":               s.BatteryPos(),
-		"mah_out":                   s.MAhOut(),
-		"discharge_amps_set":        s.DischAmpSet(),
-		"discharge_pwm":             s.DischargePWM(),
-		"battery_neg":               s.BatteryNeg(),
-		"mode":                      s.Mode().String(),
-		"regen_volt_set":            s.RegenVoltSet(),
-		"start_supply_volts":        s.StartSupplyVolts(),
-		"slow_avg_amps":             s.SlowAvgAmps(),
-		"preset_set_amps":           s.PresetSetAmps(),
-		"preset_num":                s.Preset(),
-		"chemistry":                 s.Chemistry().String(),
-		"screen_num":                s.ScreenNum(),
-		"cycle_num":                 s.CycleNum(),
-		"power_reduction_reason":    s.PowerReductionReason().String(),
+	m := map[string]interface{}{}
+	for k, f := range statusFieldMap {
+		if v := f(s); v != nil {
+			m[k] = v
+		}
 	}
-	voltages := []float64{}
-	ir := []float64{}
-	balPwm := []int{}
-	for i := 0; i < s.DetectedCellCount(); i++ {
-		voltages = append(voltages, s.CellVoltage(i+1))
-		ir = append(ir, s.IR(i+1))
-		balPwm = append(balPwm, s.BalancePWM(i+1))
-	}
-	m["voltage"] = voltages
-	m["ir"] = ir
-	m["bal_pwm"] = balPwm
-
-	if sl := s.SlavesFound(); len(sl) > 0 {
-		m["slaves_found"] = sl
-	}
-
-	safetyCharge, chargeComplete, reduceAmps := s.statusFlags()
-	m["safety_charge"] = safetyCharge
-	m["charge_complete"] = chargeComplete
-	m["reduce_amps"] = reduceAmps
-
-	discharging, regenDischarge, charging, balancing := s.rxStatus()
-	m["discharging"] = discharging
-	m["regen_discharge"] = regenDischarge
-	m["charging"] = charging
-	m["balancing"] = balancing
-
 	return m
 }
 
 // MarshalJSON satisfies json.Marshaler.
 func (s *Status) MarshalJSON() ([]byte, error) {
-	return json.Marshal(s.Map())
+	b := &bytes.Buffer{}
+	b.WriteByte('{')
+	needComma := false
+	fbuf := []byte{}
+	for k, f := range statusFieldMap {
+		v := f(s)
+		if v == nil {
+			continue
+		}
+		if needComma {
+			b.WriteByte(',')
+		}
+		needComma = true
+
+		fmt.Fprintf(b, "%q: ", k)
+
+		switch tv := v.(type) {
+		case bool:
+			if tv {
+				b.WriteString("true")
+			} else {
+				b.WriteString("false")
+			}
+		case string:
+			fmt.Fprintf(b, "%q", tv)
+		case float64:
+			fbuf = strconv.AppendFloat(fbuf, tv, 'g', -1, 64)
+			b.Write(fbuf)
+		case []float64:
+			b.WriteByte('[')
+			nc := false
+			for _, n := range tv {
+				if nc {
+					b.WriteByte(',')
+				}
+				nc = true
+				fbuf = strconv.AppendFloat(fbuf, n, 'g', -1, 64)
+				b.Write(fbuf)
+				fbuf = fbuf[:0]
+			}
+			b.WriteByte(']')
+		case int:
+			fbuf = strconv.AppendInt(fbuf, int64(tv), 10)
+			b.Write(fbuf)
+		case []int:
+			b.WriteByte('[')
+			nc := false
+			for _, n := range tv {
+				if nc {
+					b.WriteByte(',')
+				}
+				nc = true
+				fbuf = strconv.AppendInt(fbuf, int64(n), 10)
+				b.Write(fbuf)
+				fbuf = fbuf[:0]
+			}
+			b.WriteByte(']')
+		default:
+			other, err := json.Marshal(v)
+			if err != nil {
+				return nil, err
+			}
+			b.Write(other)
+		}
+
+		fbuf = fbuf[:0]
+	}
+	b.WriteByte('}')
+	return b.Bytes(), nil
 }
 
 func (s *Status) read1(o int) uint8 {
