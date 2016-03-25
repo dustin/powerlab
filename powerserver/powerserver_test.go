@@ -9,7 +9,7 @@ import (
 	"github.com/dustin/powerlab"
 )
 
-func BenchmarkJSONMarshaling(b *testing.B) {
+func benchMarshaler(req *http.Request, b *testing.B) {
 	ls, err := powerlab.NewLogReader("../sample/2015-07-17T21:35:36-07:00.gob.gz")
 	if err != nil {
 		b.Fatal(err)
@@ -36,14 +36,21 @@ func BenchmarkJSONMarshaling(b *testing.B) {
 	}
 
 	w := httptest.NewRecorder()
-	req := &http.Request{
-		Header: http.Header{
-			"accept-encoding": []string{"gzip"},
-		},
-	}
 
 	b.ResetTimer()
 	if err := serveJSON(w, req, out); err != nil {
 		b.Fatal(err)
 	}
+}
+
+func BenchmarkJSONMarshaling(b *testing.B) {
+	benchMarshaler(&http.Request{
+		Header: http.Header{
+			"Accept-Encoding": []string{"gzip"},
+		},
+	}, b)
+}
+
+func BenchmarkJSONMarshalingNoGZ(b *testing.B) {
+	benchMarshaler(&http.Request{}, b)
 }
