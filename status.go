@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -101,9 +102,13 @@ func (s *Status) Map() map[string]interface{} {
 	return m
 }
 
+var bufferPool = &sync.Pool{New: func() interface{} { return &bytes.Buffer{} }}
+
 // MarshalJSON satisfies json.Marshaler.
 func (s *Status) MarshalJSON() ([]byte, error) {
-	b := &bytes.Buffer{}
+	b := bufferPool.Get().(*bytes.Buffer)
+	b.Reset()
+	defer bufferPool.Put(b)
 	b.WriteByte('{')
 	needComma := false
 	fbuf := []byte{}
