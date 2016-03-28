@@ -442,7 +442,7 @@ func main() {
 		}
 		rv := []markedStatus{}
 		for _, ms := range allReadings() {
-			if ms.TS.After(after) {
+			if ms.ST != nil && ms.TS.After(after) {
 				rv = append(rv, ms)
 			}
 		}
