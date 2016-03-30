@@ -44,6 +44,7 @@ func benchMarshaler(req *http.Request, b *testing.B) {
 }
 
 func BenchmarkJSONMarshaling(b *testing.B) {
+	*gzEnabled = true
 	benchMarshaler(&http.Request{
 		Header: http.Header{
 			"Accept-Encoding": []string{"gzip"},
@@ -52,5 +53,15 @@ func BenchmarkJSONMarshaling(b *testing.B) {
 }
 
 func BenchmarkJSONMarshalingNoGZ(b *testing.B) {
+	*gzEnabled = false
 	benchMarshaler(&http.Request{}, b)
+}
+
+func BenchmarkJSONMarshalingNoGZ2(b *testing.B) {
+	*gzEnabled = false
+	benchMarshaler(&http.Request{
+		Header: http.Header{
+			"Accept-Encoding": []string{"gzip"},
+		},
+	}, b)
 }

@@ -3,15 +3,18 @@ package main
 import (
 	"compress/gzip"
 	"encoding/json"
+	"flag"
 	"io"
 	"net/http"
 	"reflect"
 	"strings"
 )
 
+var gzEnabled = flag.Bool("gzip", false, "enable gzip compression of responses")
+
 func canGzip(req *http.Request) bool {
 	acceptable := req.Header.Get("accept-encoding")
-	return strings.Contains(acceptable, "gzip")
+	return *gzEnabled && strings.Contains(acceptable, "gzip")
 }
 
 type gzippingWriter struct {
