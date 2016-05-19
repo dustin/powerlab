@@ -94,10 +94,12 @@ type JSONStatusLogger struct {
 	w io.WriteCloser
 }
 
+// NewJSONStatusLogger creates a new StatusLogger that writes in JSON format.
 func NewJSONStatusLogger(w io.WriteCloser) StatusLogger {
 	return &JSONStatusLogger{w}
 }
 
+// Close closes.
 func (l JSONStatusLogger) Close() error {
 	return l.w.Close()
 }
@@ -120,10 +122,12 @@ type GobStatusLogger struct {
 	e *gob.Encoder
 }
 
+// NewGobStatusLogger creates a new StatusLogger that writes in gob format.
 func NewGobStatusLogger(w io.WriteCloser) StatusLogger {
 	return &GobStatusLogger{w, gob.NewEncoder(w)}
 }
 
+// Close closes.
 func (l GobStatusLogger) Close() error {
 	l.e = nil
 	return l.w.Close()

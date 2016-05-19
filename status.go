@@ -408,6 +408,9 @@ func (s *Status) SupplyAmps() float64 {
 	return float64(s.read2(80)) / 150
 }
 
+// BatteryPos returns the battery pos field from the powerlab.
+//
+// TODO:  Understand this more.
 func (s *Status) BatteryPos() float64 {
 	return float64(s.read2(82)) / 12797
 }
@@ -422,14 +425,23 @@ func (s *Status) DischAmpSet() float64 {
 	return float64(s.read2(92)) / 600
 }
 
+// DischargePWM returns the discharge PWM field from the powerlab.
+//
+// TODO:  Understand this more.
 func (s *Status) DischargePWM() int {
 	return int(s.read2(94))
 }
 
+// BatteryNeg returns the battery neg value from the powerlab.
+//
+// TODO:  Understand this more.
 func (s *Status) BatteryNeg() float64 {
 	return float64(s.read2(100)) * 46.96 / 4095
 }
 
+// BalancePWM returns the balance PWM field from the powerlab.
+//
+// TODO:  Understand this more.
 func (s *Status) BalancePWM(cell int) int {
 	if cell < 0 || cell > 8 {
 		panic("invalid cell number")
@@ -479,22 +491,27 @@ func (m Mode) String() string {
 	return fmt.Sprintf("Unknown mode (#%d)", m)
 }
 
+// RegenVoltSet returns the set point for regenerative charging.
 func (s *Status) RegenVoltSet() float64 {
 	return float64(s.read2(90)) * 46.96 / 4095
 }
 
+// StartSupplyVolts returns the input voltage at the start of a cycle.
 func (s *Status) StartSupplyVolts() float64 {
 	return float64(s.read2(104)) * 46.96 / 4095
 }
 
+// SlowAvgAmps returns the average current over a longer period of time.
 func (s *Status) SlowAvgAmps() float64 {
 	return float64(s.read2s(116)) / 600
 }
 
+// PresetSetAmps returns the set point of the preset current.
 func (s *Status) PresetSetAmps() float64 {
 	return float64(s.read2(118)) / 600
 }
 
+// SlavesFound returns the IDs of slaves found.
 func (s *Status) SlavesFound() []int {
 	bits := s.read2(120)
 	slaves := []int{}
@@ -513,8 +530,10 @@ func (s *Status) ErrorCode() int {
 	return int(s.read1(134))
 }
 
+// Chemistry represents the type of a battery.
 type Chemistry int
 
+// Known chemistry types.
 const (
 	_ = Chemistry(iota)
 	LiPo
@@ -551,24 +570,31 @@ func (c Chemistry) String() string {
 	return chemistryNames[c]
 }
 
+// Chemistry represents the type of battery being operated on.
 func (s *Status) Chemistry() Chemistry {
 	return Chemistry(s.read1(135))
 }
 
+// Preset is the preset value being executed.
 func (s *Status) Preset() int {
 	return int(s.read1(137))
 }
 
+// ScreenNum is the number of the screen being displayed on the UI.
 func (s *Status) ScreenNum() int {
 	return int(s.read1(139))
 }
 
+// CycleNum is the cycle number the powerlab is currently on during a
+// multi-cycle teset.
 func (s *Status) CycleNum() int {
 	return int(s.read1(142))
 }
 
+// PowerReductionReason tells us why we are using less than full power.
 type PowerReductionReason int
 
+// Reasons we might reduce power.
 const (
 	FullPowerAllowed = PowerReductionReason(iota)
 	InputCurrentLimit
@@ -616,18 +642,22 @@ func (p PowerReductionReason) String() string {
 	return powerReductionReasons[p]
 }
 
+// PowerReductionReason tells us why we are using less than full power.
 func (s *Status) PowerReductionReason() PowerReductionReason {
 	return PowerReductionReason(s.read1(143))
 }
 
+// CRC returned for this status.
 func (s *Status) CRC() uint16 {
 	return s.read2(statusLen - 2)
 }
 
+// ComputeCRC computes a CRC for this status.
 func (s *Status) ComputeCRC() uint16 {
 	return crc16(s[4 : 4+statusLen-2])
 }
 
+// ValidateCRC validates the returned CRC is the same as what we'd calculate.
 func (s *Status) ValidateCRC() error {
 	if s.ComputeCRC() != s.CRC() {
 		return ErrCRC
