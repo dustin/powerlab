@@ -31,6 +31,7 @@ function farray(a, f) {
 
 function updateStatus(dees) {
     if (dees.length == 0) {
+        d3.select("#mode").text("no status");
         return;
     }
 
