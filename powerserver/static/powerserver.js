@@ -7,6 +7,8 @@ var lastStatus = '';
 var batterygauge;
 var cellchart;
 
+var lastReading = new Date();
+
 function sp(d) {
     return d.detected_cell_count + "S" + d.packs + "P";
 }
@@ -31,9 +33,13 @@ function farray(a, f) {
 
 function updateStatus(dees) {
     if (dees.length == 0) {
-        d3.select("#mode").text("no status");
+        if (new Date() - lastReading > 30000) {
+            d3.select("#mode").text("no status");
+        }
         return;
     }
+
+    lastReading = new Date();
 
     $(".modesec").hide();
 
