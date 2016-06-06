@@ -109,12 +109,10 @@ function makeGauge() {
         size: 240,
         label: "",
         min: 0, max: 100,
-        minorTicks: 5
+        minorTicks: 5,
+        yellowZones: [{from: 80, to: 95}],
+        greenZones: [{from: 95, to: 100}]
     }
-
-    var range = config.max - config.min;
-    config.yellowZones = [{ from: config.min + range*0.8, to: config.min + range*0.95 }];
-    config.greenZones = [{ from: config.min + range*0.95, to: config.max }];
 
     var g = new Gauge("chargeGauge", config);
     g.render();
