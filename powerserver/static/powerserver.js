@@ -93,13 +93,13 @@ function updateStatus(dees) {
 }
 
 function updateStatusNow() {
-    d3.json("/statuses?after=" + lastStatus, function(d) {
+    d3.json("/statuses?after=" + lastStatus, function(e, d) {
         if (d) {
             $("body").removeClass('error');
             updateStatus(d);
         } else {
             $("body").addClass('error');
-            console.log("Error updating");
+            console.log("Error updating", e);
         }
     });
 }
