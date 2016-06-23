@@ -43,6 +43,13 @@ function updateStatus(dees) {
 
     $(".modesec").hide();
 
+    if (statuses.length > 0 && statuses[statuses.length-1].ST.charge_sec > dees[0].ST.charge_sec) {
+        console.log("Resetting the statuses since charge time dropped from",
+                    statuses[statuses.length-1].ST.charge_time, "to",
+                    dees[0].ST.charge_time);
+        statuses = [];
+    }
+
     statuses = statuses.concat(dees);
     statuses.sort(function(a, b) { return a.TS < b.TS ? -1 : 1; });
     if (statuses.length > maxStatuses) {
