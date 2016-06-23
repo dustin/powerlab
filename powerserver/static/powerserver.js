@@ -159,7 +159,6 @@ function makeCellChart() {
             }
         }
         seriesData = values;
-        console.log("Drawing", seriesData);
 
         d3.select('#cellChart svg')
             .datum(seriesData)
