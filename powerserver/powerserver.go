@@ -433,7 +433,9 @@ func main() {
 	go statusLogger()
 
 	http.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
-		serveJSON(w, r, getCurrent())
+		if err := serveJSON(w, r, getCurrent()); err != nil {
+			log.Printf("Error serving status json: %v", err)
+		}
 	})
 	http.HandleFunc("/statuses", func(w http.ResponseWriter, r *http.Request) {
 		after, err := timelib.ParseTime(r.FormValue("after"))
@@ -446,7 +448,9 @@ func main() {
 				rv = append(rv, ms)
 			}
 		}
-		serveJSON(w, r, rv)
+		if err := serveJSON(w, r, rv); err != nil {
+			log.Printf("Error serving statuses json: %v", err)
+		}
 	})
 
 	if *logpath != "" {
