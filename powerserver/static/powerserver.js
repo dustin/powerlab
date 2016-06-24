@@ -127,6 +127,16 @@ function makeGauge() {
     return g;
 }
 
+function formatDuration(n) {
+    if (n > 900) {
+        return Math.floor(n/60) + "m";
+    } else if (n > 120) {
+        return Math.floor(n/60) + "m" + (n%60 > 0 ? (n%60) + "s" : "");
+    } else {
+        return n + "s";
+    }
+}
+
 function makeCellChart() {
     var chart;
 
@@ -135,8 +145,8 @@ function makeCellChart() {
             .useInteractiveGuideline(true);
 
         chart.xAxis
-            .axisLabel('Charge Time (s)')
-            .tickFormat(d3.format(',r'));
+            .axisLabel('Charge Time')
+            .tickFormat(formatDuration);
 
         chart.yAxis
             .axisLabel('Voltage (v)')
