@@ -13,10 +13,8 @@ import (
 	"time"
 
 	"github.com/dustin/go-nma"
-	"github.com/dustin/httputil"
 	"github.com/dustin/powerlab"
 	"github.com/dustin/replaykit"
-	"github.com/dustin/seriesly/timelib"
 )
 
 type sample struct {
@@ -419,8 +417,6 @@ func main() {
 		log.Fatalf("invalid log format: %v (must be either json or gob)", *logFormat)
 	}
 
-	expvar.Publish("httpclients", httputil.InitHTTPTracker(false))
-
 	initLogging(*useSyslog)
 
 	log.Printf("Starting powerserver.")
@@ -432,31 +428,7 @@ func main() {
 	}
 	go statusLogger()
 
-	http.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
-		if err := serveJSON(w, r, getCurrent()); err != nil {
-			log.Printf("Error serving status json: %v", err)
-		}
-	})
-	http.HandleFunc("/statuses", func(w http.ResponseWriter, r *http.Request) {
-		after, err := timelib.ParseTime(r.FormValue("after"))
-		if err != nil {
-			after = time.Time{}
-		}
-		rv := []markedStatus{}
-		for _, ms := range allReadings() {
-			if ms.ST != nil && ms.TS.After(after) {
-				rv = append(rv, ms)
-			}
-		}
-		if err := serveJSON(w, r, rv); err != nil {
-			log.Printf("Error serving statuses json: %v", err)
-		}
-	})
-
-	if *logpath != "" {
-		http.Handle("/logs/", http.StripPrefix("/logs/", logHandler{}))
-	}
-	http.Handle("/", http.FileServer(http.Dir(*static)))
+	initWeb()
 
 	log.Fatal(http.ListenAndServe(*bind, nil))
 }
