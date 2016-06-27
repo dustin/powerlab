@@ -337,7 +337,7 @@ type logEvent struct {
 
 func (l logEvent) TS() time.Time { return l.le.Timestamp }
 
-func powerlabPlayback() {
+func powerlabPlaybackOnce() {
 	ls, err := powerlab.NewLogReader(*replayFile)
 	if err != nil {
 		log.Fatalf("Error opening replay file: %v", err)
@@ -370,6 +370,12 @@ func powerlabPlayback() {
 	}))
 
 	log.Printf("Completed replay")
+}
+
+func powerlabPlayback() {
+	for {
+		powerlabPlaybackOnce()
+	}
 }
 
 func statusLogger() {
