@@ -68,6 +68,17 @@ func setCurrent(st *powerlab.Status) {
 	current.mu.Lock()
 	defer current.mu.Unlock()
 
+	var d time.Duration
+	if len(current.vals) > 0 {
+		d = current.vals[current.head].ST.ChargeDuration()
+	}
+
+	if d > st.ChargeDuration() {
+		log.Printf("Resetting stats.  Old duration=%v, new duration=%v", d, st.ChargeDuration())
+		current.vals = nil
+		current.head = 0
+	}
+
 	now := time.Now()
 	if len(current.vals) >= maxReadings {
 		current.head++
