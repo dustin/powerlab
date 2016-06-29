@@ -65,6 +65,10 @@ var (
 )
 
 func setCurrent(st *powerlab.Status) {
+	if st == nil {
+		log.Printf("Setting current to nil?")
+		return
+	}
 	current.mu.Lock()
 	defer current.mu.Unlock()
 
