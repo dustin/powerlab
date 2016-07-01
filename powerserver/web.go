@@ -23,7 +23,7 @@ func initWeb() {
 		if err != nil {
 			after = time.Time{}
 		}
-		rv := []markedStatus{}
+		var rv []markedStatus
 		for _, ms := range allReadings() {
 			if ms.ST != nil && ms.TS.After(after) {
 				rv = append(rv, ms)
