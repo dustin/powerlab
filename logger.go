@@ -42,7 +42,7 @@ func (l *LogEntry) UnmarshalJSON(data []byte) error {
 	l.Raw = led.Raw
 	l.Data = &Status{}
 	if len(l.Data) != len(l.Raw) {
-		return fmt.Errorf("Mismatched data length. Wanted %v, got %v",
+		return fmt.Errorf("mismatched data length (wanted %v, got %v)",
 			len(l.Data), len(l.Raw))
 	}
 	copy((*l.Data)[:], l.Raw)
@@ -67,7 +67,7 @@ func (l *LogEntry) MarshalBinary() (data []byte, err error) {
 // UnmarshalBinary reverses MarshalBinary's encoding.
 func (l *LogEntry) UnmarshalBinary(data []byte) error {
 	if data[0] != logEncodingMagic {
-		return fmt.Errorf("Invalid encoding magic: %x", data[0])
+		return fmt.Errorf("invalid encoding magic: %x", data[0])
 	}
 	if err := l.Timestamp.UnmarshalBinary(data[1:16]); err != nil {
 		return err
@@ -75,7 +75,7 @@ func (l *LogEntry) UnmarshalBinary(data []byte) error {
 
 	l.Data = &Status{}
 	if len(l.Data) != (len(data) - 16) {
-		return fmt.Errorf("Mismatched data length. Wanted %v, got %v",
+		return fmt.Errorf("mismatched data length. Wanted %v, got %v",
 			len(l.Data), len(data)-16)
 	}
 	copy((*l.Data)[:], data[16:])
@@ -164,7 +164,7 @@ func NewLogReaderStream(r io.ReadCloser, f string) (*LogSource, error) {
 	case "json":
 		rv.d = json.NewDecoder(r)
 	default:
-		return nil, fmt.Errorf("Unknown file format (not json or gob): %v", f)
+		return nil, fmt.Errorf("unknown file format (not json or gob): %v", f)
 	}
 
 	return rv, nil
@@ -195,7 +195,7 @@ func NewLogReader(fn string) (*LogSource, error) {
 	}
 
 	lf.Close()
-	return nil, fmt.Errorf("Unknown file format (not json or gob)")
+	return nil, fmt.Errorf("unknown file format (not json or gob)")
 }
 
 var csvFields = []string{
