@@ -172,7 +172,7 @@ function makeCellChart() {
                         values: [],
                     });
                 }
-                values[j].values.push({x: st.charge_sec, y: st.voltage[j]});
+                values[j].values.push({x: st.charge_sec, y: st.voltage[j] || st.max_cell});
             }
         }
         seriesData = values;
