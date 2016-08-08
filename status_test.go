@@ -3,6 +3,7 @@ package powerlab
 import (
 	"fmt"
 	"math"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -204,6 +205,66 @@ func TestJSON(t *testing.T) {
 		t.Fatalf("Error marshaling json: %v", err)
 	}
 	t.Logf("%s", b)
+}
+
+func TestStatusMap(t *testing.T) {
+	m := capturedExemplar.Map()
+
+	exp := map[string]interface{}{
+		"avg_amps":                  0.0,
+		"avg_cell":                  78.7,
+		"bal_pwm":                   []int{0, 0, 0},
+		"balancing":                 true,
+		"battery_neg":               0.08027350427350428,
+		"battery_pos":               1.306556224115027,
+		"charge_complete":           false,
+		"charge_current":            0.5402160864345739,
+		"charge_sec":                10.0,
+		"charge_time":               "10s",
+		"charging":                  true,
+		"chemistry":                 "Lithium Polymer",
+		"cpu_temp":                  31.459182445097966,
+		"cycle_num":                 0,
+		"detected_cell_count":       3,
+		"discharge_amps_set":        0.0,
+		"discharge_pwm":             0,
+		"discharging":               false,
+		"fast_amps":                 0.0,
+		"high_temp":                 false,
+		"ir":                        []float64{0, 0, 0},
+		"mah_in":                    0,
+		"mah_out":                   0,
+		"max_cell":                  3.993435961553489,
+		"mode":                      "charging",
+		"nicd_fallback":             0.0012502930374305166,
+		"out_pos":                   0.25518925518925517,
+		"packs":                     1,
+		"power_reduction_reason":    "Full Power Allowed",
+		"preset_num":                2,
+		"preset_set_amps":           1.5,
+		"reduce_amps":               false,
+		"regen_discharge":           false,
+		"regen_volt_set":            0.0,
+		"safety_charge":             false,
+		"screen_num":                2,
+		"slow_avg_amps":             0.0,
+		"start_avg_cell":            78.7,
+		"start_supply_volts":        12.362119658119658,
+		"supply_amps":               0.0,
+		"supply_volts":              12.178637362637364,
+		"supply_volts_with_current": 12.359252747252746,
+		"sync_pwm_drive":            "buck",
+		"version":                   "1.11",
+		"voltage": []float64{3.9925609216449227,
+			3.9925609216449227, 3.9913109025711453},
+	}
+
+	for k, got := range m {
+		e := exp[k]
+		if !reflect.DeepEqual(got, e) {
+			t.Errorf("On %q, got %#v (%T), wanted %#v (%T)", k, got, got, e, e)
+		}
+	}
 }
 
 func BenchmarkJSONMarshaling(b *testing.B) {
