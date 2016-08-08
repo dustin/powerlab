@@ -1,6 +1,7 @@
 package powerlab
 
 import (
+	"fmt"
 	"math"
 	"testing"
 	"time"
@@ -172,6 +173,14 @@ func TestReading(t *testing.T) {
 	assertEpsilon(t, "IR 2", s.IR(2), 0)
 
 	assert(t, "detected cell count", s.DetectedCellCount(), 3)
+	expCells := []float64{4.2, 3.7, 0}
+	for i, c := range s.CellVoltages() {
+		assertEpsilon(t, fmt.Sprintf("cell[%d]", i), c, expCells[i])
+	}
+	expIR := []float64{10.3, 0, 0}
+	for i, c := range s.IRs() {
+		assertEpsilon(t, fmt.Sprintf("ir[%d]", i), c, expIR[i])
+	}
 	assert(t, "packs", s.Packs(), 6)
 
 	assertEpsilon(t, "maxcell", s.MaxCell(), 4.11)
