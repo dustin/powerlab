@@ -148,6 +148,9 @@ func TestReading(t *testing.T) {
 	if chargeComplete {
 		t.Error("Expected charge not complete")
 	}
+	if s.ChargeComplete() {
+		t.Errorf("s.ChargeComplete() = %v, wanted false", s.ChargeComplete())
+	}
 	if !reduceAmps {
 		t.Error("Expected reduce amps")
 	}
