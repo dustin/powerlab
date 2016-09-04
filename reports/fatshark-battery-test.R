@@ -7,4 +7,6 @@ powerlab.nums$value <- as.numeric(powerlab.nums$value)
 powerlab.nums$cell <- factor(powerlab.nums$cell)
 powerlab.nums <- powerlab.nums[powerlab.nums$value > 0 | !(powerlab.nums$field %in% c('voltage', 'ir')),]
 
-ggplot(powerlab.nums[powerlab.nums$field %in% c('voltage', 'ir', 'avg_amps'),], aes(ts, value, color=cell)) + geom_line() + theme_bw() + labs(x='', y='') + facet_wrap(~field, nrow=3, scales='free_y') + ggtitle('Crappy Fatshark Battery Cycle Test') + guides(color=F)
+ggplot(powerlab.nums[powerlab.nums$field %in% c('voltage', 'ir', 'avg_amps'),], aes(ts, value, color=cell, group=cell)) +
+    geom_line() + theme_bw() + labs(x='', y='') +
+    facet_wrap(~field, nrow=3, scales='free_y') + ggtitle('Crappy Battery Cycle Test') + guides(color=F)
