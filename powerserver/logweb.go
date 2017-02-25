@@ -96,12 +96,6 @@ func showLog(w http.ResponseWriter, r *http.Request) {
 	io.Copy(g, lr)
 }
 
-type dsfio []os.FileInfo
-
-func (d dsfio) Len() int           { return len(d) }
-func (d dsfio) Less(i, j int) bool { return d[i].Name() > d[j].Name() }
-func (d dsfio) Swap(i, j int)      { d[i], d[j] = d[j], d[i] }
-
 type jfio struct {
 	Name    string    `json:"name"`
 	Size    int64     `json:"size"`
@@ -126,7 +120,7 @@ func (logHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	sort.Sort(dsfio(o))
+	sort.Slice(o, func(i, j int) bool { return o[i].Name() > o[j].Name() })
 
 	g := newGzippingWriter(w, r)
 	defer g.Close()
