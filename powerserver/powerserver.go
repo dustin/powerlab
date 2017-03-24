@@ -298,7 +298,9 @@ func powerlabReader() {
 		} else {
 			crcFails = 0
 		}
-		log.Printf("Closed reader loop (retrying): %v", err)
+		if err != io.EOF {
+			log.Printf("Closed reader loop (retrying): %v", err)
+		}
 	}
 }
 
