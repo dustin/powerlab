@@ -309,9 +309,6 @@ func powerLabReaderLoop(ch chan sample) error {
 	}
 	defer pl.Close()
 
-	log.Printf("Started reader")
-	defer log.Printf("Closing reader")
-
 	hardErrors := 0
 	heart := time.NewTicker(*sampleFreq)
 	defer heart.Stop()
@@ -322,10 +319,14 @@ func powerLabReaderLoop(ch chan sample) error {
 			if err != powerlab.ErrTimeout {
 				hardErrors++
 				if hardErrors > 5 {
-					log.Printf("Too many errors getting status.")
+					if err != io.EOF {
+						log.Printf("Too many errors getting status.")
+					}
 					return err
 				}
-				log.Printf("Failed to read status: %v", err)
+				if err != io.EOF {
+					log.Printf("Failed to read status: %v", err)
+				}
 			}
 			continue
 		}
