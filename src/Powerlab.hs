@@ -18,6 +18,7 @@ to_w32 = (toEnum . fromEnum) :: Enum a => a -> Word32
 -- (∧) = (.&.)
 -- (∥) = (.|.)
 
+-- This was ported from https://github.com/dustin/powerlab/blob/master/crc.go
 crc16 :: B.ByteString -> Word16
 crc16 x = let
   perbit a x = (a ≫ 1) ⊕ if odd (x ⊕ a) then 33800 else 0
