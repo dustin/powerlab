@@ -1,6 +1,7 @@
 module StatusTest (tests) where
 
 import Powerlab
+import Powerlab.Status
 
 import Data.Word
 import Data.List
