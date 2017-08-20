@@ -5,6 +5,7 @@ import Powerlab
 import Data.Word
 import Data.List
 import qualified Data.ByteString as B
+import qualified Data.ByteString.Lazy as LB
 import qualified Data.ByteString.Char8 as BC
 
 import Test.HUnit
@@ -1134,10 +1135,10 @@ crc_test_data = [
   ] :: [[Word8]]
 
 testCRCRef =
-  map (\(a, b) -> testCase (show a) $ assertEqual "" b $ crc16 $ B.pack a) $ zip crc_test_data crc_test_results
+  map (\(a, b) -> testCase (show a) $ assertEqual "" b $ crc16 $ LB.pack a) $ zip crc_test_data crc_test_results
 
 testCRC16 =
-  map (\(a, b) -> testCase (show a) $ assertEqual "" b $ crc16 $ BC.pack a) [
+  map (\(a, b) -> testCase (show a) $ assertEqual "" b $ crc16 $ (LB.fromStrict . BC.pack) a) [
   ("testing", 10243),
   ("", 0x1286),
   (['\0'], 0xe12c)]

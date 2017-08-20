@@ -7,18 +7,20 @@ module Powerlab (
 
 import Data.Bits
 import Data.Word
-import qualified Data.ByteString as B
+import Data.Int
+import Data.Binary.Get
+import qualified Data.ByteString.Lazy as B
 
 to_w16 = (toEnum . fromEnum) :: Word8 -> Word16
 
 -- logical symbols since haskell doesn't have them.
-(≫) = shiftR
-(≪) = shiftL
-(⊕) = xor
-(∥) = (.|.)
+(≫) = Data.Bits.shiftR
+(⊕) = Data.Bits.xor
 
 -- Not yet needed, but since I was typing...
--- (∧) = (.&.)
+-- (∧) = Data.Bits.(.&.)
+-- (≪) = Data.Bits.shiftL
+-- (∥) = Data.Bits.(.|.)
 
 -- This was ported from https://github.com/dustin/powerlab/blob/master/crc.go
 crc16 :: B.ByteString -> Word16
@@ -27,16 +29,13 @@ crc16 x = let
   perbyte n b = foldl perbit n [b ≫ x | x <- [0..7]] in
     B.foldl ((. to_w16) . perbyte) 4742 x
 
-read1 :: Int -> B.ByteString -> Word8
+read1 :: Int64 -> B.ByteString -> Word8
 read1 n x = B.index x (4+n)
 
-read2 :: Int -> B.ByteString -> Word16
-read2 n x = let bits = B.unpack $ B.take 2 (B.drop (n + 4) x)
-                a = head bits
-                b = head (drop 1 bits) in
-              ((to_w16 a) ≪ 8) ∥ (to_w16 b)
+read2 :: Int64 -> B.ByteString -> Word16
+read2 n x = flip runGet (B.drop (n+4) x) $ do w <- getWord16be; return w
 
-statusLen = 149
+statusLen = 149 :: Int64
 
 verify_pkt :: B.ByteString -> Bool
 verify_pkt d

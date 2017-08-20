@@ -1,6 +1,6 @@
 import Powerlab
 
-import qualified Data.ByteString as B
+import qualified Data.ByteString.Lazy as B
 
 import Criterion
 import Criterion.Main
