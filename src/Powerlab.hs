@@ -21,6 +21,6 @@ to_w32 = (toEnum . fromEnum) :: Enum a => a -> Word32
 -- This was ported from https://github.com/dustin/powerlab/blob/master/crc.go
 crc16 :: B.ByteString -> Word16
 crc16 x = let
-  perbit a x = (a ≫ 1) ⊕ if odd (x ⊕ a) then 33800 else 0
+  perbit a b = (a ≫ 1) ⊕ if odd (b ⊕ a) then 33800 else 0
   perbyte n b = foldl perbit n [(to_w32 b) ≫ x | x <- [0..7]] in
     to_w16 $ B.foldl perbyte 4742 x
