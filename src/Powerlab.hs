@@ -6,8 +6,7 @@ import Data.Bits
 import Data.Word
 import qualified Data.ByteString as B
 
-to_w16 = (toEnum . fromEnum) :: Enum a => a -> Word16
-to_w32 = (toEnum . fromEnum) :: Enum a => a -> Word32
+to_w16 = (toEnum . fromEnum) :: Word8 -> Word16
 
 -- logical symbols since haskell doesn't have them.
 (≫) = shiftR
@@ -23,4 +22,4 @@ crc16 :: B.ByteString -> Word16
 crc16 x = let
   perbit a b = (a ≫ 1) ⊕ if odd (b ⊕ a) then 33800 else 0
   perbyte n b = foldl perbit n [b ≫ x | x <- [0..7]] in
-    to_w16 $ B.foldl ((. to_w32) . perbyte) 4742 x
+    B.foldl ((. to_w16) . perbyte) 4742 x
