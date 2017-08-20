@@ -25,8 +25,9 @@ data PowerReductionReason = FullPowerAllowed
                           | DischargeReduced
                           | Reduce
                           | SupplyLow
+                            deriving(Show, Eq)
 
-data PWMType = Buck | Boost
+data PWMType = Buck | Boost deriving (Show, Eq)
 
 data Chemistry = LiPo
                | LiIon
@@ -39,6 +40,7 @@ data Chemistry = LiPo
                | LiFE
                | Primary
                | PowerSupply
+               deriving(Show, Eq)
 
 data Mode = Unknown         -- = Mode(-1)
           | Ready           -- = Mode(0)
@@ -50,6 +52,7 @@ data Mode = Unknown         -- = Mode(-1)
           | HaltForSafety   -- = Mode(10)
           | PackCoolDown    -- = Mode(11)
           | SystemStopError -- = Mode(99)
+          deriving(Show, Eq, Enum)
 
 
 data Status = Status { avgAmps :: Double
@@ -95,6 +98,7 @@ data Status = Status { avgAmps :: Double
                      , vRAmps :: Double
                      , version :: String
   }
+            deriving(Show)
 
 -- CellVoltage(n Int) Double
 -- IR(cell Int) Double
