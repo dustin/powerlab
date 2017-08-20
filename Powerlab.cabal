@@ -34,6 +34,21 @@ test-suite Powerlab-test
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
 
+benchmark Powerlab-bech
+  type:               exitcode-stdio-1.0
+  hs-source-dirs:     test
+  main-is:            Bench.hs
+  build-depends:      base
+                     , Powerlab
+                     , bytestring
+                     , HUnit
+                     , QuickCheck
+                     , test-framework
+                     , test-framework-hunit, test-framework-quickcheck2
+                     , criterion
+  ghc-options:        -Wall
+                      -O2
+
 source-repository head
   type:     git
   location: https://github.com/dustin/Powerlab
