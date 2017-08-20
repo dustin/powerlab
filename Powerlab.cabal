@@ -23,7 +23,8 @@ library
 test-suite Powerlab-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
-  main-is:             CRCTest.hs
+  main-is:             Main.hs
+  other-modules:       CRCTest
   build-depends:       base
                      , Powerlab
                      , bytestring

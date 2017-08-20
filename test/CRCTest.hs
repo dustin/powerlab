@@ -1,17 +1,16 @@
+module CRCTest (tests) where
+
 import Powerlab
 
 import Data.Word
 import Data.List
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
-import System.Environment (getArgs)
-
 
 import Test.HUnit
 import Test.QuickCheck
 import Test.QuickCheck.Arbitrary
-import Test.Framework (defaultMainWithOpts, interpretArgsOrExit, testGroup)
-import Test.Framework.Runners.Options
+import Test.Framework (testGroup)
 import Test.Framework.Providers.HUnit
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
@@ -1147,6 +1146,3 @@ tests = [
   testGroup "crc16" testCRC16,
   testGroup "crc16 ref" testCRCRef
   ]
-
-main = do opts <- interpretArgsOrExit =<< getArgs
-          defaultMainWithOpts tests opts { ropt_hide_successes = Just True }
