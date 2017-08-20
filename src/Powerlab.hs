@@ -3,6 +3,8 @@ module Powerlab (
   , verify_pkt
   , read1
   , read2
+  , read2s
+  , read4
   ) where
 
 import Data.Bits
@@ -32,8 +34,16 @@ crc16 x = let
 read1 :: Int64 -> B.ByteString -> Word8
 read1 n x = B.index x (4+n)
 
+off o x = B.drop (o+4) x
+
 read2 :: Int64 -> B.ByteString -> Word16
-read2 n x = flip runGet (B.drop (n+4) x) $ do w <- getWord16be; return w
+read2 n x = flip runGet (off n x) $ do w <- getWord16be; return w
+
+read2s :: Int64 -> B.ByteString -> Int16
+read2s n x = flip runGet (off n x) $ do w <- getInt16be; return w
+
+read4 :: Int64 -> B.ByteString -> Word32
+read4 n x = flip runGet (off n x) $ do w <- getWord32be; return w
 
 statusLen = 149 :: Int64
 
