@@ -4,8 +4,10 @@ module Powerlab.Status (
   , Chemistry(..)
   , PWMType(..)
   , Mode(..)
+  , PowerReductionReason(..)
   , version, cell, cells, ir, irs, vr_amps, avg_amps, avg_cell, battery_neg, battery_pos
   , detected_cell_count, cpu_temp, status_flags, charge_complete, chemistry
+  , power_reduction_reason
   ) where
 
 import Data.Bits (shiftL, (.&.))
@@ -34,7 +36,7 @@ data PowerReductionReason = FullPowerAllowed
                           | DischargeReduced
                           | Reduce
                           | SupplyLow
-                            deriving(Show, Eq)
+                            deriving(Show, Enum, Eq)
 
 data PWMType = Buck | Boost deriving (Show, Eq)
 
@@ -92,7 +94,6 @@ data Status = Status {
                      , niCdFallbackV :: Double
                      , outPositive :: Double
                      , packs :: Int
-                     , powerReductionReason :: PowerReductionReason
                      , preset :: Int
                      , presetSetAmps :: Double
                      , regenVoltSet :: Double
@@ -163,3 +164,6 @@ charge_complete st = let (_, r, _) = status_flags st in r
 
 chemistry :: Status -> Chemistry
 chemistry st = (toEnum $ (fromEnum $ read1 135 st) - 1)
+
+power_reduction_reason :: Status -> PowerReductionReason
+power_reduction_reason st = (toEnum $ fromEnum $ read1 143 st)
