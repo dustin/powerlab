@@ -111,7 +111,8 @@ exemplarTests = [
   testCase "" $ St.power_reduction_reason exemplarSt @?= St.FullPowerAllowed,
   testCase "" $ St.charge_duration exemplarSt @?= (duration 30 * 60),
   testCase "" $ St.mode capturedSt @?= St.Charging,
-  testCase "" $ St.mode exemplarSt @?= St.Ready
+  testCase "" $ St.mode exemplarSt @?= St.Ready,
+  testCase "" $ St.sync_pwm_drive exemplarSt @?= St.Buck
                 ]
 
 capturedExemplar = B.pack [

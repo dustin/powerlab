@@ -7,7 +7,7 @@ module Powerlab.Status (
   , PowerReductionReason(..)
   , version, cell, cells, ir, irs, vr_amps, avg_amps, avg_cell, battery_neg, battery_pos
   , detected_cell_count, cpu_temp, status_flags, charge_complete, chemistry
-  , power_reduction_reason, charge_duration, mode
+  , power_reduction_reason, charge_duration, mode, sync_pwm_drive
   ) where
 
 import Data.Bits (shiftL, (.&.))
@@ -116,7 +116,6 @@ data Status = Status {
                      , supplyAmps :: Double
                      , supplyVolts :: Double
                      , supplyVoltsWithCurrent :: Double
-                     , syncPWMDrive :: PWMType
   }
             deriving(Show)
 -}
@@ -186,3 +185,9 @@ charge_duration st = toEnum $ (fromEnum $ read2 28 st) * dt_secs
 
 mode :: Status -> Mode
 mode = mode' . read1 133
+
+sync_pwm_drive :: Status -> PWMType
+sync_pwm_drive st
+  | x > 8192 = Boost
+  | otherwise = Buck
+    where x = read2 18 st
