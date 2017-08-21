@@ -75,7 +75,6 @@ parse b
 
 {-
 data Status = Status {
-                     , cellVoltages :: [Double]
                      , chargeComplete :: Bool
                      , chargeCurrent :: Double
                      , chargeDuration :: DiffTime
