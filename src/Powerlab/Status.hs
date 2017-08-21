@@ -5,7 +5,7 @@ module Powerlab.Status (
   , PWMType
   , Mode
   , version, cell, cells, ir, irs, vr_amps, avg_amps, avg_cell, battery_neg, battery_pos
-  , detected_cell_count
+  , detected_cell_count, cpu_temp
   ) where
 
 import Data.Word
@@ -75,8 +75,6 @@ parse b
 
 {-
 data Status = Status {
-                     , cPUTemp :: Double
-                     , cRC :: Word16
                      , cellVoltages :: [Double]
                      , chargeComplete :: Bool
                      , chargeCurrent :: Double
@@ -150,3 +148,6 @@ battery_neg = (* (46.96 / 4095)) . read2f 100
 
 battery_pos :: Status -> Double
 battery_pos = (/ 12797) . read2f 82
+
+cpu_temp :: Status -> Double
+cpu_temp st = (2.5*(read2f 26 st)/4095 - 0.986) / 0.00355

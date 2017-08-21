@@ -101,7 +101,8 @@ exemplarTests = [
   testCase "avg amps" $ assertApproxEqual "avg amps" ε (1.3*6) $ St.avg_amps exemplarSt,
   testCase "avg cell" $ assertApproxEqual "avg cell" ε 50 $ St.avg_cell exemplarSt,
   testCase "bat neg" $ assertApproxEqual "bat neg" ε 0.080 $ St.battery_neg capturedSt,
-  testCase "bat pos" $ assertApproxEqual "bat pos" ε 1.306 $ St.battery_pos capturedSt
+  testCase "bat pos" $ assertApproxEqual "bat pos" ε 1.306 $ St.battery_pos capturedSt,
+  testCase "CPU temp" $ assertApproxEqual "CPU temp" ε 36.962 $ St.cpu_temp exemplarSt
                 ]
 
 capturedExemplar = B.pack [
