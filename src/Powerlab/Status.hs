@@ -4,7 +4,7 @@ module Powerlab.Status (
   , Chemistry
   , PWMType
   , Mode
-  , version, cell, cells, iR, iRs, vRAmps, avgAmps, avgCell
+  , version, cell, cells, iR, iRs, vRAmps, avgAmps, avgCell, batteryNeg, batteryPos
   ) where
 
 import Data.Word
@@ -74,8 +74,6 @@ parse b
 
 {-
 data Status = Status {
-                     , batteryNeg :: Double
-                     , batteryPos :: Double
                      , cPUTemp :: Double
                      , cRC :: Word16
                      , cellVoltages :: [Double]
@@ -145,3 +143,9 @@ avgAmps = (/ 600) . read2f 42
 
 avgCell :: Status -> Double
 avgCell = (/ 10) . read2f 38
+
+batteryNeg :: Status -> Double
+batteryNeg = (* (46.96 / 4095)) . read2f 100
+
+batteryPos :: Status -> Double
+batteryPos = (/ 12797) . read2f 82

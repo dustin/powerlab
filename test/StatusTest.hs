@@ -84,6 +84,8 @@ exemplar = B.pack [
 
 exemplarSt = St.parse exemplar
 
+capturedSt = St.parse capturedExemplar
+
 approxl [] [] = True
 approxl (a:as) (b:bs)
   | abs (a - b) > 0.001 = False
@@ -97,7 +99,9 @@ exemplarTests = [
   testCase "cells"   $ assertBool "cells" (approxl [4.2, 3.7, 0] $ St.cells exemplarSt),
   testCase "IRs"     $ assertBool "IRs" (approxl [10.3, 0, 0] $ St.iRs exemplarSt),
   testCase "avg amps" $ assertApproxEqual "avg amps" ε (1.3*6) $ St.avgAmps exemplarSt,
-  testCase "avg cell" $ assertApproxEqual "avg cell" ε 50 $ St.avgCell exemplarSt
+  testCase "avg cell" $ assertApproxEqual "avg cell" ε 50 $ St.avgCell exemplarSt,
+  testCase "bat neg" $ assertApproxEqual "bat neg" ε 0.080 $ St.batteryNeg capturedSt,
+  testCase "bat pos" $ assertApproxEqual "bat pos" ε 1.306 $ St.batteryPos capturedSt
                 ]
 
 capturedExemplar = B.pack [
