@@ -89,11 +89,14 @@ approxl (a:as) (b:bs)
   | abs (a - b) > 0.001 = False
   | otherwise = approxl as bs
 
+ε = 0.001
+
 exemplarTests = [
   testCase "version" $ St.version exemplarSt @?= "3.14",
-  testCase "cell(1)" $ assertApproxEqual "cell(1)" 0.001 4.2 $ St.cell exemplarSt 1,
+  testCase "cell(1)" $ assertApproxEqual "cell(1)" ε 4.2 $ St.cell exemplarSt 1,
   testCase "cells"   $ assertBool "cells" (approxl [4.2, 3.7, 0] $ St.cells exemplarSt),
-  testCase "IRs"     $ assertBool "IRs" (approxl [10.3, 0, 0] $ St.iRs exemplarSt)
+  testCase "IRs"     $ assertBool "IRs" (approxl [10.3, 0, 0] $ St.iRs exemplarSt),
+  testCase "avg amps" $ assertApproxEqual "avg amps" ε (1.3*6) $ St.avgAmps exemplarSt
                 ]
 
 capturedExemplar = B.pack [

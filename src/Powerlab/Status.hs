@@ -4,7 +4,7 @@ module Powerlab.Status (
   , Chemistry
   , PWMType
   , Mode
-  , version, cell, cells, iR, iRs, vRAmps
+  , version, cell, cells, iR, iRs, vRAmps, avgAmps
   ) where
 
 import Data.Word
@@ -73,7 +73,7 @@ parse b
     | otherwise = error "invalid packet"
 
 {-
-data Status = Status { avgAmps :: Double
+data Status = Status {
                      , avgCell :: Double
                      , batteryNeg :: Double
                      , batteryPos :: Double
@@ -140,3 +140,6 @@ vRAmps st = read2f 68 st / 600
 
 iRs :: Status -> [Double]
 iRs st = map (iR st) [1..(detectedCellCount st)]
+
+avgAmps :: Status -> Double
+avgAmps st = read2f 42 st / 600
