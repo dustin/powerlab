@@ -4,7 +4,7 @@ module Powerlab.Status (
   , Chemistry
   , PWMType
   , Mode
-  , version, cell
+  , version, cell, cells
   ) where
 
 import Data.Word
@@ -125,6 +125,12 @@ cell :: Status -> Int -> Double
 cell st n
   | n <= 0 || n > 8 = error "invalid cell number"
   | otherwise = let x = read2f (2* (toEnum . fromEnum)n) st in x * 5.12 / 65535
+
+detectedCellCount :: Status -> Int
+detectedCellCount st = fromEnum $ read1 132 st
+
+cells :: Status -> [Double]
+cells st = map (\c -> cell st c) [1..(1+ detectedCellCount st)]
 
 -- CellVoltage(n Int) Double
 -- IR(cell Int) Double
