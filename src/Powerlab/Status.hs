@@ -136,7 +136,7 @@ iR st n
                   x / 6.3984 / (vRAmps st)
 
 vRAmps :: Status -> Double
-vRAmps st = (read2f 68 st) / 600
+vRAmps st = read2f 68 st / 600
 
 iRs :: Status -> [Double]
 iRs st = map (iR st) [1..(detectedCellCount st)]
