@@ -7,7 +7,7 @@ module Powerlab.Status (
   , PowerReductionReason(..)
   , version, cell, cells, ir, irs, vr_amps, avg_amps, avg_cell, battery_neg, battery_pos
   , detected_cell_count, cpu_temp, status_flags, charge_complete, chemistry
-  , power_reduction_reason, charge_duration
+  , power_reduction_reason, charge_duration, mode
   ) where
 
 import Data.Bits (shiftL, (.&.))
@@ -54,17 +54,29 @@ data Chemistry = LiPo
                | PowerSupply
                deriving(Show, Enum, Eq)
 
-data Mode = Unknown         -- = Mode(-1)
-          | Ready           -- = Mode(0)
-          | DetectingPack   -- = Mode(1)
-          | Charging        -- = Mode(6)
-          | TrickleCharging -- = Mode(7)
-          | Discharging     -- = Mode(8)
-          | Monitoring      -- = Mode(9)
-          | HaltForSafety   -- = Mode(10)
-          | PackCoolDown    -- = Mode(11)
-          | SystemStopError -- = Mode(99)
-          deriving(Show, Eq, Enum)
+data Mode = Unknown
+          | Ready
+          | DetectingPack
+          | Charging
+          | TrickleCharging
+          | Discharging
+          | Monitoring
+          | HaltForSafety
+          | PackCoolDown
+          | SystemStopError
+          deriving(Show, Eq)
+
+mode' :: Word8 -> Mode
+mode' 0  = Ready
+mode' 1  = DetectingPack
+mode' 6  = Charging
+mode' 7  = TrickleCharging
+mode' 8  = Discharging
+mode' 9  = Monitoring
+mode' 10 = HaltForSafety
+mode' 11 = PackCoolDown
+mode' 99 = SystemStopError
+mode' _  = Unknown
 
 newtype Status = Status B.ByteString
 
@@ -90,7 +102,6 @@ data Status = Status {
                      , mAhIn :: Int
                      , mAhOut :: Int
                      , maxCell :: Double
-                     , mode :: Mode
                      , niCdFallbackV :: Double
                      , outPositive :: Double
                      , packs :: Int
@@ -172,3 +183,6 @@ dt_secs = 1000000000000
 
 charge_duration :: Status -> NominalDiffTime
 charge_duration st = toEnum $ (fromEnum $ read2 28 st) * dt_secs
+
+mode :: Status -> Mode
+mode = mode' . read1 133

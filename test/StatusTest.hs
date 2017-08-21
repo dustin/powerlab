@@ -109,7 +109,9 @@ exemplarTests = [
   testCase "" $ assertBool "charging" $ not $ St.charge_complete exemplarSt,
   testCase "" $ St.chemistry capturedSt @?= St.LiPo,
   testCase "" $ St.power_reduction_reason exemplarSt @?= St.FullPowerAllowed,
-  testCase "" $ St.charge_duration exemplarSt @?= (duration 30 * 60)
+  testCase "" $ St.charge_duration exemplarSt @?= (duration 30 * 60),
+  testCase "" $ St.mode capturedSt @?= St.Charging,
+  testCase "" $ St.mode exemplarSt @?= St.Ready
                 ]
 
 capturedExemplar = B.pack [
