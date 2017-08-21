@@ -1,11 +1,11 @@
 module Powerlab.Status (
   Status, statusLen
   , parse, unwrap
-  , Chemistry
-  , PWMType
-  , Mode
+  , Chemistry(..)
+  , PWMType(..)
+  , Mode(..)
   , version, cell, cells, ir, irs, vr_amps, avg_amps, avg_cell, battery_neg, battery_pos
-  , detected_cell_count, cpu_temp, status_flags, charge_complete
+  , detected_cell_count, cpu_temp, status_flags, charge_complete, chemistry
   ) where
 
 import Data.Bits (shiftL, (.&.))
@@ -49,7 +49,7 @@ data Chemistry = LiPo
                | LiFE
                | Primary
                | PowerSupply
-               deriving(Show, Eq)
+               deriving(Show, Enum, Eq)
 
 data Mode = Unknown         -- = Mode(-1)
           | Ready           -- = Mode(0)
@@ -78,7 +78,6 @@ parse b
 data Status = Status {
                      , chargeCurrent :: Double
                      , chargeDuration :: DiffTime
-                     , chemistry :: Chemistry
                      , computeCRC :: Word16
                      , cycleNum :: Int
                      , dischAmpSet :: Double
@@ -161,3 +160,6 @@ status_flags st = let b = read2 44 st in (bit b 1, bit b 8, bit b 11)
 
 charge_complete :: Status -> Bool
 charge_complete st = let (_, r, _) = status_flags st in r
+
+chemistry :: Status -> Chemistry
+chemistry st = (toEnum $ (fromEnum $ read1 135 st) - 1)

@@ -103,7 +103,8 @@ exemplarTests = [
   testCase "" $ assertApproxEqual "bat neg" ε 0.080 $ St.battery_neg capturedSt,
   testCase "" $ assertApproxEqual "bat pos" ε 1.306 $ St.battery_pos capturedSt,
   testCase "" $ assertApproxEqual "CPU temp" ε 36.962 $ St.cpu_temp exemplarSt,
-  testCase "" $ assertBool "charging" $ not $ St.charge_complete exemplarSt
+  testCase "" $ assertBool "charging" $ not $ St.charge_complete exemplarSt,
+  testCase "" $ St.chemistry capturedSt @?= St.LiPo
                 ]
 
 capturedExemplar = B.pack [
