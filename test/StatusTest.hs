@@ -113,7 +113,11 @@ exemplarTests = [
   testCase "" $ St.mode capturedSt @?= St.Charging,
   testCase "" $ St.mode exemplarSt @?= St.Ready,
   testCase "" $ St.sync_pwm_drive exemplarSt @?= St.Buck,
-  testCase "" $ St.slaves_found exemplarSt @?= []
+  testCase "" $ St.slaves_found exemplarSt @?= [],
+  testCase "" $ assertApproxEqual "charge current" ε (1.3*6) $ St.charge_current exemplarSt,
+  testCase "" $ assertApproxEqual "charge current 2" ε 0.5402 $ St.charge_current capturedSt,
+  testCase "" $ assertApproxEqual "supply V with A" ε 12 $ St.supply_volts_with_current exemplarSt,
+  testCase "" $ assertApproxEqual "supply V with A 2" ε 12.359 $ St.supply_volts_with_current capturedSt
                 ]
 
 capturedExemplar = B.pack [

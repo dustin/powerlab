@@ -8,6 +8,7 @@ module Powerlab.Status (
   , version, cell, cells, ir, irs, vr_amps, avg_amps, avg_cell, battery_neg, battery_pos
   , detected_cell_count, cpu_temp, status_flags, charge_complete, chemistry
   , power_reduction_reason, charge_duration, mode, sync_pwm_drive, slaves_found
+  , charge_current, supply_volts_with_current
   ) where
 
 import Data.Bits (shiftL, (.&.))
@@ -91,7 +92,6 @@ parse b
 
 {-
 data Status = Status {
-                     , chargeCurrent :: Double
                      , cycleNum :: Int
                      , dischAmpSet :: Double
                      , dischargePWM :: Int
@@ -113,7 +113,6 @@ data Status = Status {
                      , startSupplyVolts :: Double
                      , supplyAmps :: Double
                      , supplyVolts :: Double
-                     , supplyVoltsWithCurrent :: Double
   }
             deriving(Show)
 -}
@@ -192,3 +191,9 @@ sync_pwm_drive st
 
 slaves_found :: Status -> [Int]
 slaves_found st = filter (bit b) [1..16] where b = read2 120 st
+
+charge_current :: Status -> Double
+charge_current = (/ 1666) . read2f 20
+
+supply_volts_with_current :: Status -> Double
+supply_volts_with_current st = (read2f 22 st) * 46.96 / 4095 / 16
