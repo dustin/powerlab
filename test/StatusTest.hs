@@ -1,7 +1,7 @@
-module StatusTest (tests) where
+module StatusTest (tests, exemplar) where
 
 import Powerlab
-import Powerlab.Status
+import qualified Powerlab.Status as St
 
 import Data.Word
 import Data.List
@@ -81,6 +81,12 @@ exemplar = B.pack [
   0x09, 0xf5 -- Checksum
   ]
 
+exemplarSt = St.parse exemplar
+
+exemplarTests = [
+  testCase "version" $ St.version exemplarSt @?= "3.14"
+                ]
+
 capturedExemplar = B.pack [
   0x52, 0x61, 0x6d, 0x0, 0x0, 0x6f, 0xc7, 0xa0, 0xc7, 0xa0,
   0xc7, 0x90, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
@@ -98,6 +104,7 @@ capturedExemplar = B.pack [
   0x0, 0x32, 0x3]
 
 tests = [
-  testCase "verify exemplar" (verify_pkt exemplar @?= True),
-  testCase "verify captured" (verify_pkt capturedExemplar @?= True)
+  testCase "verify exemplar" (verify_pkt exemplar St.statusLen @?= True),
+  testCase "verify captured" (verify_pkt capturedExemplar St.statusLen @?= True),
+  testGroup "validate exemplar" exemplarTests
   ]

@@ -5,6 +5,7 @@ module Powerlab (
   , read2
   , read2s
   , read4
+  , PktWrap, unwrap
   ) where
 
 import Data.Bits
@@ -12,6 +13,9 @@ import Data.Word
 import Data.Int
 import Data.Binary.Get
 import qualified Data.ByteString.Lazy as B
+
+class PktWrap a where
+  unwrap :: a -> B.ByteString
 
 to_w16 = (toEnum . fromEnum) :: Word8 -> Word16
 
@@ -31,27 +35,29 @@ crc16 x = let
   perbyte n b = foldl perbit n [b ≫ x | x <- [0..7]] in
     B.foldl ((. to_w16) . perbyte) 4742 x
 
-read1 :: Int64 -> B.ByteString -> Word8
-read1 n x = B.index x (4+n)
+read1 :: PktWrap t => Int64 -> t -> Word8
+read1 n x = B.index (unwrap x) (4+n)
 
-readn :: (Get x) -> Int64 -> B.ByteString -> x
-readn f n l = flip runGet (B.drop (n+4) l) $ do w <- f; return w
+readn :: PktWrap t => (Get x) -> Int64 -> t -> x
+readn f n l = flip runGet (B.drop (n+4) $ unwrap l) $ do w <- f; return w
 
-read2 :: Int64 -> B.ByteString -> Word16
+read2 :: PktWrap t => Int64 -> t -> Word16
 read2 = readn getWord16be
 
-read2s :: Int64 -> B.ByteString -> Int16
+read2s :: PktWrap t => Int64 -> t -> Int16
 read2s = readn getInt16be
 
-read4 :: Int64 -> B.ByteString -> Word32
+read4 :: PktWrap t => Int64 -> t -> Word32
 read4 = readn getWord32be
 
-statusLen = 149 :: Int64
+instance PktWrap B.ByteString where
+  unwrap x = x
 
-verify_pkt :: B.ByteString -> Bool
-verify_pkt d
-  | B.length d /= statusLen + 4 = False
+verify_pkt :: (PktWrap t) => t -> Int64 -> Bool
+verify_pkt p n
+  | B.length d /= n + 4 = False
   | crc16 r == c = True
   | otherwise = error ("computed crc = " ++ (show $ crc16 r) ++ " wanted " ++ (show c))
-  where r = B.take (statusLen - 2) $ B.drop 4 d
-        c = read2 (statusLen - 2) d
+  where d = unwrap p
+        r = B.take (n - 2) $ B.drop 4 d
+        c = read2 (n - 2) d

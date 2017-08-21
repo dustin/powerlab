@@ -1,12 +1,19 @@
 module Powerlab.Status (
-  Status
+  Status, statusLen
+  , parse, unwrap
   , Chemistry
   , PWMType
   , Mode
+  , version
   ) where
 
 import Data.Word
+import Data.Int
 import Data.Time.Clock
+
+import Powerlab
+
+import qualified Data.ByteString.Lazy as B
 
 data PowerReductionReason = FullPowerAllowed
                           | InputCurrentLimit
@@ -54,7 +61,18 @@ data Mode = Unknown         -- = Mode(-1)
           | SystemStopError -- = Mode(99)
           deriving(Show, Eq, Enum)
 
+newtype Status = Status B.ByteString
 
+instance PktWrap Status where
+  unwrap (Status b) = b
+
+statusLen = 149 :: Int64
+
+parse b
+    | verify_pkt b statusLen = Status b
+    | otherwise = error "invalid packet"
+
+{-
 data Status = Status { avgAmps :: Double
                      , avgCell :: Double
                      , batteryNeg :: Double
@@ -96,9 +114,12 @@ data Status = Status { avgAmps :: Double
                      , supplyVoltsWithCurrent :: Double
                      , syncPWMDrive :: PWMType
                      , vRAmps :: Double
-                     , version :: String
   }
             deriving(Show)
+-}
+
+version :: Status -> String
+version xs = let v = read2 0 (unwrap xs) in (show $ v `div` 100) ++ "." ++ (show $ v `mod` 100)
 
 -- CellVoltage(n Int) Double
 -- IR(cell Int) Double
