@@ -4,7 +4,7 @@ module Powerlab.Status (
   , Chemistry
   , PWMType
   , Mode
-  , version
+  , version, cell
   ) where
 
 import Data.Word
@@ -120,6 +120,11 @@ data Status = Status { avgAmps :: Double
 
 version :: Status -> String
 version xs = let v = read2 0 (unwrap xs) in (show $ v `div` 100) ++ "." ++ (show $ v `mod` 100)
+
+cell :: Status -> Int -> Double
+cell st n
+  | n <= 0 || n > 8 = error "invalid cell number"
+  | otherwise = let x = read2f (2* (toEnum . fromEnum)n) st in x * 5.12 / 65535
 
 -- CellVoltage(n Int) Double
 -- IR(cell Int) Double

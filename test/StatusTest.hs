@@ -9,6 +9,7 @@ import qualified Data.ByteString.Lazy as B
 import System.Environment (getArgs)
 
 import Test.HUnit
+import Test.HUnit.Approx
 import Test.QuickCheck
 import Test.QuickCheck.Arbitrary
 import Test.Framework (defaultMainWithOpts, interpretArgsOrExit, testGroup)
@@ -84,7 +85,8 @@ exemplar = B.pack [
 exemplarSt = St.parse exemplar
 
 exemplarTests = [
-  testCase "version" $ St.version exemplarSt @?= "3.14"
+  testCase "version" $ St.version exemplarSt @?= "3.14",
+  testCase "cell(1)" $ assertApproxEqual "cell(1)" 0.001 4.2 $ St.cell exemplarSt 1
                 ]
 
 capturedExemplar = B.pack [
