@@ -96,7 +96,8 @@ exemplarTests = [
   testCase "cell(1)" $ assertApproxEqual "cell(1)" ε 4.2 $ St.cell exemplarSt 1,
   testCase "cells"   $ assertBool "cells" (approxl [4.2, 3.7, 0] $ St.cells exemplarSt),
   testCase "IRs"     $ assertBool "IRs" (approxl [10.3, 0, 0] $ St.iRs exemplarSt),
-  testCase "avg amps" $ assertApproxEqual "avg amps" ε (1.3*6) $ St.avgAmps exemplarSt
+  testCase "avg amps" $ assertApproxEqual "avg amps" ε (1.3*6) $ St.avgAmps exemplarSt,
+  testCase "avg cell" $ assertApproxEqual "avg cell" ε 50 $ St.avgCell exemplarSt
                 ]
 
 capturedExemplar = B.pack [
