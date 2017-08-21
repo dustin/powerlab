@@ -4,7 +4,7 @@ module Powerlab.Status (
   , Chemistry
   , PWMType
   , Mode
-  , version, cell, cells
+  , version, cell, cells, iR, iRs, vRAmps
   ) where
 
 import Data.Word
@@ -86,13 +86,11 @@ data Status = Status { avgAmps :: Double
                      , chemistry :: Chemistry
                      , computeCRC :: Word16
                      , cycleNum :: Int
-                     , detectedCellCount :: Int
                      , dischAmpSet :: Double
                      , dischargePWM :: Int
                      , errorCode :: Int
                      , fastAmps :: Double
                      , highTemp :: Bool
-                     , iRs :: [Double]
                      , mAhIn :: Int
                      , mAhOut :: Int
                      , maxCell :: Double
@@ -113,7 +111,6 @@ data Status = Status { avgAmps :: Double
                      , supplyVolts :: Double
                      , supplyVoltsWithCurrent :: Double
                      , syncPWMDrive :: PWMType
-                     , vRAmps :: Double
   }
             deriving(Show)
 -}
@@ -131,3 +128,15 @@ detectedCellCount st = fromEnum $ read1 132 st
 
 cells :: Status -> [Double]
 cells st = map (cell st) [1..(detectedCellCount st)]
+
+iR :: Status -> Int -> Double
+iR st n
+  | n <= 0 || n > 8 = error "invalid cell number"
+  | otherwise = let x = read2f (50 + (2* (toEnum . fromEnum)n)) st in
+                  x / 6.3984 / (vRAmps st)
+
+vRAmps :: Status -> Double
+vRAmps st = (read2f 68 st) / 600
+
+iRs :: Status -> [Double]
+iRs st = map (iR st) [1..(detectedCellCount st)]
