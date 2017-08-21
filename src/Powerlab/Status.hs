@@ -135,13 +135,13 @@ iR st n
                   x / 6.3984 / (vRAmps st)
 
 vRAmps :: Status -> Double
-vRAmps st = read2f 68 st / 600
+vRAmps = (/ 600) . read2f 68
 
 iRs :: Status -> [Double]
 iRs st = map (iR st) [1..(detectedCellCount st)]
 
 avgAmps :: Status -> Double
-avgAmps st = read2f 42 st / 600
+avgAmps = (/ 600) . read2f 42
 
 avgCell :: Status -> Double
-avgCell st = read2f 38 st / 10
+avgCell = (/ 10) . read2f 38
