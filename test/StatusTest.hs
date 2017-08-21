@@ -97,11 +97,11 @@ exemplarTests = [
   testCase "version" $ St.version exemplarSt @?= "3.14",
   testCase "cell(1)" $ assertApproxEqual "cell(1)" ε 4.2 $ St.cell exemplarSt 1,
   testCase "cells"   $ assertBool "cells" (approxl [4.2, 3.7, 0] $ St.cells exemplarSt),
-  testCase "IRs"     $ assertBool "IRs" (approxl [10.3, 0, 0] $ St.iRs exemplarSt),
-  testCase "avg amps" $ assertApproxEqual "avg amps" ε (1.3*6) $ St.avgAmps exemplarSt,
-  testCase "avg cell" $ assertApproxEqual "avg cell" ε 50 $ St.avgCell exemplarSt,
-  testCase "bat neg" $ assertApproxEqual "bat neg" ε 0.080 $ St.batteryNeg capturedSt,
-  testCase "bat pos" $ assertApproxEqual "bat pos" ε 1.306 $ St.batteryPos capturedSt
+  testCase "IRs"     $ assertBool "IRs" (approxl [10.3, 0, 0] $ St.irs exemplarSt),
+  testCase "avg amps" $ assertApproxEqual "avg amps" ε (1.3*6) $ St.avg_amps exemplarSt,
+  testCase "avg cell" $ assertApproxEqual "avg cell" ε 50 $ St.avg_cell exemplarSt,
+  testCase "bat neg" $ assertApproxEqual "bat neg" ε 0.080 $ St.battery_neg capturedSt,
+  testCase "bat pos" $ assertApproxEqual "bat pos" ε 1.306 $ St.battery_pos capturedSt
                 ]
 
 capturedExemplar = B.pack [

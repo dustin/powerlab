@@ -4,7 +4,8 @@ module Powerlab.Status (
   , Chemistry
   , PWMType
   , Mode
-  , version, cell, cells, iR, iRs, vRAmps, avgAmps, avgCell, batteryNeg, batteryPos
+  , version, cell, cells, ir, irs, vr_amps, avg_amps, avg_cell, battery_neg, battery_pos
+  , detected_cell_count
   ) where
 
 import Data.Word
@@ -120,32 +121,32 @@ cell st n
   | n <= 0 || n > 8 = error "invalid cell number"
   | otherwise = let x = read2f (2* (toEnum . fromEnum)n) st in x * 5.12 / 65535
 
-detectedCellCount :: Status -> Int
-detectedCellCount st = fromEnum $ read1 132 st
+detected_cell_count :: Status -> Int
+detected_cell_count st = fromEnum $ read1 132 st
 
 cells :: Status -> [Double]
-cells st = map (cell st) [1..(detectedCellCount st)]
+cells st = map (cell st) [1..(detected_cell_count st)]
 
-iR :: Status -> Int -> Double
-iR st n
+ir :: Status -> Int -> Double
+ir st n
   | n <= 0 || n > 8 = error "invalid cell number"
   | otherwise = let x = read2f (50 + (2* (toEnum . fromEnum)n)) st in
-                  x / 6.3984 / (vRAmps st)
+                  x / 6.3984 / (vr_amps st)
 
-vRAmps :: Status -> Double
-vRAmps = (/ 600) . read2f 68
+vr_amps :: Status -> Double
+vr_amps = (/ 600) . read2f 68
 
-iRs :: Status -> [Double]
-iRs st = map (iR st) [1..(detectedCellCount st)]
+irs :: Status -> [Double]
+irs st = map (ir st) [1..(detected_cell_count st)]
 
-avgAmps :: Status -> Double
-avgAmps = (/ 600) . read2f 42
+avg_amps :: Status -> Double
+avg_amps = (/ 600) . read2f 42
 
-avgCell :: Status -> Double
-avgCell = (/ 10) . read2f 38
+avg_cell :: Status -> Double
+avg_cell = (/ 10) . read2f 38
 
-batteryNeg :: Status -> Double
-batteryNeg = (* (46.96 / 4095)) . read2f 100
+battery_neg :: Status -> Double
+battery_neg = (* (46.96 / 4095)) . read2f 100
 
-batteryPos :: Status -> Double
-batteryPos = (/ 12797) . read2f 82
+battery_pos :: Status -> Double
+battery_pos = (/ 12797) . read2f 82
