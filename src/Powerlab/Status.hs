@@ -92,7 +92,6 @@ parse b
 {-
 data Status = Status {
                      , chargeCurrent :: Double
-                     , computeCRC :: Word16
                      , cycleNum :: Int
                      , dischAmpSet :: Double
                      , dischargePWM :: Int
