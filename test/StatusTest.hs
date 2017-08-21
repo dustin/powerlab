@@ -97,29 +97,29 @@ approxl (a:as) (b:bs)
 duration x = toEnum (x * 1000000000000) :: NominalDiffTime
 
 exemplarTests = [
-  testCase "" $ St.version exemplarSt @?= "3.14",
-  testCase "" $ assertApproxEqual "cell(1)" ε 4.2 $ St.cell exemplarSt 1,
-  testCase "" $ assertBool "cells" (approxl [4.2, 3.7, 0] $ St.cells exemplarSt),
-  testCase "" $ assertBool "IRs" (approxl [10.3, 0, 0] $ St.irs exemplarSt),
-  testCase "" $ assertApproxEqual "avg amps" ε (1.3*6) $ St.avg_amps exemplarSt,
-  testCase "" $ assertApproxEqual "avg cell" ε 50 $ St.avg_cell exemplarSt,
-  testCase "" $ assertApproxEqual "bat neg" ε 0.080 $ St.battery_neg capturedSt,
-  testCase "" $ assertApproxEqual "bat pos" ε 1.306 $ St.battery_pos capturedSt,
-  testCase "" $ assertApproxEqual "CPU temp" ε 36.962 $ St.cpu_temp exemplarSt,
-  testCase "" $ assertBool "charging" $ not $ St.charge_complete exemplarSt,
-  testCase "" $ St.chemistry capturedSt @?= St.LiPo,
-  testCase "" $ St.power_reduction_reason exemplarSt @?= St.FullPowerAllowed,
-  testCase "" $ St.charge_duration exemplarSt @?= (duration 30 * 60),
-  testCase "" $ St.mode capturedSt @?= St.Charging,
-  testCase "" $ St.mode exemplarSt @?= St.Ready,
-  testCase "" $ St.sync_pwm_drive exemplarSt @?= St.Buck,
-  testCase "" $ St.slaves_found exemplarSt @?= [],
-  testCase "" $ assertApproxEqual "charge current" ε (1.3*6) $ St.charge_current exemplarSt,
-  testCase "" $ assertApproxEqual "charge current 2" ε 0.5402 $ St.charge_current capturedSt,
-  testCase "" $ assertApproxEqual "supply V with A" ε 12 $ St.supply_volts_with_current exemplarSt,
-  testCase "" $ assertApproxEqual "supply V with A 2" ε 12.359 $ St.supply_volts_with_current capturedSt,
-  testCase "" $ assertApproxEqual "supply V" ε 12.1786 $ St.supply_volts capturedSt,
-  testCase "" $ assertApproxEqual "supply A" ε 0 $ St.supply_amps capturedSt
+  St.version exemplarSt @?= "3.14",
+  assertApproxEqual "cell(1)" ε 4.2 $ St.cell exemplarSt 1,
+  assertBool "cells" (approxl [4.2, 3.7, 0] $ St.cells exemplarSt),
+  assertBool "IRs" (approxl [10.3, 0, 0] $ St.irs exemplarSt),
+  assertApproxEqual "avg amps" ε (1.3*6) $ St.avg_amps exemplarSt,
+  assertApproxEqual "avg cell" ε 50 $ St.avg_cell exemplarSt,
+  assertApproxEqual "bat neg" ε 0.080 $ St.battery_neg capturedSt,
+  assertApproxEqual "bat pos" ε 1.306 $ St.battery_pos capturedSt,
+  assertApproxEqual "CPU temp" ε 36.962 $ St.cpu_temp exemplarSt,
+  assertBool "charging" $ not $ St.charge_complete exemplarSt,
+  St.chemistry capturedSt @?= St.LiPo,
+  St.power_reduction_reason exemplarSt @?= St.FullPowerAllowed,
+  St.charge_duration exemplarSt @?= (duration 30 * 60),
+  St.mode capturedSt @?= St.Charging,
+  St.mode exemplarSt @?= St.Ready,
+  St.sync_pwm_drive exemplarSt @?= St.Buck,
+  St.slaves_found exemplarSt @?= [],
+  assertApproxEqual "charge current" ε (1.3*6) $ St.charge_current exemplarSt,
+  assertApproxEqual "charge current 2" ε 0.5402 $ St.charge_current capturedSt,
+  assertApproxEqual "supply V with A" ε 12 $ St.supply_volts_with_current exemplarSt,
+  assertApproxEqual "supply V with A 2" ε 12.359 $ St.supply_volts_with_current capturedSt,
+  assertApproxEqual "supply V" ε 12.1786 $ St.supply_volts capturedSt,
+  assertApproxEqual "supply A" ε 0 $ St.supply_amps capturedSt
                 ]
 
 capturedExemplar = B.pack [
@@ -141,5 +141,5 @@ capturedExemplar = B.pack [
 tests = [
   testCase "verify exemplar" (verify_pkt exemplar St.statusLen @?= True),
   testCase "verify captured" (verify_pkt capturedExemplar St.statusLen @?= True),
-  testGroup "validate exemplar" exemplarTests
+  testGroup "validate exemplar" $ map (testCase "") exemplarTests
   ]
