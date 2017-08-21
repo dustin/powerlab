@@ -5,12 +5,13 @@ module Powerlab.Status (
   , PWMType
   , Mode
   , version, cell, cells, ir, irs, vr_amps, avg_amps, avg_cell, battery_neg, battery_pos
-  , detected_cell_count, cpu_temp
+  , detected_cell_count, cpu_temp, status_flags, charge_complete
   ) where
 
-import Data.Word
+import Data.Bits (shiftL, (.&.))
 import Data.Int
 import Data.Time.Clock
+import Data.Word
 
 import Powerlab
 
@@ -75,7 +76,6 @@ parse b
 
 {-
 data Status = Status {
-                     , chargeComplete :: Bool
                      , chargeCurrent :: Double
                      , chargeDuration :: DiffTime
                      , chemistry :: Chemistry
@@ -150,3 +150,14 @@ battery_pos = (/ 12797) . read2f 82
 
 cpu_temp :: Status -> Double
 cpu_temp st = (2.5*(read2f 26 st)/4095 - 0.986) / 0.00355
+
+-- Weird one-based bit thing from the powerlab spec
+bit :: Word16 -> Int -> Bool
+bit b n = (b .&. (1 `shiftL` (16 - n))) /= 0
+
+-- safetyCharge, chargeComplete, reduceAmps
+status_flags :: Status -> (Bool, Bool, Bool)
+status_flags st = let b = read2 44 st in (bit b 1, bit b 8, bit b 11)
+
+charge_complete :: Status -> Bool
+charge_complete st = let (_, r, _) = status_flags st in r
