@@ -92,7 +92,7 @@ approxl (a:as) (b:bs)
 exemplarTests = [
   testCase "version" $ St.version exemplarSt @?= "3.14",
   testCase "cell(1)" $ assertApproxEqual "cell(1)" 0.001 4.2 $ St.cell exemplarSt 1,
-  testCase "cells"   $ assertBool "cells" (approxl [4.2, 3.7, 0, 0] $ St.cells exemplarSt)
+  testCase "cells"   $ assertBool "cells" (approxl [4.2, 3.7, 0] $ St.cells exemplarSt)
                 ]
 
 capturedExemplar = B.pack [

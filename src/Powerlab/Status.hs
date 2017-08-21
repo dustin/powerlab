@@ -130,8 +130,7 @@ detectedCellCount :: Status -> Int
 detectedCellCount st = fromEnum $ read1 132 st
 
 cells :: Status -> [Double]
-cells st = map (\c -> cell st c) [1..(1+ detectedCellCount st)]
+cells st = map (\c -> cell st c) [1..(detectedCellCount st)]
 
--- CellVoltage(n Int) Double
 -- IR(cell Int) Double
 -- balancePWM(cell Int) Int
