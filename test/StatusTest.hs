@@ -117,7 +117,9 @@ exemplarTests = [
   testCase "" $ assertApproxEqual "charge current" ε (1.3*6) $ St.charge_current exemplarSt,
   testCase "" $ assertApproxEqual "charge current 2" ε 0.5402 $ St.charge_current capturedSt,
   testCase "" $ assertApproxEqual "supply V with A" ε 12 $ St.supply_volts_with_current exemplarSt,
-  testCase "" $ assertApproxEqual "supply V with A 2" ε 12.359 $ St.supply_volts_with_current capturedSt
+  testCase "" $ assertApproxEqual "supply V with A 2" ε 12.359 $ St.supply_volts_with_current capturedSt,
+  testCase "" $ assertApproxEqual "supply V" ε 12.1786 $ St.supply_volts capturedSt,
+  testCase "" $ assertApproxEqual "supply A" ε 0 $ St.supply_amps capturedSt
                 ]
 
 capturedExemplar = B.pack [

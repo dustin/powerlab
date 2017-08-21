@@ -8,7 +8,7 @@ module Powerlab.Status (
   , version, cell, cells, ir, irs, vr_amps, avg_amps, avg_cell, battery_neg, battery_pos
   , detected_cell_count, cpu_temp, status_flags, charge_complete, chemistry
   , power_reduction_reason, charge_duration, mode, sync_pwm_drive, slaves_found
-  , charge_current, supply_volts_with_current
+  , charge_current, supply_volts_with_current, supply_volts, supply_amps
   ) where
 
 import Data.Bits (shiftL, (.&.))
@@ -111,8 +111,6 @@ data Status = Status {
                      , slowAvgAmps :: Double
                      , startAvg :: Double
                      , startSupplyVolts :: Double
-                     , supplyAmps :: Double
-                     , supplyVolts :: Double
   }
             deriving(Show)
 -}
@@ -197,3 +195,9 @@ charge_current = (/ 1666) . read2f 20
 
 supply_volts_with_current :: Status -> Double
 supply_volts_with_current st = (read2f 22 st) * 46.96 / 4095 / 16
+
+supply_volts :: Status -> Double
+supply_volts st = (read2f 24 st) * 46.96 / 4095.0
+
+supply_amps :: Status -> Double
+supply_amps = (/ 150) . read2f 80
