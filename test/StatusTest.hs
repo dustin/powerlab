@@ -112,7 +112,8 @@ exemplarTests = [
   testCase "" $ St.charge_duration exemplarSt @?= (duration 30 * 60),
   testCase "" $ St.mode capturedSt @?= St.Charging,
   testCase "" $ St.mode exemplarSt @?= St.Ready,
-  testCase "" $ St.sync_pwm_drive exemplarSt @?= St.Buck
+  testCase "" $ St.sync_pwm_drive exemplarSt @?= St.Buck,
+  testCase "" $ St.slaves_found exemplarSt @?= []
                 ]
 
 capturedExemplar = B.pack [

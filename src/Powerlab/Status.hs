@@ -7,7 +7,7 @@ module Powerlab.Status (
   , PowerReductionReason(..)
   , version, cell, cells, ir, irs, vr_amps, avg_amps, avg_cell, battery_neg, battery_pos
   , detected_cell_count, cpu_temp, status_flags, charge_complete, chemistry
-  , power_reduction_reason, charge_duration, mode, sync_pwm_drive
+  , power_reduction_reason, charge_duration, mode, sync_pwm_drive, slaves_found
   ) where
 
 import Data.Bits (shiftL, (.&.))
@@ -109,7 +109,6 @@ data Status = Status {
                      , presetSetAmps :: Double
                      , regenVoltSet :: Double
                      , screenNum :: Int
-                     , slavesFound :: [Int]
                      , slowAvgAmps :: Double
                      , startAvg :: Double
                      , startSupplyVolts :: Double
@@ -191,3 +190,6 @@ sync_pwm_drive st
   | x > 8192 = Boost
   | otherwise = Buck
     where x = read2 18 st
+
+slaves_found :: Status -> [Int]
+slaves_found st = filter (bit b) [1..16] where b = read2 120 st
