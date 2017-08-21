@@ -7,13 +7,14 @@ module Powerlab.Status (
   , PowerReductionReason(..)
   , version, cell, cells, ir, irs, vr_amps, avg_amps, avg_cell, battery_neg, battery_pos
   , detected_cell_count, cpu_temp, status_flags, charge_complete, chemistry
-  , power_reduction_reason
+  , power_reduction_reason, charge_duration
   ) where
 
 import Data.Bits (shiftL, (.&.))
 import Data.Int
 import Data.Time.Clock
 import Data.Word
+import Data.Time
 
 import Powerlab
 
@@ -79,7 +80,6 @@ parse b
 {-
 data Status = Status {
                      , chargeCurrent :: Double
-                     , chargeDuration :: DiffTime
                      , computeCRC :: Word16
                      , cycleNum :: Int
                      , dischAmpSet :: Double
@@ -167,3 +167,8 @@ chemistry st = (toEnum $ (fromEnum $ read1 135 st) - 1)
 
 power_reduction_reason :: Status -> PowerReductionReason
 power_reduction_reason st = (toEnum $ fromEnum $ read1 143 st)
+
+dt_secs = 1000000000000
+
+charge_duration :: Status -> NominalDiffTime
+charge_duration st = toEnum $ (fromEnum $ read2 28 st) * dt_secs

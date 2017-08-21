@@ -29,6 +29,7 @@ test-suite Powerlab-test
   other-modules:       CRCTest, StatusTest
   build-depends:       base
                      , Powerlab
+                     , time
                      , bytestring
                      , HUnit, HUnit-approx
                      , QuickCheck

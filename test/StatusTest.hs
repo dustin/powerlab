@@ -3,6 +3,7 @@ module StatusTest (tests, exemplar) where
 import Powerlab
 import qualified Powerlab.Status as St
 
+import Data.Time
 import Data.Word
 import Data.List
 import qualified Data.ByteString.Lazy as B
@@ -93,6 +94,8 @@ approxl (a:as) (b:bs)
 
 ε = 0.001
 
+duration x = toEnum (x * 1000000000000) :: NominalDiffTime
+
 exemplarTests = [
   testCase "" $ St.version exemplarSt @?= "3.14",
   testCase "" $ assertApproxEqual "cell(1)" ε 4.2 $ St.cell exemplarSt 1,
@@ -105,7 +108,8 @@ exemplarTests = [
   testCase "" $ assertApproxEqual "CPU temp" ε 36.962 $ St.cpu_temp exemplarSt,
   testCase "" $ assertBool "charging" $ not $ St.charge_complete exemplarSt,
   testCase "" $ St.chemistry capturedSt @?= St.LiPo,
-  testCase "" $ St.power_reduction_reason exemplarSt @?= St.FullPowerAllowed
+  testCase "" $ St.power_reduction_reason exemplarSt @?= St.FullPowerAllowed,
+  testCase "" $ St.charge_duration exemplarSt @?= (duration 30 * 60)
                 ]
 
 capturedExemplar = B.pack [
