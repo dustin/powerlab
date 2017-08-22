@@ -125,7 +125,8 @@ exemplarTests = [
   St.cycle_num exemplarSt @?= 0,
   St.packs exemplarSt @?= 6,
   St.mah_in exemplarSt @?= 1172,
-  St.mah_out exemplarSt @?= 0
+  St.mah_out exemplarSt @?= 0,
+  St.discharge_pwm exemplarSt @?= 0
                 ]
 
 capturedExemplar = B.pack [
