@@ -125,6 +125,7 @@ exemplarTests = [
   assertApproxEqual "fast amps" ε (1.3*6) $ St.fast_amps exemplarSt,
   assertApproxEqual "max cell" ε 4.11 $ St.max_cell exemplarSt,
   assertApproxEqual "nicd fallback v" ε 0.67 $ St.nicd_fallback_v exemplarSt,
+  assertApproxEqual "out positive" ε (4.2*3) $ St.out_positive exemplarSt,
   St.cycle_num exemplarSt @?= 0,
   St.packs exemplarSt @?= 6,
   St.mah_in exemplarSt @?= 1172,

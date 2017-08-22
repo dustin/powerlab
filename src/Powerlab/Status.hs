@@ -12,7 +12,7 @@ module Powerlab.Status (
   , power_reduction_reason, charge_duration, mode, sync_pwm_drive, slaves_found
   , charge_current, supply_volts_with_current, supply_volts, supply_amps, cycle_num
   , slow_avg_amps, packs, mah_in, mah_out, discharge_amp_set, discharge_pwm, error_code
-  , fast_amps, high_temp, max_cell, nicd_fallback_v
+  , fast_amps, high_temp, max_cell, nicd_fallback_v, out_positive
   ) where
 
 import Powerlab
@@ -107,7 +107,6 @@ parse b
 
 {-
 data Status = Status {
-                     , outPositive :: Double
                      , preset :: Int
                      , presetSetAmps :: Double
                      , regenVoltSet :: Double
@@ -272,3 +271,6 @@ max_cell = (/ 12797) . read2f 74
 
 nicd_fallback_v :: Status -> Double
 nicd_fallback_v st = (read2f 70 st) / 12797 - (max_cell st)
+
+out_positive :: Status -> Double
+out_positive = (/ 4095) . read2f 32
