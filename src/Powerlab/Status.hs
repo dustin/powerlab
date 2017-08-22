@@ -11,7 +11,7 @@ module Powerlab.Status (
   , detected_cell_count, cpu_temp, status_flags, charge_complete, chemistry
   , power_reduction_reason, charge_duration, mode, sync_pwm_drive, slaves_found
   , charge_current, supply_volts_with_current, supply_volts, supply_amps, cycle_num
-  , slow_avg_amps, packs, mah_in, mah_out, discharge_amp_set, discharge_pwm
+  , slow_avg_amps, packs, mah_in, mah_out, discharge_amp_set, discharge_pwm, error_code
   ) where
 
 import Powerlab
@@ -106,7 +106,6 @@ parse b
 
 {-
 data Status = Status {
-                     , errorCode :: Int
                      , fastAmps :: Double
                      , highTemp :: Bool
                      , maxCell :: Double
@@ -261,3 +260,6 @@ discharge_amp_set = (/ 600) . read2f 92
 
 discharge_pwm :: Status -> Int
 discharge_pwm st = fromEnum $ read2 94 st
+
+error_code :: Status -> Int
+error_code st = fromEnum $ read1 134 st
