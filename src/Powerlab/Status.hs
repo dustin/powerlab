@@ -11,7 +11,7 @@ module Powerlab.Status (
   , detected_cell_count, cpu_temp, status_flags, charge_complete, chemistry
   , power_reduction_reason, charge_duration, mode, sync_pwm_drive, slaves_found
   , charge_current, supply_volts_with_current, supply_volts, supply_amps, cycle_num
-  , slow_avg_amps, packs, mah_in, mah_out
+  , slow_avg_amps, packs, mah_in, mah_out, discharge_amp_set
   ) where
 
 import Powerlab
@@ -106,7 +106,6 @@ parse b
 
 {-
 data Status = Status {
-                     , dischAmpSet :: Double
                      , dischargePWM :: Int
                      , errorCode :: Int
                      , fastAmps :: Double
@@ -257,3 +256,6 @@ mah_in = (`div` 2160) . fromEnum . read4 34
 
 mah_out :: Status -> Int
 mah_out = (`div` 2160) . fromEnum . read4 84
+
+discharge_amp_set :: Status -> Double
+discharge_amp_set = (/ 600) . read2f 92
