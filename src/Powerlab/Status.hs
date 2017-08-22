@@ -13,6 +13,7 @@ module Powerlab.Status (
   , charge_current, supply_volts_with_current, supply_volts, supply_amps, cycle_num
   , slow_avg_amps, packs, mah_in, mah_out, discharge_amp_set, discharge_pwm, error_code
   , fast_amps, high_temp, max_cell, nicd_fallback_v, out_positive, preset
+  , preset_set_amps
   ) where
 
 import Powerlab
@@ -107,7 +108,6 @@ parse b
 
 {-
 data Status = Status {
-                     , presetSetAmps :: Double
                      , regenVoltSet :: Double
                      , screenNum :: Int
                      , startAvg :: Double
@@ -276,3 +276,6 @@ out_positive = (/ 4095) . read2f 32
 
 preset :: Status -> Int
 preset st = fromEnum $ read1 137 st
+
+preset_set_amps :: Status -> Double
+preset_set_amps = (/ 600) . read2f 118
