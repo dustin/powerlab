@@ -1,4 +1,9 @@
+module Main (main) where
+
 import Powerlab
+import qualified Powerlab.Status as St
+import Data.Aeson
+
 
 import qualified Data.ByteString.Lazy as B
 
@@ -25,7 +30,10 @@ statusTestData = B.pack [
   0x0, 0x1, 0x1, 0x2, 0x0, 0x2, 0x0, 0xc, 0x0, 0x0, 0x0, 0x0,
   0x0, 0x32, 0x3]
 
+statusTestSt = St.parse statusTestData
+
 bench_verify = bench "status verification test" $ whnf verify_pkt statusTestData
 
+bench_status_json = bench "Status -> JSON" $ whnf encode statusTestSt
 
-main = defaultMain [bench_crc16, bench_verify]
+main = defaultMain [bench_crc16, bench_verify, bench_status_json]

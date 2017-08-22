@@ -46,15 +46,15 @@ benchmark Powerlab-bench
   hs-source-dirs:     test
   main-is:            Bench.hs
   build-depends:      base
-                     , Powerlab
-                     , bytestring
-                     , HUnit
-                     , QuickCheck
-                     , test-framework
-                     , test-framework-hunit, test-framework-quickcheck2
-                     , criterion
-  ghc-options:        -Wall
-                      -O2
+                    , Powerlab
+                    , bytestring
+                    , HUnit
+                    , QuickCheck
+                    , aeson
+                    , test-framework
+                    , test-framework-hunit, test-framework-quickcheck2
+                    , criterion
+  ghc-options:        -O2
 
 source-repository head
   type:     git
