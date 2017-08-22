@@ -128,6 +128,7 @@ exemplarTests = [
   assertApproxEqual "out positive" ε (4.2*3) $ St.out_positive exemplarSt,
   assertApproxEqual "preset set amps" ε 1.5 $ St.preset_set_amps capturedSt,
   assertApproxEqual "regen volt set" ε 0 $ St.regen_volt_set exemplarSt,
+  assertApproxEqual "start avg" ε 30 $ St.start_avg exemplarSt,
   St.cycle_num exemplarSt @?= 0,
   St.packs exemplarSt @?= 6,
   St.mah_in exemplarSt @?= 1172,
