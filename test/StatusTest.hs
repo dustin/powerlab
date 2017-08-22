@@ -127,6 +127,7 @@ exemplarTests = [
   assertApproxEqual "nicd fallback v" ε 0.67 $ St.nicd_fallback_v exemplarSt,
   assertApproxEqual "out positive" ε (4.2*3) $ St.out_positive exemplarSt,
   assertApproxEqual "preset set amps" ε 1.5 $ St.preset_set_amps capturedSt,
+  assertApproxEqual "regen volt set" ε 0 $ St.regen_volt_set exemplarSt,
   St.cycle_num exemplarSt @?= 0,
   St.packs exemplarSt @?= 6,
   St.mah_in exemplarSt @?= 1172,
