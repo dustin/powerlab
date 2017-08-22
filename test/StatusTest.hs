@@ -122,7 +122,9 @@ exemplarTests = [
   assertApproxEqual "supply A" ε 0 $ St.supply_amps capturedSt,
   assertApproxEqual "slow avg amps" ε 0 $ St.slow_avg_amps capturedSt,
   St.cycle_num exemplarSt @?= 0,
-  St.packs exemplarSt @?= 6
+  St.packs exemplarSt @?= 6,
+  St.mah_in exemplarSt @?= 1172,
+  St.mah_out exemplarSt @?= 0
                 ]
 
 capturedExemplar = B.pack [

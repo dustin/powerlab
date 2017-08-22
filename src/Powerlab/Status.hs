@@ -9,7 +9,7 @@ module Powerlab.Status (
   , detected_cell_count, cpu_temp, status_flags, charge_complete, chemistry
   , power_reduction_reason, charge_duration, mode, sync_pwm_drive, slaves_found
   , charge_current, supply_volts_with_current, supply_volts, supply_amps, cycle_num
-  , slow_avg_amps, packs
+  , slow_avg_amps, packs, mah_in, mah_out
   ) where
 
 import Data.Bits (shiftL, (.&.))
@@ -98,8 +98,6 @@ data Status = Status {
                      , errorCode :: Int
                      , fastAmps :: Double
                      , highTemp :: Bool
-                     , mAhIn :: Int
-                     , mAhOut :: Int
                      , maxCell :: Double
                      , niCdFallbackV :: Double
                      , outPositive :: Double
@@ -208,3 +206,9 @@ slow_avg_amps = (/ 600) . read2f 116
 
 packs :: Status -> Int
 packs = fromEnum . read1 136
+
+mah_in :: Status -> Int
+mah_in = (`div` 2160) . fromEnum . read4 34
+
+mah_out :: Status -> Int
+mah_out = (`div` 2160) . fromEnum . read4 84
