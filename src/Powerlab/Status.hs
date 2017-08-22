@@ -108,35 +108,50 @@ parse b
 
 instance ToJSON Status where
   toJSON st =
-    object ["version" .= version st,
-            "detected_cell_count" .= detected_cell_count st,
-            "cells" .= cells st,
-            "vr_amps" .= vr_amps st,
-            "irs" .= irs st,
-            "avg_amps" .= avg_amps st,
+    object ["avg_amps" .= avg_amps st,
             "avg_cell" .= avg_cell st,
             "battery_neg" .= battery_neg st,
             "battery_pos" .= battery_pos st,
-            "cpu_temp" .= cpu_temp st,
+            "cells" .= cells st,
             "charge_complete" .= charge_complete st,
-            "chemistry" .= chemistry st,
-            "power_reduction_reason" .= power_reduction_reason st,
-            "charge_duration" .= charge_duration st,
-            "mode" .= mode st,
-            "sync_pwm_drive" .= sync_pwm_drive st,
-            "slaves_found" .= slaves_found st,
             "charge_current" .= charge_current st,
-            "supply_volts_with_current" .= supply_volts_with_current st,
-            "supply_volts" .= supply_volts st,
-            "supply_amps" .= supply_amps st,
+            "charge_duration" .= charge_duration st,
+            "chemistry" .= chemistry st,
+            "cpu_temp" .= cpu_temp st,
             "cycle_num" .= cycle_num st,
-            "slow_avg_amps" .= slow_avg_amps st,
-            "packs" .= packs st,
+            "detected_cell_count" .= detected_cell_count st,
+            "discharge_amp_set" .= discharge_amp_set st,
+            "discharge_pwm" .= discharge_pwm st,
+            "error_code" .= error_code st,
+            "fast_amps" .= fast_amps st,
+            "high_temp" .= high_temp st,
+            "irs" .= irs st,
             "mah_in" .= mah_in st,
-            "mah_out" .= mah_out st
-            ]
+            "mah_out" .= mah_out st,
+            "max_cell" .= max_cell st,
+            "mode" .= mode st,
+            "nicd_fallback_v" .= nicd_fallback_v st,
+            "out_positive" .= out_positive st,
+            "packs" .= packs st,
+            "power_reduction_reason" .= power_reduction_reason st,
+            "preset" .= preset st,
+            "preset_set_amps" .= preset_set_amps st,
+            "regen_volt_set" .= regen_volt_set st,
+            "screen_num" .= screen_num st,
+            "slaves_found" .= slaves_found st,
+            "slow_avg_amps" .= slow_avg_amps st,
+            "start_avg" .= start_avg st,
+            "start_supply_volts" .= start_supply_volts st,
+            "supply_amps" .= supply_amps st,
+            "supply_volts" .= supply_volts st,
+            "supply_volts_with_current" .= supply_volts_with_current st,
+            "sync_pwm_drive" .= sync_pwm_drive st,
+            "version" .= version st,
+            "vr_amps" .= vr_amps st
+           ]
 
--- status_flags :: Status -> (Bool, Bool, Bool)
+-- TODO: status_flags :: Status -> (Bool, Bool, Bool)
+-- TODO: rx_status
 
 version :: Status -> String
 version xs = let v = read2 0 (unwrap xs) in (show $ v `div` 100) ++ "." ++ (show $ v `mod` 100)
