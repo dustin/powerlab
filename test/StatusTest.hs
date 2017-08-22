@@ -122,6 +122,7 @@ exemplarTests = [
   assertApproxEqual "supply A" ε 0 $ St.supply_amps capturedSt,
   assertApproxEqual "slow avg amps" ε 0 $ St.slow_avg_amps capturedSt,
   assertApproxEqual "discharge amp set" ε 0 $ St.discharge_amp_set exemplarSt,
+  assertApproxEqual "fast amps" ε (1.3*6) $ St.fast_amps exemplarSt,
   St.cycle_num exemplarSt @?= 0,
   St.packs exemplarSt @?= 6,
   St.mah_in exemplarSt @?= 1172,
