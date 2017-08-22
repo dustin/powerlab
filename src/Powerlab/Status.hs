@@ -9,6 +9,7 @@ module Powerlab.Status (
   , detected_cell_count, cpu_temp, status_flags, charge_complete, chemistry
   , power_reduction_reason, charge_duration, mode, sync_pwm_drive, slaves_found
   , charge_current, supply_volts_with_current, supply_volts, supply_amps, cycle_num
+  , slow_avg_amps
   ) where
 
 import Data.Bits (shiftL, (.&.))
@@ -107,7 +108,6 @@ data Status = Status {
                      , presetSetAmps :: Double
                      , regenVoltSet :: Double
                      , screenNum :: Int
-                     , slowAvgAmps :: Double
                      , startAvg :: Double
                      , startSupplyVolts :: Double
   }
@@ -203,3 +203,6 @@ supply_amps = (/ 150) . read2f 80
 
 cycle_num :: Status -> Int
 cycle_num st = fromEnum $ read1 142 st
+
+slow_avg_amps :: Status -> Double
+slow_avg_amps = (/ 600) . read2f 116
