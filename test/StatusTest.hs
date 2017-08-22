@@ -71,7 +71,7 @@ exemplar = B.pack [
   3,    -- DetectedCellCount -- 132
   0,    -- Mode -- 133
   0,    -- ErrorCode -- 134
-  0,    -- Chemistry -- 135
+  1,    -- Chemistry -- 135
   6,    -- Packs -- 136
   0,    -- Preset
   0,    -- unused
@@ -80,7 +80,7 @@ exemplar = B.pack [
   0,       -- CycleNumber
   0,       -- PowerReductionReason
   0, 0, 0, -- unused
-  0x09, 0xf5 -- Checksum
+  0x8c, 0xa0 -- Checksum
   ]
 
 exemplarSt = St.parse exemplar
