@@ -132,6 +132,7 @@ exemplarTests = [
   St.mah_out exemplarSt @?= 0,
   St.discharge_pwm exemplarSt @?= 0,
   St.error_code exemplarSt @?= 0,
+  St.preset capturedSt @?= 2,
   assertBool "not high temp" $ not $ St.high_temp capturedSt,
   assertBool "high temp" $ St.high_temp exemplarSt
                 ]
