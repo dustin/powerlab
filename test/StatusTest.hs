@@ -138,6 +138,8 @@ exemplarTests = [
   St.error_code exemplarSt @?= 0,
   St.preset capturedSt @?= 2,
   St.screen_num capturedSt @?= 2,
+  St.status_flags exemplarSt @?= (True, False, True),
+  St.rx_status exemplarSt @?= (True, True, False, True),
   assertBool "not high temp" $ not $ St.high_temp capturedSt,
   assertBool "high temp" $ St.high_temp exemplarSt
                 ]

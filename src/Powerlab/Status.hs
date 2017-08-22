@@ -13,7 +13,7 @@ module Powerlab.Status (
   , charge_current, supply_volts_with_current, supply_volts, supply_amps, cycle_num
   , slow_avg_amps, packs, mah_in, mah_out, discharge_amp_set, discharge_pwm, error_code
   , fast_amps, high_temp, max_cell, nicd_fallback_v, out_positive, preset
-  , preset_set_amps, regen_volt_set, screen_num, start_avg, start_supply_volts
+  , preset_set_amps, regen_volt_set, screen_num, start_avg, start_supply_volts, rx_status
   ) where
 
 import Powerlab
@@ -201,6 +201,10 @@ bit b n = (b .&. (1 `shiftL` (16 - n))) /= 0
 -- safetyCharge, chargeComplete, reduceAmps
 status_flags :: Status -> (Bool, Bool, Bool)
 status_flags st = let b = read2 44 st in (bit b 1, bit b 8, bit b 11)
+
+-- discharge running, regenerative discharge, charge running, balancers running
+rx_status :: Status -> (Bool, Bool, Bool, Bool)
+rx_status st = let b = read2 46 st in (bit b 1, bit b 4, bit b 6, bit b 7)
 
 charge_complete :: Status -> Bool
 charge_complete st = let (_, r, _) = status_flags st in r
