@@ -8,7 +8,7 @@ module Powerlab.Status (
   , version, cell, cells, ir, irs, vr_amps, avg_amps, avg_cell, battery_neg, battery_pos
   , detected_cell_count, cpu_temp, status_flags, charge_complete, chemistry
   , power_reduction_reason, charge_duration, mode, sync_pwm_drive, slaves_found
-  , charge_current, supply_volts_with_current, supply_volts, supply_amps
+  , charge_current, supply_volts_with_current, supply_volts, supply_amps, cycle_num
   ) where
 
 import Data.Bits (shiftL, (.&.))
@@ -92,7 +92,6 @@ parse b
 
 {-
 data Status = Status {
-                     , cycleNum :: Int
                      , dischAmpSet :: Double
                      , dischargePWM :: Int
                      , errorCode :: Int
@@ -201,3 +200,6 @@ supply_volts st = (read2f 24 st) * 46.96 / 4095.0
 
 supply_amps :: Status -> Double
 supply_amps = (/ 150) . read2f 80
+
+cycle_num :: Status -> Int
+cycle_num st = fromEnum $ read1 142 st

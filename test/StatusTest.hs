@@ -119,7 +119,8 @@ exemplarTests = [
   assertApproxEqual "supply V with A" ε 12 $ St.supply_volts_with_current exemplarSt,
   assertApproxEqual "supply V with A 2" ε 12.359 $ St.supply_volts_with_current capturedSt,
   assertApproxEqual "supply V" ε 12.1786 $ St.supply_volts capturedSt,
-  assertApproxEqual "supply A" ε 0 $ St.supply_amps capturedSt
+  assertApproxEqual "supply A" ε 0 $ St.supply_amps capturedSt,
+  St.cycle_num exemplarSt @?= 0
                 ]
 
 capturedExemplar = B.pack [
