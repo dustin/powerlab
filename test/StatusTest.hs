@@ -128,7 +128,9 @@ exemplarTests = [
   St.mah_in exemplarSt @?= 1172,
   St.mah_out exemplarSt @?= 0,
   St.discharge_pwm exemplarSt @?= 0,
-  St.error_code exemplarSt @?= 0
+  St.error_code exemplarSt @?= 0,
+  assertBool "not high temp" $ not $ St.high_temp capturedSt,
+  assertBool "high temp" $ St.high_temp exemplarSt
                 ]
 
 capturedExemplar = B.pack [
