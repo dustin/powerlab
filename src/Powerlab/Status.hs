@@ -13,7 +13,7 @@ module Powerlab.Status (
   , charge_current, supply_volts_with_current, supply_volts, supply_amps, cycle_num
   , slow_avg_amps, packs, mah_in, mah_out, discharge_amp_set, discharge_pwm, error_code
   , fast_amps, high_temp, max_cell, nicd_fallback_v, out_positive, preset
-  , preset_set_amps, regen_volt_set, screen_num, start_avg
+  , preset_set_amps, regen_volt_set, screen_num, start_avg, start_supply_volts
   ) where
 
 import Powerlab
@@ -105,13 +105,6 @@ statusLen = 149 :: Int64
 parse b
     | verify_pkt b statusLen = Status b
     | otherwise = error "invalid packet"
-
-{-
-data Status = Status {
-                     , startSupplyVolts :: Double
-  }
-            deriving(Show)
--}
 
 instance ToJSON Status where
   toJSON st =
@@ -285,3 +278,6 @@ screen_num st = fromEnum $ read1 139 st
 
 start_avg :: Status -> Double
 start_avg = (/ 10) . read2f 40
+
+start_supply_volts :: Status -> Double
+start_supply_volts st = (read2f 104 st) * 46.96 / 4095
