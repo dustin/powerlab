@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Powerlab.Status (
   Status, statusLen
   , parse, unwrap
@@ -12,13 +14,15 @@ module Powerlab.Status (
   , slow_avg_amps, packs, mah_in, mah_out
   ) where
 
+import Powerlab
+
 import Data.Bits (shiftL, (.&.))
 import Data.Int
 import Data.Time.Clock
 import Data.Word
 import Data.Time
-
-import Powerlab
+import Data.Text (Text)
+import Data.Aeson
 
 import qualified Data.ByteString.Lazy as B
 
@@ -41,7 +45,11 @@ data PowerReductionReason = FullPowerAllowed
                           | SupplyLow
                             deriving(Show, Enum, Eq)
 
+instance ToJSON PowerReductionReason where toJSON a = toJSON (show a)
+
 data PWMType = Buck | Boost deriving (Show, Eq)
+
+instance ToJSON PWMType where toJSON a = toJSON (show a)
 
 data Chemistry = LiPo
                | LiIon
@@ -56,6 +64,9 @@ data Chemistry = LiPo
                | PowerSupply
                deriving(Show, Enum, Eq)
 
+instance ToJSON Chemistry where
+  toJSON a = toJSON (show a)
+
 data Mode = Unknown
           | Ready
           | DetectingPack
@@ -67,6 +78,8 @@ data Mode = Unknown
           | PackCoolDown
           | SystemStopError
           deriving(Show, Eq)
+
+instance ToJSON Mode where toJSON a = toJSON (show a)
 
 mode' :: Word8 -> Mode
 mode' 0  = Ready
@@ -110,6 +123,38 @@ data Status = Status {
   }
             deriving(Show)
 -}
+
+instance ToJSON Status where
+  toJSON st =
+    object ["version" .= version st,
+            "detected_cell_count" .= detected_cell_count st,
+            "cells" .= cells st,
+            "vr_amps" .= vr_amps st,
+            "irs" .= irs st,
+            "avg_amps" .= avg_amps st,
+            "avg_cell" .= avg_cell st,
+            "battery_neg" .= battery_neg st,
+            "battery_pos" .= battery_pos st,
+            "cpu_temp" .= cpu_temp st,
+            "charge_complete" .= charge_complete st,
+            "chemistry" .= chemistry st,
+            "power_reduction_reason" .= power_reduction_reason st,
+            "charge_duration" .= charge_duration st,
+            "mode" .= mode st,
+            "sync_pwm_drive" .= sync_pwm_drive st,
+            "slaves_found" .= slaves_found st,
+            "charge_current" .= charge_current st,
+            "supply_volts_with_current" .= supply_volts_with_current st,
+            "supply_volts" .= supply_volts st,
+            "supply_amps" .= supply_amps st,
+            "cycle_num" .= cycle_num st,
+            "slow_avg_amps" .= slow_avg_amps st,
+            "packs" .= packs st,
+            "mah_in" .= mah_in st,
+            "mah_out" .= mah_out st
+            ]
+
+-- status_flags :: Status -> (Bool, Bool, Bool)
 
 version :: Status -> String
 version xs = let v = read2 0 (unwrap xs) in (show $ v `div` 100) ++ "." ++ (show $ v `mod` 100)
