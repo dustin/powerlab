@@ -8,13 +8,13 @@ import Data.Time
 import Numeric (showIntAtBase)
 
 import qualified Data.ByteString.Lazy as B
-import qualified Data.ByteString.Char8 as BC
+import qualified Data.ByteString.Lazy.Char8 as BC
 
 e :: String -> B.ByteString
-e = B.fromStrict . BC.pack
+e = BC.pack
 
-esc :: String -> String
-esc [] = []
+esc :: String -> B.ByteString
+esc [] = B.empty
 esc (x:xs)
   | x == '\n' = b 'n'  xs
   | x == '\\' = b '\\' xs
@@ -23,12 +23,14 @@ esc (x:xs)
   | x == '\f' = b 'f'  xs
   | x == '\t' = b 't'  xs
   | x == '"'  = b '"'  xs
-  | d < 0x1f  = '\\' : 'u' : leftpad (showIntAtBase 16 intToDigit d "") ++ (esc xs)
-  | otherwise = x : esc xs
-  where b c xs = '\\' : c : esc xs
+  | d < 0x1f  = (bs '\\') `B.append` (bs 'u') `B.append` leftpad (showIntAtBase 16 intToDigit d "") `B.append` (esc xs)
+  | otherwise = (bs x) `B.append` esc xs
+  where b c xs = (bs '\\') `B.append` (bs c) `B.append` esc xs
+        leftpad :: String -> B.ByteString
         leftpad s
-          | length s == 4 = s
+          | length s == 4 = e s
           | otherwise = leftpad $ '0' : s
+        bs = BC.singleton
         d = fromEnum x
 
 class ToJSON a where
@@ -40,7 +42,7 @@ class ToJSON a where
 
 instance ToJSON Char where
   toJSON x = toJSONList [x]
-  toJSONList s = e $ "\"" ++ (esc s) ++ "\""
+  toJSONList s = (BC.singleton '"') `B.append` (esc s) `B.append` (BC.singleton '"')
 
 instance ToJSON UTCTime where
   toJSON = toJSON . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
