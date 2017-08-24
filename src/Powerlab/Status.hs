@@ -149,11 +149,14 @@ instance ToJSON Status where
             "supply_volts_with_current" .= supply_volts_with_current st,
             "sync_pwm_drive" .= sync_pwm_drive st,
             "version" .= version st,
-            "vr_amps" .= vr_amps st
+            "vr_amps" .= vr_amps st,
+            "safety_charge" .= (\st -> let (r, _, _) = status_flags st in r) st,
+            "reduce_amps" .= (\st -> let (_, _, r) = status_flags st in r) st,
+            "discharge_running" .= (\st -> let (r, _, _, _) = rx_status st in r) st,
+            "regenerative_discharge" .= (\st -> let (_, r, _, _) = rx_status st in r) st,
+            "charge_running" .= (\st -> let (_, _, r, _) = rx_status st in r) st,
+            "balancers_running" .= (\st -> let (_, _, _, r) = rx_status st in r) st
            ]
-
--- TODO: status_flags :: Status -> (Bool, Bool, Bool)
--- TODO: rx_status
 
 version :: Status -> String
 version xs = let v = read2 0 (unwrap xs) in (show $ v `div` 100) ++ "." ++ (show $ v `mod` 100)
