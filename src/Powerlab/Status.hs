@@ -5,6 +5,7 @@ module Powerlab.Status (
   , parse, unwrap
   , Chemistry(..)
   , PWMType(..)
+  , ToJSON, toJSON, object, (.=)
   , Mode(..)
   , PowerReductionReason(..)
   , version, cell, cells, ir, irs, vr_amps, avg_amps, avg_cell, battery_neg, battery_pos
@@ -17,6 +18,7 @@ module Powerlab.Status (
   ) where
 
 import Powerlab
+import MiniJSON
 
 import Data.Bits (shiftL, (.&.))
 import Data.Int
@@ -24,7 +26,6 @@ import Data.Time.Clock
 import Data.Word
 import Data.Time
 import Data.Text (Text)
-import Data.Aeson
 
 import qualified Data.ByteString.Lazy as B
 
@@ -115,7 +116,8 @@ instance ToJSON Status where
             "cells" .= cells st,
             "charge_complete" .= charge_complete st,
             "charge_current" .= charge_current st,
-            "charge_duration" .= charge_duration st,
+            "charge_sec" .= ((fromEnum $ charge_duration st) `div` 1000000000000),
+            "charge_time" .= (show $ charge_duration st),
             "chemistry" .= chemistry st,
             "cpu_temp" .= cpu_temp st,
             "cycle_num" .= cycle_num st,

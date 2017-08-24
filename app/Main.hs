@@ -4,16 +4,15 @@ import Network.Wai
 import Network.HTTP.Types
 import Network.Wai.Handler.Warp (run)
 
-import qualified Data.ByteString.Lazy as B
-
-import Data.Aeson
 import Data.Time
 import qualified Data.ByteString.Lazy as B
+import qualified Data.ByteString.Char8 as BC
 import Control.Exception
 import Control.Concurrent
 import Control.Concurrent.STM
 
 import Powerlab
+import MiniJSON
 import qualified Powerlab.Status as St
 
 data TSRec = TSRec { ts :: UTCTime, st :: St.Status }

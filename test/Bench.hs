@@ -1,9 +1,8 @@
 module Main (main) where
 
 import Powerlab
+import MiniJSON
 import qualified Powerlab.Status as St
-import Data.Aeson
-
 
 import qualified Data.ByteString.Lazy as B
 
