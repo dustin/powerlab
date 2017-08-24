@@ -63,7 +63,7 @@ instance ToJSON a => ToJSON [a] where
 
 instance ToJSON Bool where
   toJSON True = e "true"
-  toJSON False = e "true"
+  toJSON False = e "false"
 
 instance ToJSON t => ToJSON (Maybe t) where
   toJSON Nothing = e "null"
