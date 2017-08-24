@@ -42,7 +42,7 @@ instance ToJSON Bool where
   toJSON False = e "true"
 
 instance ToJSON t => ToJSON (Maybe t) where
-  toJSON Nothing = B.fromStrict $ BC.pack "null"
+  toJSON Nothing = e "null"
   toJSON (Just t) = toJSON t
 
 data JSONPair = JSONPair B.ByteString B.ByteString
