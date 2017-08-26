@@ -116,7 +116,7 @@ instance ToJSON Status where
             "cells" .= cells st,
             "charge_complete" .= charge_complete st,
             "charge_current" .= charge_current st,
-            "charge_sec" .= ((fromEnum $ charge_duration st) `div` 1000000000000),
+            "charge_sec" .= ((diffTimeToPicoseconds $ charge_duration st) `div` 1000000000000),
             "charge_time" .= (show $ charge_duration st),
             "chemistry" .= chemistry st,
             "cpu_temp" .= cpu_temp st,
@@ -219,8 +219,6 @@ chemistry st = (toEnum $ (fromEnum $ read1 135 st) - 1)
 
 power_reduction_reason :: Status -> PowerReductionReason
 power_reduction_reason st = (toEnum $ fromEnum $ read1 143 st)
-
-dt_secs = 1000000000000
 
 charge_duration :: Status -> DiffTime
 charge_duration st = secondsToDiffTime $ toEnum . fromEnum $ read2 28 st

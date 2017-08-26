@@ -58,6 +58,9 @@ instance ToJSON Double where
 instance ToJSON Int where
   toJSON d = e $ show d
 
+instance ToJSON Integer where
+  toJSON d = e $ show d
+
 instance ToJSON a => ToJSON [a] where
   toJSON = toJSONList
 
