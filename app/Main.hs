@@ -3,6 +3,13 @@
 import Network.Wai
 import Network.HTTP.Types
 import Network.Wai.Handler.Warp (run)
+import WaiAppStatic.Types (unsafeToPiece)
+import Network.Wai.Application.Static (StaticSettings(..)
+                                      , staticApp
+                                      , ssIndices
+                                      , defaultFileServerSettings
+                                      , defaultWebAppSettings )
+
 
 import Data.Time
 import qualified Data.ByteString.Lazy as B
@@ -27,18 +34,11 @@ instance ToJSON TSRec where
 data State = State { current :: Maybe TSRec, recent :: [TSRec] }
 
 -- Application :: Request -> (Response -> IO ResponseReceived) -> IO ResponseReceived
-app :: TVar State -> Application
-app tv request respond = case rawPathInfo request of
-  "/"         -> respond index
+app :: Application -> TVar State -> Application
+app stat tv request respond = case rawPathInfo request of
   "/status"   -> status respond tv
   "/statuses" -> statuses respond tv
-  _           -> respond notFound
-
-notFound :: Response
-notFound = responseLBS
-    status404
-    [("Content-Type", "text/plain")]
-    "404 - Not Found"
+  _           -> stat request respond
 
 get :: TVar State -> IO State
 get tv = atomically $ readTVar tv
@@ -98,18 +98,23 @@ updater tv = do
 newState :: STM (TVar State)
 newState = do x <- newTVar $ State Nothing []; return x
 
-data Options = Options  { optPort :: Int } deriving Show
+data Options = Options  { optPort :: Int
+                        , optStatic :: FilePath } deriving Show
 
 startOptions :: Options
-startOptions = Options  { optPort = 8080 }
+startOptions = Options  { optPort = 8080
+                        , optStatic = "static"}
 
 options :: [ OptDescr (Options -> IO Options) ]
 options =
   [ Option "p" ["port"]
     (ReqArg
-      (\arg opt -> return opt { optPort = read arg })
-      "port")
-    "Port Number"
+      (\arg opt -> return opt { optPort = read arg }) "port")
+    "Port Number",
+    Option "s" ["static"]
+    (ReqArg
+     (\arg opt -> return opt { optStatic = arg }) "static")
+    "Path to static files"
   ]
 
 main :: IO ()
@@ -118,7 +123,9 @@ main = do
   let (opts, misc, errors) = getOpt RequireOrder options args
   opts <- foldl (>>=) (return startOptions) opts
 
+  let statApp = staticApp $ (defaultWebAppSettings (optStatic opts)) {ssIndices = [unsafeToPiece "index.html"]}
+
   tv <- atomically newState
   forkIO $ updater tv
   putStrLn $ "http://localhost:" ++ (show $ optPort opts)
-  run (optPort opts) $ app tv
+  run (optPort opts) $ app statApp tv

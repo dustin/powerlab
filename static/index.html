@@ -1,0 +1,132 @@
+<html>
+  <head>
+    <title>PowerServer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"
+            charset="utf-8"></script>
+    <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="/nv.d3.min.js"></script>
+    <script src="gauge.js"></script>
+    <script src="powerserver.js"></script>
+    <link href="/nv.d3.css" rel="stylesheet" type="text/css">
+    <style type="text/css">
+      html {
+        font-family: 'verdana';
+      }
+
+      body {
+        max-width: 600px;
+      }
+
+      .error {
+        background-color: red;
+      }
+
+      .complete {
+        color: green;
+      }
+
+      #chargeGauge {
+        float: right;
+      }
+
+      .axis path,
+      .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+      }
+
+      .browser text {
+        text-anchor: end;
+      }
+
+      .axis path {
+        display: none;
+      }
+
+      .axis line {
+        shape-rendering: crispEdges;
+        stroke: #000;
+      }
+
+      .axis .minor line {
+        stroke: #777;
+        stroke-dasharray: 2,2;
+      }
+
+      .axis text {
+        font-size: small;
+      }
+
+      .modeimg {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        width: 320px;
+      }
+
+      #cellChart {
+        height: 350px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Mode: <span id="mode"></span></h1>
+    <div class="chart" id="chargeGauge"></div>
+
+    <div class="modesec" style="display: none" id="charging">
+
+      <h2>Chemistry:  <span id="charging-chemistry"></span></h2>
+      <p>
+        Current: <span id="charging-amps"></span><br/>
+        In: <span id="charging-mah"></span><br/>
+        Max Cell: <span id="charging-maxcell"></span><br/>
+        Voltages: <span id="charging-volts"></span><br/>
+        IR: <span id="charging-ir"></span><br/>
+        Time: <span id="charging-time"></span><br/>
+      </p>
+
+      <img class="modeimg" src="charging.jpg" alt="charging" />
+    </div>
+
+    <div class="modesec" style="display: none" id="discharging">
+      <h2>Chemistry:  <span id="discharging-chemistry"></span></h2>
+      <p>
+        Current: <span id="discharging-amps"></span><br/>
+        Out: <span id="discharging-mahout"></span><br/>
+        Max Cell: <span id="discharging-maxcell"></span><br/>
+        Voltages: <span id="discharging-volts"></span><br/>
+        Time: <span id="discharging-time"></span><br/>
+      </p>
+
+      <img class="modeimg" src="discharging.jpg" alt="discharging" />
+    </div>
+
+    <div class="modesec" style="display: none" id="pack-cool-down">
+      <h2>Chemistry:  <span id="pack-cool-down-chemistry"></span></h2>
+      <p>
+        Voltages: <span id="pack-cool-down-volts"></span><br/>
+      </p>
+    </div>
+
+    <div class="modesec" style="display: none" id="monitoring">
+      <h2>Chemistry:  <span id="monitoring-chemistry"></span></h2>
+      <p>
+        Time: <span id="monitoring-time"></span><br/>
+        Max Cell: <span id="monitoring-maxcell"></span><br/>
+        Voltages: <span id="monitoring-volts"></span><br/>
+      </p>
+    </div>
+
+    <div class="cycle-info" style="display: none">
+      Cycle #<span id="cycle-num"></span>
+    </div>
+
+    <div class="chart" id="cellChart"><svg></svg></div>
+  </body>
+
+  <script type="text/javascript">
+    $(powerInit);
+  </script>
+</html>
