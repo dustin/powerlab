@@ -10,6 +10,9 @@ import qualified Data.ByteString.Char8 as BC
 import Control.Exception
 import Control.Concurrent
 import Control.Concurrent.STM
+import System.Environment
+import System.Console.GetOpt
+import Control.Monad
 
 import Powerlab
 import MiniJSON
@@ -95,9 +98,27 @@ updater tv = do
 newState :: STM (TVar State)
 newState = do x <- newTVar $ State Nothing []; return x
 
+data Options = Options  { optPort :: Int } deriving Show
+
+startOptions :: Options
+startOptions = Options  { optPort = 8080 }
+
+options :: [ OptDescr (Options -> IO Options) ]
+options =
+  [ Option "p" ["port"]
+    (ReqArg
+      (\arg opt -> return opt { optPort = read arg })
+      "port")
+    "Port Number"
+  ]
+
 main :: IO ()
 main = do
+  args <- getArgs
+  let (opts, misc, errors) = getOpt RequireOrder options args
+  opts <- foldl (>>=) (return startOptions) opts
+
   tv <- atomically newState
   forkIO $ updater tv
-  putStrLn $ "http://localhost:8080/"
-  run 8080 $ app tv
+  putStrLn $ "http://localhost:" ++ (show $ optPort opts)
+  run (optPort opts) $ app tv
