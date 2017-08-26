@@ -222,8 +222,8 @@ power_reduction_reason st = (toEnum $ fromEnum $ read1 143 st)
 
 dt_secs = 1000000000000
 
-charge_duration :: Status -> NominalDiffTime
-charge_duration st = toEnum $ (fromEnum $ read2 28 st) * dt_secs
+charge_duration :: Status -> DiffTime
+charge_duration st = secondsToDiffTime $ toEnum . fromEnum $ read2 28 st
 
 mode :: Status -> Mode
 mode = mode' . read1 133

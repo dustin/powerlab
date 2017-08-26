@@ -94,7 +94,7 @@ approxl (a:as) (b:bs)
 
 ε = 0.001
 
-duration x = toEnum (x * 1000000000000) :: NominalDiffTime
+duration x = secondsToDiffTime x
 
 exemplarTests = [
   St.version exemplarSt @?= "3.14",
