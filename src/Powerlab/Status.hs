@@ -107,6 +107,9 @@ parse b
     | verify_pkt b statusLen = Status b
     | otherwise = error "invalid packet"
 
+-- pico is 1/thismany
+pico = 1000000000000
+
 instance ToJSON Status where
   toJSON st =
     object ["avg_amps" .= avg_amps st,
@@ -116,7 +119,7 @@ instance ToJSON Status where
             "cells" .= cells st,
             "charge_complete" .= charge_complete st,
             "charge_current" .= charge_current st,
-            "charge_sec" .= ((diffTimeToPicoseconds $ charge_duration st) `div` 1000000000000),
+            "charge_sec" .= ((diffTimeToPicoseconds $ charge_duration st) `div` pico),
             "charge_time" .= (show $ charge_duration st),
             "chemistry" .= chemistry st,
             "cpu_temp" .= cpu_temp st,
