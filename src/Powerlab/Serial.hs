@@ -38,14 +38,13 @@ readStatus s h = do
   return $ St.parse pkt
 
 loop :: MessageHandler -> SerialPort -> IO ()
-loop h s = do
+loop h s = forever $ do
   send s $ statusReq
   r <- readStatus s h :: IO (Either String St.Status)
   case r of
     Left ex -> putStrLn $ "exception parsing data from serial: " ++ (show ex)
     Right st -> h st
   threadDelay 1000000
-  loop h s
 
 withPort :: FilePath -> MessageHandler -> IO ()
 withPort path handler =
