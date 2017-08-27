@@ -53,12 +53,6 @@ statuses respond tv = do
   st <- get tv
   respond $ responseLBS status200 [("Content-Type", "application/json")] $ encode $ recent st
 
-index :: Response
-index = responseLBS
-  status200
-  [("Content-Type", "text/plain")]
-  "Hello, Web!"
-
 setState :: UTCTime -> St.Status -> TVar State -> STM ()
 setState t st tv = do
   State _ l <- readTVar tv
