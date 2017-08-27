@@ -68,6 +68,7 @@ setState t st tv = do
 updater :: TVar State -> FilePath -> IO ()
 updater tv serial = do
   withPort serial (\st -> do
+                      putStrLn $ "Updating with " ++ (show $ encode st)
                       now <- getCurrentTime
                       atomically $ setState now st tv)
 
