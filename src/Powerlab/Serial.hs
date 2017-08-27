@@ -23,7 +23,7 @@ loop :: MessageHandler -> SerialPort -> IO ()
 loop h s = do
   send s $ statusReq
   cmd <- recv s 4
-  if cmd == statusReq then ( readStatus s h ) else (error "misread")
+  if cmd == statusReq then ( readStatus s h ) else (error $ "misread: " ++ (show cmd))
   threadDelay 1000000
   loop h s
 
