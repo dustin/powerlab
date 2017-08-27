@@ -108,7 +108,7 @@ main = do
   let statApp = staticApp $ (defaultWebAppSettings (optStatic opts)) {ssIndices = [unsafeToPiece "index.html"]}
 
   tv <- atomically newState
-  forkFinally (updater tv (optSerial opts)) (\x -> error $ show x)
+  forkFinally (updater tv (optSerial opts)) (\x -> error $ "updater fatality: " ++ (show x))
 
   putStrLn $ "http://localhost:" ++ (show $ optPort opts)
   run (optPort opts) $ app statApp tv
