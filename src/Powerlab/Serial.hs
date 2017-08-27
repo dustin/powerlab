@@ -42,10 +42,10 @@ readStatus s h = do
 loop :: MessageHandler -> SerialPort -> IO ()
 loop h s = do
   send s $ statusReq
-  ok <- try $ evaluate $ readStatus s h :: IO (Either SomeException (IO St.Status))
-  case ok of
+  r <- try $ readStatus s h :: IO (Either SomeException St.Status)
+  case r of
     Left ex -> putStrLn $ "exception parsing data from serial: " ++ (show ex)
-    Right st -> st >>= h
+    Right st -> h st
   threadDelay 1000000
   loop h s
 
