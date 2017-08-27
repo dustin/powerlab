@@ -24,13 +24,13 @@ import Powerlab.Serial
 import MiniJSON
 import qualified Powerlab.Status as St
 
-data TSRec = TSRec { ts :: UTCTime, st :: St.Status }
+data TSRec = TSRec { ts :: !UTCTime, st :: !St.Status }
 
 instance ToJSON TSRec where
 
   toJSON (TSRec ts st) = object ["ts" .= ts, "st" .= st]
 
-data State = State { current :: Maybe TSRec, recent :: [TSRec] }
+data State = State { current :: !(Maybe TSRec), recent :: ![TSRec] }
 
 -- Application :: Request -> (Response -> IO ResponseReceived) -> IO ResponseReceived
 app :: Application -> TVar State -> Application
