@@ -6,6 +6,7 @@ import qualified Powerlab.Status as St
 import Data.Time
 import Data.Word
 import Data.List
+import Data.Either
 import qualified Data.ByteString.Lazy as B
 import System.Environment (getArgs)
 
@@ -83,9 +84,13 @@ exemplar = B.pack [
   0x8c, 0xa0 -- Checksum
   ]
 
-exemplarSt = St.parse exemplar
+exemplarSt = case St.parse exemplar of
+               Left ex -> error ex
+               Right st -> st
 
-capturedSt = St.parse capturedExemplar
+capturedSt = case St.parse capturedExemplar of
+               Left ex -> error ex
+               Right st -> st
 
 approxl [] [] = True
 approxl (a:as) (b:bs)
@@ -161,7 +166,7 @@ capturedExemplar = B.pack [
   0x0, 0x32, 0x3]
 
 tests = [
-  testCase "verify exemplar" (verify_pkt exemplar St.statusLen @?= True),
-  testCase "verify captured" (verify_pkt capturedExemplar St.statusLen @?= True),
+  testCase "verify exemplar" (isRight (verify_pkt exemplar St.statusLen) @?= True),
+  testCase "verify captured" (isRight (verify_pkt capturedExemplar St.statusLen) @?= True),
   testGroup "validate exemplar" $ map (testCase "") exemplarTests
   ]

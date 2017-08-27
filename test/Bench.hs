@@ -29,7 +29,9 @@ statusTestData = B.pack [
   0x0, 0x1, 0x1, 0x2, 0x0, 0x2, 0x0, 0xc, 0x0, 0x0, 0x0, 0x0,
   0x0, 0x32, 0x3]
 
-statusTestSt = St.parse statusTestData
+statusTestSt = case St.parse statusTestData of
+                 Left ex -> error ex
+                 Right st -> st
 
 bench_verify = bench "status verification test" $ whnf verify_pkt statusTestData
 

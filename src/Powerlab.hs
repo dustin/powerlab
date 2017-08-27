@@ -56,11 +56,11 @@ read4 = readn getWord32be
 instance PktWrap B.ByteString where
   unwrap x = x
 
-verify_pkt :: (PktWrap t) => t -> Int64 -> Bool
+verify_pkt :: (PktWrap t) => t -> Int64 -> Either String Bool
 verify_pkt p n
-  | B.length d /= n + 4 = False
-  | crc16 r == c = True
-  | otherwise = error ("computed crc = " ++ (show $ crc16 r) ++ " wanted " ++ (show c))
+  | B.length d /= n + 4 = Left "invalid length"
+  | crc16 r == c = Right True
+  | otherwise = Left ("computed crc = " ++ (show $ crc16 r) ++ " wanted " ++ (show c))
   where d = unwrap p
         r = B.take (n - 2) $ B.drop 4 d
         c = read2 (n - 2) d

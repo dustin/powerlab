@@ -103,9 +103,9 @@ instance PktWrap Status where
 
 statusLen = 149 :: Int64
 
-parse b
-    | verify_pkt b statusLen = Status b
-    | otherwise = error "invalid packet"
+parse b = case verify_pkt b statusLen of
+            Left x -> Left x
+            Right True -> Right $ Status b
 
 -- pico is 1/thismany
 pico = 1000000000000

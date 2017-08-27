@@ -30,19 +30,17 @@ read_full s l = do
   rest <- read_full s $ l - B.length r
   return $ r `B.append` rest
 
-readStatus :: SerialPort -> MessageHandler -> IO St.Status
+readStatus :: SerialPort -> MessageHandler -> IO (Either String St.Status)
 readStatus s h = do
   matched <- read_match 8 s (B.unpack statusReq)
-  when matched $ error "not found"
-
-  d <- read_full s (fromEnum St.statusLen)
+  d <- if matched then read_full s (fromEnum St.statusLen) else evaluate B.empty
   let pkt = (LB.fromStrict $ statusReq `B.append` d)
-  return $ ($!) St.parse pkt
+  return $ St.parse pkt
 
 loop :: MessageHandler -> SerialPort -> IO ()
 loop h s = do
   send s $ statusReq
-  r <- try $ readStatus s h :: IO (Either SomeException St.Status)
+  r <- readStatus s h :: IO (Either String St.Status)
   case r of
     Left ex -> putStrLn $ "exception parsing data from serial: " ++ (show ex)
     Right st -> h st
