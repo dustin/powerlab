@@ -18,6 +18,7 @@ import Control.Concurrent.STM
 import System.Environment
 import System.Console.GetOpt
 import Control.Monad
+import qualified Data.ByteString.Lazy as B
 
 import Powerlab
 import Powerlab.Serial

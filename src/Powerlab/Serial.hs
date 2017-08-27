@@ -4,6 +4,7 @@ module Powerlab.Serial (
 
 import Powerlab
 import qualified Powerlab.Status as St
+import Control.Exception.Base
 import Control.Concurrent
 import Control.Monad
 
@@ -29,18 +30,22 @@ read_full s l = do
   rest <- read_full s $ l - B.length r
   return $ r `B.append` rest
 
-readStatus :: SerialPort -> MessageHandler -> IO ()
+readStatus :: SerialPort -> MessageHandler -> IO St.Status
 readStatus s h = do
   matched <- read_match 8 s (B.unpack statusReq)
-  when matched $ return ()
+  when matched $ error "not found"
 
   d <- read_full s (fromEnum St.statusLen)
-  h $ St.parse (LB.fromStrict $ statusReq `B.append` d)
+  let pkt = (LB.fromStrict $ statusReq `B.append` d)
+  return $ St.parse pkt
 
 loop :: MessageHandler -> SerialPort -> IO ()
 loop h s = do
   send s $ statusReq
-  readStatus s h
+  ok <- try $ evaluate $ readStatus s h :: IO (Either SomeException (IO St.Status))
+  case ok of
+    Left ex -> putStrLn $ "exception parsing data from serial: " ++ (show ex)
+    Right st -> st >>= h
   threadDelay 1000000
   loop h s
 
