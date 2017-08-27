@@ -15,12 +15,13 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Powerlab, MiniJSON, Powerlab.Status
+  exposed-modules:     Powerlab, MiniJSON, Powerlab.Status, Powerlab.Serial
   build-depends:       base >= 4.7 && < 5
                      , bytestring
                      , time
                      , binary
                      , text
+                     , serialport
   default-language:    Haskell2010
 
 executable powerserver

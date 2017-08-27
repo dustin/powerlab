@@ -22,6 +22,7 @@ import System.Console.GetOpt
 import Control.Monad
 
 import Powerlab
+import Powerlab.Serial
 import MiniJSON
 import qualified Powerlab.Status as St
 
@@ -89,21 +90,23 @@ update tv = do
     Left ex -> putStrLn $ "exception parsing data: " ++ (show ex)
     Right newState -> atomically $ setState now newState tv
 
-updater :: TVar State -> IO ()
-updater tv = do
-  update tv
-  threadDelay 5000000
-  updater tv
+updater :: TVar State -> FilePath -> IO ()
+updater tv serial = do
+  withPort serial (\st -> do
+                      now <- getCurrentTime
+                      atomically $ setState now st tv)
 
 newState :: STM (TVar State)
 newState = do x <- newTVar $ State Nothing []; return x
 
 data Options = Options  { optPort :: Int
-                        , optStatic :: FilePath } deriving Show
+                        , optStatic :: FilePath
+                        , optSerial :: FilePath } deriving Show
 
 startOptions :: Options
 startOptions = Options  { optPort = 8080
-                        , optStatic = "static"}
+                        , optStatic = "static"
+                        , optSerial = "" }
 
 options :: [ OptDescr (Options -> IO Options) ]
 options =
@@ -114,7 +117,11 @@ options =
     Option "s" ["static"]
     (ReqArg
      (\arg opt -> return opt { optStatic = arg }) "static")
-    "Path to static files"
+    "Path to static files",
+    Option "S" ["serial"]
+    (ReqArg
+     (\arg opt -> return opt { optSerial = arg }) "serial")
+    "Path to serial port"
   ]
 
 main :: IO ()
@@ -126,6 +133,7 @@ main = do
   let statApp = staticApp $ (defaultWebAppSettings (optStatic opts)) {ssIndices = [unsafeToPiece "index.html"]}
 
   tv <- atomically newState
-  forkIO $ updater tv
+  forkFinally (updater tv (optSerial opts)) (error "Loop failed")
+
   putStrLn $ "http://localhost:" ++ (show $ optPort opts)
   run (optPort opts) $ app statApp tv

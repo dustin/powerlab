@@ -12,6 +12,7 @@ import Data.Word
 import Data.Int
 import Data.Binary.Get
 import qualified Data.ByteString.Lazy as B
+import qualified Data.ByteString.Char8 as BC
 
 class PktWrap a where
   unwrap :: a -> B.ByteString
