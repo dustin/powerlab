@@ -63,7 +63,7 @@ setState :: UTCTime -> St.Status -> TVar State -> STM ()
 setState t st tv = do
   State _ l <- readTVar tv
   let tst = TSRec t st
-  writeTVar tv (State (Just tst) (tst:take 3 l))
+  writeTVar tv (State (Just tst) (tst:take 3600 l))
 
 updater :: TVar State -> FilePath -> IO ()
 updater tv serial = do
