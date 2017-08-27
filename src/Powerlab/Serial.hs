@@ -37,7 +37,7 @@ readStatus s h = do
 
   d <- read_full s (fromEnum St.statusLen)
   let pkt = (LB.fromStrict $ statusReq `B.append` d)
-  return $ St.parse pkt
+  return $ ($!) St.parse pkt
 
 loop :: MessageHandler -> SerialPort -> IO ()
 loop h s = do
