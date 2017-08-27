@@ -22,12 +22,19 @@ read_match ttl s l@(x:xs) = do
   c <- recv s 1
   if (B.head c) == x then read_match (pred ttl) s xs else read_match (pred ttl) s l
 
+read_full :: SerialPort -> Int -> IO B.ByteString
+read_full _ 0 = return B.empty
+read_full s l = do
+  r <- recv s l
+  rest <- read_full s $ l - B.length r
+  return $ r `B.append` rest
+
 readStatus :: SerialPort -> MessageHandler -> IO ()
 readStatus s h = do
   matched <- read_match 8 s (B.unpack statusReq)
   when matched $ return ()
 
-  d <- recv s (fromEnum St.statusLen)
+  d <- read_full s (fromEnum St.statusLen)
   h $ St.parse (LB.fromStrict $ statusReq `B.append` d)
 
 loop :: MessageHandler -> SerialPort -> IO ()
