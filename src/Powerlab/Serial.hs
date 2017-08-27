@@ -35,7 +35,7 @@ readStatus s h = do
   matched <- read_match 8 s (B.unpack statusReq)
   d <- if matched then read_full s (fromEnum St.statusLen) else return B.empty
   let pkt = (LB.fromStrict $ statusReq `B.append` d)
-  return $ St.parse pkt
+  return $! St.parse pkt
 
 loop :: MessageHandler -> SerialPort -> IO ()
 loop h s = forever $ do
