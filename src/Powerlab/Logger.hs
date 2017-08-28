@@ -36,9 +36,7 @@ with_open_logger logger@Logger{logNamer = namer} t a = do
 
 close_logger :: Logger a -> IO (Logger a)
 close_logger logger@Logger{logFile = Nothing} = return logger
-close_logger logger@Logger{logFile = Just h} = do
-  hClose h
-  return logger {logFile = Nothing}
+close_logger logger@Logger{logFile = Just h} = hClose h >> return logger {logFile = Nothing}
 
 log_item :: Logger a -> UTCTime -> a -> IO (Logger a)
 log_item logger@Logger{interesting = filt} t a =
