@@ -1,5 +1,5 @@
 module Powerlab.Logger (
-  Logger, time_fmt_namer, new_logger
+  Logger, time_fmt_namer, new_logger, log_item
   )where
 
 import Data.Time
@@ -9,21 +9,42 @@ import System.IO
 data Logger a = Logger {
   logNamer :: UTCTime -> String
   , logFile :: Maybe Handle
-  , interesting :: a -> Bool
-  , write :: a -> Handle -> IO ()
+  , interesting :: UTCTime -> a -> Bool
+  , write :: UTCTime -> a -> Handle -> IO ()
   }
 
 time_fmt_namer :: String -> UTCTime -> String
 time_fmt_namer = formatTime defaultTimeLocale
 
-new_logger :: (UTCTime -> String) -> (a -> Bool) -> (a -> Handle -> IO ()) -> Logger a
+new_logger :: (UTCTime -> String) -> (UTCTime -> a -> Bool) -> (UTCTime -> a -> Handle -> IO ()) -> Logger a
 new_logger namer filt writer = Logger{logNamer = namer
                                      , logFile = Nothing
                                      , interesting = filt
                                      , write = writer }
 
-log_item :: Logger a -> a -> IO ()
+log_item' :: Logger a -> UTCTime -> a -> IO ()
+log_item' Logger{logFile = Just f, write = w} t a = w t a f
+
+with_open_logger :: Logger a -> UTCTime -> a -> IO (Logger a)
+with_open_logger logger@Logger{logFile = Just _} t a = do
+  log_item logger t a
+  return logger
+with_open_logger logger@Logger{logNamer = namer} t a = do
+  let fn = namer t
+  f <- openFile fn WriteMode
+  let rv = logger {logFile = Just f}
+  log_item' rv t a
+  return rv
+
+close_logger :: Logger a -> IO (Logger a)
+close_logger logger@Logger{logFile = Nothing} = return logger
+close_logger logger@Logger{logFile = Just h} = do
+  hClose h
+  return logger {logFile = Nothing}
+
+log_item :: Logger a -> UTCTime -> a -> IO (Logger a)
 log_item logger@Logger{logNamer = namer
                       , logFile = file
                       , interesting = filt
-                      , write = wf} a = return ()
+                      , write = wf} t a =
+  if (filt t a) then with_open_logger logger t a else close_logger logger

@@ -61,8 +61,8 @@ setState t st tv = do
   let tst = TSRec t st
   writeTVar tv (State (Just tst) (tst:take 3600 l))
 
-log_writer :: St.Status -> Handle -> IO ()
-log_writer st h = do
+log_writer :: UTCTime -> St.Status -> Handle -> IO ()
+log_writer t st h = do
   putStrLn $ "Logging " ++ (show $ encode st)
 
 updater :: TVar State -> Logger St.Status -> FilePath -> IO ()
@@ -115,7 +115,7 @@ main = do
   let statApp = staticApp $ (defaultWebAppSettings (optStatic opts)) {ssIndices = [unsafeToPiece "index.html"]}
 
   tv <- atomically newState
-  let lf = new_logger (time_fmt_namer $ optLogfile opts) (const True) log_writer
+  let lf = new_logger (time_fmt_namer $ optLogfile opts) (const . const True) log_writer
   forkFinally (updater tv lf (optSerial opts)) (\x -> error $ "updater fatality: " ++ (show x))
 
   putStrLn $ "http://localhost:" ++ (show $ optPort opts)
