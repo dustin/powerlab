@@ -39,7 +39,7 @@ read1 :: PktWrap t => Int64 -> t -> Word8
 read1 n x = B.index (unwrap x) (4+n)
 
 readn :: PktWrap t => (Get x) -> Int64 -> t -> x
-readn f n l = flip runGet (B.drop (n+4) $ unwrap l) $ do w <- f; return w
+readn f n l = flip runGet (B.drop (n+4) $ unwrap l) $ f
 
 read2 :: PktWrap t => Int64 -> t -> Word16
 read2 = readn getWord16be
