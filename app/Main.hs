@@ -62,11 +62,10 @@ setState t st tv = do
   writeTVar tv (State (Just tst) (tst:take 3600 l))
 
 log_writer :: UTCTime -> St.Status -> Handle -> IO ()
-log_writer t st h = do
-  B.hPut h $ encode $ TSRec t st
+log_writer t st h = B.hPut h $ encode $ TSRec t st
 
 updater :: TVar State -> Logger St.Status -> FilePath -> IO ()
-updater tv lf serial = do
+updater tv lf serial =
   withPort serial (\st -> do
                       putStrLn $ "Updating with " ++ (show $ encode st)
                       now <- getCurrentTime
@@ -74,7 +73,7 @@ updater tv lf serial = do
                       atomically $ setState now st tv)
 
 newState :: STM (TVar State)
-newState = do x <- newTVar $ State Nothing []; return x
+newState = newTVar $ State Nothing []
 
 data Options = Options  { optPort :: Int
                         , optStatic :: FilePath
