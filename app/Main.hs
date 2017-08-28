@@ -16,12 +16,14 @@ import Control.Exception
 import Control.Concurrent
 import Control.Concurrent.STM
 import System.Environment
+import System.IO
 import System.Console.GetOpt
 import Control.Monad
 import qualified Data.ByteString.Lazy as B
 
 import Powerlab
 import Powerlab.Serial
+import Powerlab.Logger
 import MiniJSON
 import qualified Powerlab.Status as St
 
@@ -59,8 +61,12 @@ setState t st tv = do
   let tst = TSRec t st
   writeTVar tv (State (Just tst) (tst:take 3600 l))
 
-updater :: TVar State -> FilePath -> IO ()
-updater tv serial = do
+log_writer :: St.Status -> Handle -> IO ()
+log_writer st h = do
+  putStrLn $ "Logging " ++ (show $ encode st)
+
+updater :: TVar State -> Logger St.Status -> FilePath -> IO ()
+updater tv lf serial = do
   withPort serial (\st -> do
                       putStrLn $ "Updating with " ++ (show $ encode st)
                       now <- getCurrentTime
@@ -71,12 +77,14 @@ newState = do x <- newTVar $ State Nothing []; return x
 
 data Options = Options  { optPort :: Int
                         , optStatic :: FilePath
-                        , optSerial :: FilePath } deriving Show
+                        , optSerial :: FilePath
+                        , optLogfile :: String } deriving Show
 
 startOptions :: Options
 startOptions = Options  { optPort = 8080
                         , optStatic = "static"
-                        , optSerial = "" }
+                        , optSerial = ""
+                        , optLogfile = "/tmp/%Y%m%dT%H%M%S" }
 
 options :: [ OptDescr (Options -> IO Options) ]
 options =
@@ -91,7 +99,11 @@ options =
     Option "S" ["serial"]
     (ReqArg
      (\arg opt -> return opt { optSerial = arg }) "serial")
-    "Path to serial port"
+    "Path to serial port",
+    Option "L" ["logfile"]
+    (ReqArg
+     (\arg opt -> return opt { optSerial = arg }) "logfile")
+    "Path to timestamped logfile"
   ]
 
 main :: IO ()
@@ -103,7 +115,8 @@ main = do
   let statApp = staticApp $ (defaultWebAppSettings (optStatic opts)) {ssIndices = [unsafeToPiece "index.html"]}
 
   tv <- atomically newState
-  forkFinally (updater tv (optSerial opts)) (\x -> error $ "updater fatality: " ++ (show x))
+  let lf = new_logger (time_fmt_namer $ optLogfile opts) (\_ -> True) log_writer
+  forkFinally (updater tv lf (optSerial opts)) (\x -> error $ "updater fatality: " ++ (show x))
 
   putStrLn $ "http://localhost:" ++ (show $ optPort opts)
   run (optPort opts) $ app statApp tv
