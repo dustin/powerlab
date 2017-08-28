@@ -43,8 +43,5 @@ close_logger logger@Logger{logFile = Just h} = do
   return logger {logFile = Nothing}
 
 log_item :: Logger a -> UTCTime -> a -> IO (Logger a)
-log_item logger@Logger{logNamer = namer
-                      , logFile = file
-                      , interesting = filt
-                      , write = wf} t a =
+log_item logger@Logger{interesting = filt} t a =
   if (filt t a) then with_open_logger logger t a else close_logger logger
