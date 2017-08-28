@@ -63,13 +63,14 @@ setState t st tv = do
 
 log_writer :: UTCTime -> St.Status -> Handle -> IO ()
 log_writer t st h = do
-  putStrLn $ "Logging " ++ (show $ encode st)
+  B.hPut h $ encode $ TSRec t st
 
 updater :: TVar State -> Logger St.Status -> FilePath -> IO ()
 updater tv lf serial = do
   withPort serial (\st -> do
                       putStrLn $ "Updating with " ++ (show $ encode st)
                       now <- getCurrentTime
+                      log_item lf now st
                       atomically $ setState now st tv)
 
 newState :: STM (TVar State)
