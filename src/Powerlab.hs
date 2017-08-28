@@ -17,8 +17,6 @@ import qualified Data.ByteString.Char8 as BC
 class PktWrap a where
   unwrap :: a -> B.ByteString
 
-to_w16 = (toEnum . fromEnum) :: Word8 -> Word16
-
 -- logical symbols since haskell doesn't have them.
 (≫) = Data.Bits.shiftR
 (⊕) = Data.Bits.xor
@@ -33,7 +31,7 @@ crc16 :: B.ByteString -> Word16
 crc16 x = let
   perbit a b = (a ≫ 1) ⊕ if odd (b ⊕ a) then 33800 else 0
   perbyte n b = foldl perbit n [b ≫ x | x <- [0..7]] in
-    B.foldl ((. to_w16) . perbyte) 4742 x
+    B.foldl ((. toEnum . fromEnum) . perbyte) 4742 x
 
 read1 :: PktWrap t => Int64 -> t -> Word8
 read1 n x = B.index (unwrap x) (4+n)
