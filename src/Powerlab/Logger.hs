@@ -26,9 +26,7 @@ log_item' :: Logger a -> UTCTime -> a -> IO ()
 log_item' Logger{logFile = Just f, write = w} t a = w t a f
 
 with_open_logger :: Logger a -> UTCTime -> a -> IO (Logger a)
-with_open_logger logger@Logger{logFile = Just _} t a = do
-  log_item logger t a
-  return logger
+with_open_logger logger@Logger{logFile = Just _} t a = log_item logger t a >> return logger
 with_open_logger logger@Logger{logNamer = namer} t a = do
   let fn = namer t
   f <- openFile fn WriteMode
