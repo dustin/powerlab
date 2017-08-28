@@ -115,7 +115,7 @@ main = do
   let statApp = staticApp $ (defaultWebAppSettings (optStatic opts)) {ssIndices = [unsafeToPiece "index.html"]}
 
   tv <- atomically newState
-  let lf = new_logger (time_fmt_namer $ optLogfile opts) (\_ -> True) log_writer
+  let lf = new_logger (time_fmt_namer $ optLogfile opts) (const True) log_writer
   forkFinally (updater tv lf (optSerial opts)) (\x -> error $ "updater fatality: " ++ (show x))
 
   putStrLn $ "http://localhost:" ++ (show $ optPort opts)
