@@ -110,7 +110,8 @@ options =
 main :: IO ()
 main = do
   args <- getArgs
-  let (opts, misc, errors) = getOpt RequireOrder options args
+  let (opts, misc, errs) = getOpt RequireOrder options args
+  when (errs /= []) $ ioError (userError (concat errs ++ usageInfo "Usage: " options))
   opts <- foldl (>>=) (return startOptions) opts
 
   let statApp = staticApp $ (defaultWebAppSettings (optStatic opts)) {ssIndices = [unsafeToPiece "index.html"]}
