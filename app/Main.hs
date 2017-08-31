@@ -15,6 +15,7 @@ import Data.Time
 import Data.Time.Format
 import Control.Exception
 import Control.Concurrent
+import Control.Concurrent.Async
 import Control.Concurrent.STM
 import System.Environment
 import System.IO
@@ -118,7 +119,7 @@ main = do
 
   tv <- atomically newState
   let lf = new_logger (formatTime defaultTimeLocale $ optLogfile opts) (const . const True) log_writer
-  forkFinally (updater tv lf (optSerial opts)) (\x -> error $ "updater fatality: " ++ (show x))
 
   putStrLn $ "http://localhost:" ++ (show $ optPort opts)
-  run (optPort opts) $ app statApp tv
+
+  race_ (updater tv lf (optSerial opts)) (run (optPort opts) $ app statApp tv)
