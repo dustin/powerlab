@@ -5,7 +5,7 @@ import Data.List (intercalate)
 import Data.Maybe
 import Data.Text (Text, unpack)
 import Data.Time
-import Numeric (showIntAtBase)
+import Numeric (showHex)
 
 import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString.Lazy.Char8 as BC
@@ -25,7 +25,7 @@ esc (x:xs)
   | x == '\f' = b 'f'  xs
   | x == '\t' = b 't'  xs
   | x == '"'  = b '"'  xs
-  | d < 0x1f  = bs '\\' +++ bs 'u' +++ leftpad (showIntAtBase 16 intToDigit d "") +++ esc xs
+  | d < 0x1f  = bs '\\' +++ bs 'u' +++ leftpad (showHex d "") +++ esc xs
   | otherwise = bs x +++ esc xs
   where b c xs = bs '\\' +++ bs c +++ esc xs
         leftpad :: String -> B.ByteString
