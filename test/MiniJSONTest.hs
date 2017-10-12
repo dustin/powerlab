@@ -17,30 +17,30 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 newtype JStr = JStr String
 
 instance Show JStr where
-  show (JStr a) = (show a) ++ " " ++ (show $ map fromEnum a)
+  show (JStr a) = show a ++ " " ++ show (map fromEnum a)
 
 instance Arbitrary JStr where
   arbitrary = do
-    s <- (arbitrary :: Gen String)
+    s <- arbitrary :: Gen String
     return $ JStr $ "\"" ++ s ++ "\""
 
 prop_valid_chars (JStr i) =
   let s = BC.unpack . B.toStrict $ encode i
       h = head s
       t = last s
-      m = take ((length s) - 1) (drop 1 s) in
-    (h == '"') && (t == '"') && (valid m)
+      m = take (length s - 1) (drop 1 s) in
+    (h == '"') && (t == '"') && valid m
   where valid [] = True
         valid (x:xs)
           | fromEnum x < 0x1f = False
           | x == '\\' && valid_escape xs = valid $ skip_escape xs
           | otherwise = valid xs
         valid_escape (x:xs)
-          | elem x "\"\\/bfnrt" = True
-          | x == 'u' = (take 4 xs) \\ "012345689AaBbCcDdEeFf" == ""
+          | x `elem` "\"\\/bfnrt" = True
+          | x == 'u' = take 4 xs \\ "012345689AaBbCcDdEeFf" == ""
           | otherwise = False
         skip_escape (x:xs)
-          | elem x "\"\\/bfnrt" = xs
+          | x `elem` "\"\\/bfnrt" = xs
           | x == 'u' = drop 4 xs
 
 tests = [

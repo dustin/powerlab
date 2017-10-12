@@ -99,7 +99,7 @@ approxl (a:as) (b:bs)
 
 ε = 0.001
 
-duration x = secondsToDiffTime x
+duration = secondsToDiffTime
 
 exemplarTests = [
   St.version exemplarSt @?= "3.14",
