@@ -166,7 +166,7 @@ capturedExemplar = B.pack [
   0x0, 0x32, 0x3]
 
 tests = [
-  testCase "verify exemplar" (isRight (verify_pkt exemplar St.statusLen) @?= True),
-  testCase "verify captured" (isRight (verify_pkt capturedExemplar St.statusLen) @?= True),
+  testCase "verify exemplar" (isRight (verifyPkt exemplar St.statusLen) @?= True),
+  testCase "verify captured" (isRight (verifyPkt capturedExemplar St.statusLen) @?= True),
   testGroup "validate exemplar" $ map (testCase "") exemplarTests
   ]

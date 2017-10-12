@@ -9,7 +9,7 @@ module Powerlab.Status (
   , Mode(..)
   , PowerReductionReason(..)
   , version, cell, cells, ir, irs, vr_amps, avg_amps, avg_cell, battery_neg, battery_pos
-  , detected_cell_count, cpu_temp, status_flags, charge_complete, chemistry
+  , detectedCellCount, cpu_temp, status_flags, charge_complete, chemistry
   , power_reduction_reason, charge_duration, mode, sync_pwm_drive, slaves_found
   , charge_current, supply_volts_with_current, supply_volts, supply_amps, cycle_num
   , slow_avg_amps, packs, mah_in, mah_out, discharge_amp_set, discharge_pwm, error_code
@@ -103,7 +103,7 @@ instance PktWrap Status where
 
 statusLen = 149 :: Int64
 
-parse b = case verify_pkt b statusLen of
+parse b = case verifyPkt b statusLen of
             Left x -> Left x
             Right True -> Right $ Status b
 
@@ -119,12 +119,12 @@ instance ToJSON Status where
             "cells" .= cells st,
             "charge_complete" .= charge_complete st,
             "charge_current" .= charge_current st,
-            "charge_sec" .= ((diffTimeToPicoseconds $ charge_duration st) `div` pico),
-            "charge_time" .= (show $ charge_duration st),
+            "charge_sec" .= (diffTimeToPicoseconds (charge_duration st) `div` pico),
+            "charge_time" .= show (charge_duration st),
             "chemistry" .= chemistry st,
             "cpu_temp" .= cpu_temp st,
             "cycle_num" .= cycle_num st,
-            "detected_cell_count" .= detected_cell_count st,
+            "detected_cell_count" .= detectedCellCount st,
             "discharge_amp_set" .= discharge_amp_set st,
             "discharge_pwm" .= discharge_pwm st,
             "error_code" .= error_code st,
@@ -162,18 +162,18 @@ instance ToJSON Status where
            ]
 
 version :: Status -> String
-version xs = let v = read2 0 (unwrap xs) in (show $ v `div` 100) ++ "." ++ (show $ v `mod` 100)
+version xs = let v = read2 0 (unwrap xs) in show (v `div` 100) ++ "." ++ show (v `mod` 100)
 
 cell :: Status -> Int -> Double
 cell st n
   | n <= 0 || n > 8 = error "invalid cell number"
   | otherwise = let x = read2f (2* (toEnum . fromEnum)n) st in x * 5.12 / 65535
 
-detected_cell_count :: Status -> Int
-detected_cell_count st = fromEnum $ read1 132 st
+detectedCellCount :: Status -> Int
+detectedCellCount st = fromEnum $ read1 132 st
 
 cells :: Status -> [Double]
-cells st = map (cell st) [1..(detected_cell_count st)]
+cells st = map (cell st) [1..(detectedCellCount st)]
 
 ir :: Status -> Int -> Double
 ir st n
@@ -185,7 +185,7 @@ vr_amps :: Status -> Double
 vr_amps = (/ 600) . read2f 68
 
 irs :: Status -> [Double]
-irs st = map (ir st) [1..(detected_cell_count st)]
+irs st = map (ir st) [1..(detectedCellCount st)]
 
 avg_amps :: Status -> Double
 avg_amps = (/ 600) . read2f 42

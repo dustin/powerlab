@@ -47,12 +47,12 @@ app stat tv request respond = case rawPathInfo request of
 get :: TVar State -> IO State
 get tv = atomically $ readTVar tv
 
-status :: (Response -> IO ResponseReceived) -> TVar State -> IO (ResponseReceived)
+status :: (Response -> IO ResponseReceived) -> TVar State -> IO ResponseReceived
 status respond tv = do
   st <- get tv
   respond $ responseLBS status200 [("Content-Type", "application/json")] $ encode $ current st
 
-statuses :: (Response -> IO ResponseReceived) -> TVar State -> IO (ResponseReceived)
+statuses :: (Response -> IO ResponseReceived) -> TVar State -> IO ResponseReceived
 statuses respond tv = do
   st <- get tv
   respond $ responseLBS status200 [("Content-Type", "application/json")] $ encode $ recent st
@@ -63,15 +63,15 @@ setState t st tv = do
   let tst = TSRec t st
   writeTVar tv (State (Just tst) (tst:take 3600 l))
 
-log_writer :: UTCTime -> St.Status -> Handle -> IO ()
-log_writer t st h = B.hPut h $ encode $ TSRec t st
+logWriter :: UTCTime -> St.Status -> Handle -> IO ()
+logWriter t st h = B.hPut h $ encode $ TSRec t st
 
 updater :: TVar State -> Logger St.Status -> FilePath -> IO ()
 updater tv lf serial =
   withPort serial (\st -> do
-                      putStrLn $ "Updating with " ++ (show $ encode st)
+                      putStrLn $ "Updating with " ++ show (encode st)
                       now <- getCurrentTime
-                      log_item lf now st
+                      logItem lf now st
                       atomically $ setState now st tv)
 
 newState :: STM (TVar State)
@@ -118,8 +118,8 @@ main = do
   let statApp = staticApp $ (defaultWebAppSettings (optStatic opts)) {ssIndices = [unsafeToPiece "index.html"]}
 
   tv <- atomically newState
-  let lf = new_logger (formatTime defaultTimeLocale $ optLogfile opts) (const . const True) log_writer
+  let lf = newLogger (formatTime defaultTimeLocale $ optLogfile opts) (const . const True) logWriter
 
-  putStrLn $ "http://localhost:" ++ (show $ optPort opts)
+  putStrLn $ "http://localhost:" ++ show (optPort opts)
 
   race_ (updater tv lf (optSerial opts)) (run (optPort opts) $ app statApp tv)

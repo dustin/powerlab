@@ -1,6 +1,6 @@
 module Powerlab (
     crc16
-  , verify_pkt
+  , verifyPkt
   , read1
   , read2, read2s, read2f
   , read4
@@ -36,8 +36,8 @@ crc16 x = let
 read1 :: PktWrap t => Int64 -> t -> Word8
 read1 n x = B.index (unwrap x) (4+n)
 
-readn :: PktWrap t => (Get x) -> Int64 -> t -> x
-readn f n l = flip runGet (B.drop (n+4) $ unwrap l) $ f
+readn :: PktWrap t => Get x -> Int64 -> t -> x
+readn f n l = runGet f (B.drop (n+4) $ unwrap l)
 
 read2 :: PktWrap t => Int64 -> t -> Word16
 read2 = readn getWord16be
@@ -54,11 +54,11 @@ read4 = readn getWord32be
 instance PktWrap B.ByteString where
   unwrap x = x
 
-verify_pkt :: (PktWrap t) => t -> Int64 -> Either String Bool
-verify_pkt p n
+verifyPkt :: (PktWrap t) => t -> Int64 -> Either String Bool
+verifyPkt p n
   | B.length d /= n + 4 = Left "invalid length"
   | crc16 r == c = Right True
-  | otherwise = Left ("computed crc = " ++ (show $ crc16 r) ++ " wanted " ++ (show c))
+  | otherwise = Left ("computed crc = " ++ show (crc16 r) ++ " wanted " ++ show c)
   where d = unwrap p
         r = B.take (n - 2) $ B.drop 4 d
         c = read2 (n - 2) d

@@ -25,9 +25,9 @@ esc (x:xs)
   | x == '\f' = b 'f'  xs
   | x == '\t' = b 't'  xs
   | x == '"'  = b '"'  xs
-  | d < 0x1f  = (bs '\\') +++ (bs 'u') +++ leftpad (showIntAtBase 16 intToDigit d "") +++ (esc xs)
-  | otherwise = (bs x) +++ esc xs
-  where b c xs = (bs '\\') +++ (bs c) +++ esc xs
+  | d < 0x1f  = bs '\\' +++ bs 'u' +++ leftpad (showIntAtBase 16 intToDigit d "") +++ esc xs
+  | otherwise = bs x +++ esc xs
+  where b c xs = bs '\\' +++ bs c +++ esc xs
         leftpad :: String -> B.ByteString
         leftpad s
           | length s == 4 = e s
@@ -40,17 +40,17 @@ class ToJSON a where
 
   toJSONList :: [a] -> B.ByteString
 
-  toJSONList x = (e "[") +++ (B.intercalate (e ", ") $ map toJSON x) +++ (e "]")
+  toJSONList x = e "[" +++ B.intercalate (e ", ") (map toJSON x) +++ e "]"
 
 instance ToJSON Char where
   toJSON x = toJSONList [x]
-  toJSONList s = (BC.singleton '"') +++ (esc s) +++ (BC.singleton '"')
+  toJSONList s = BC.singleton '"' +++ esc s +++ BC.singleton '"'
 
 instance ToJSON UTCTime where
   toJSON = toJSON . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
 
 instance ToJSON Text where
-  toJSON s = (e "\"") +++ (e $ unpack s) +++ (e "\"")
+  toJSON s = e "\"" +++ e (unpack s) +++ e "\""
 
 instance ToJSON Double where
   toJSON d = e $ if isNaN d then "null" else show d
@@ -75,13 +75,13 @@ instance ToJSON t => ToJSON (Maybe t) where
 data JSONPair = JSONPair B.ByteString B.ByteString
 
 instance ToJSON JSONPair where
-  toJSON (JSONPair l r) = l +++ (e ": ") +++ r
+  toJSON (JSONPair l r) = l +++ e ": " +++ r
 
 object :: [JSONPair] -> B.ByteString
-object l = (e "{") +++ (B.intercalate (e ", ") $ map toJSON l) +++ (e "}")
+object l = e "{" +++ B.intercalate (e ", ") (map toJSON l) +++ e "}"
 
 (.=) :: ToJSON t => String -> t -> JSONPair
 (.=) k v = JSONPair (toJSON k) (toJSON v)
 
 encode :: ToJSON t => t -> B.ByteString
-encode t = toJSON t
+encode = toJSON
