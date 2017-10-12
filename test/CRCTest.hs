@@ -25,7 +25,7 @@ randBytes n = B.pack `fmap` vectorOf n (choose (0, 255))
 
 gen_crc_data :: Int -> IO ()
 gen_crc_data n =
-  let r = mapM (\_ -> ((generate $ arbitrary) :: IO B.ByteString)) [1..1000] in
+  let r = mapM (const ((generate $ arbitrary) :: IO B.ByteString)) [1..1000] in
     do
       b <- fmap (map $ show . B.unpack) r
       putStrLn $ intercalate ",\n" b
