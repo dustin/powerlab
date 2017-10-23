@@ -11,7 +11,7 @@ import Criterion.Main
 
 crcTestData = B.pack [108,180,233,208,195,11,228,20,129,16,113,67,174,120,47,137,145,128,240,223,218,199,130,211,220,113,252,181,18]
 
-bench_crc16 = bench "crc test" $ whnf crc16 crcTestData
+benchCrc16 = bench "crc test" $ whnf crc16 crcTestData
 
 statusTestData = B.pack [
   0x52, 0x61, 0x6d, 0x0, 0x0, 0x6f, 0xc7, 0xa0, 0xc7, 0xa0,
@@ -33,8 +33,8 @@ statusTestSt = case St.parse statusTestData of
                  Left ex -> error ex
                  Right st -> st
 
-bench_verify = bench "status verification test" $ whnf verify_pkt statusTestData
+benchVerify = bench "status verification test" $ whnf verifyPkt statusTestData
 
-bench_status_json = bench "Status -> JSON" $ whnf encode statusTestSt
+benchStatusJson = bench "Status -> JSON" $ whnf encode statusTestSt
 
-main = defaultMain [bench_crc16, bench_verify, bench_status_json]
+main = defaultMain [benchCrc16, benchVerify, benchStatusJson]

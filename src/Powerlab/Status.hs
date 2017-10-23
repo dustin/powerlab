@@ -8,13 +8,13 @@ module Powerlab.Status (
   , ToJSON, toJSON, object, (.=)
   , Mode(..)
   , PowerReductionReason(..)
-  , version, cell, cells, ir, irs, vr_amps, avg_amps, avg_cell, battery_neg, battery_pos
-  , detectedCellCount, cpu_temp, status_flags, charge_complete, chemistry
-  , power_reduction_reason, charge_duration, mode, sync_pwm_drive, slaves_found
-  , charge_current, supply_volts_with_current, supply_volts, supply_amps, cycle_num
-  , slow_avg_amps, packs, mah_in, mah_out, discharge_amp_set, discharge_pwm, error_code
-  , fast_amps, high_temp, max_cell, nicd_fallback_v, out_positive, preset
-  , preset_set_amps, regen_volt_set, screen_num, start_avg, start_supply_volts, rx_status
+  , version, cell, cells, ir, irs, vrAmps, avgAmps, avgCell, batteryNeg, batteryPos
+  , detectedCellCount, cpuTemp, statusFlags, chargeComplete, chemistry
+  , powerReductionReason, chargeDuration, mode, syncPwmDrive, slavesFound
+  , chargeCurrent, supplyVoltsWithCurrent, supplyVolts, supplyAmps, cycleNum
+  , slowAvgAmps, packs, mahIn, mahOut, dischargeAmpSet, dischargePwm, errorCode
+  , fastAmps, highTemp, maxCell, nicdFallbackV, outPositive, preset
+  , presetSetAmps, regenVoltSet, screenNum, startAvg, startSupplyVolts, rxStatus
   ) where
 
 import Powerlab
@@ -112,53 +112,53 @@ pico = 1000000000000
 
 instance ToJSON Status where
   toJSON st =
-    object ["avg_amps" .= avg_amps st,
-            "avg_cell" .= avg_cell st,
-            "battery_neg" .= battery_neg st,
-            "battery_pos" .= battery_pos st,
-            "cells" .= cells st,
-            "charge_complete" .= charge_complete st,
-            "charge_current" .= charge_current st,
-            "charge_sec" .= (diffTimeToPicoseconds (charge_duration st) `div` pico),
-            "charge_time" .= show (charge_duration st),
-            "chemistry" .= chemistry st,
-            "cpu_temp" .= cpu_temp st,
-            "cycle_num" .= cycle_num st,
-            "detected_cell_count" .= detectedCellCount st,
-            "discharge_amp_set" .= discharge_amp_set st,
-            "discharge_pwm" .= discharge_pwm st,
-            "error_code" .= error_code st,
-            "fast_amps" .= fast_amps st,
-            "high_temp" .= high_temp st,
-            "irs" .= irs st,
-            "mah_in" .= mah_in st,
-            "mah_out" .= mah_out st,
-            "max_cell" .= max_cell st,
-            "mode" .= mode st,
-            "nicd_fallback_v" .= nicd_fallback_v st,
-            "out_positive" .= out_positive st,
-            "packs" .= packs st,
-            "power_reduction_reason" .= power_reduction_reason st,
-            "preset" .= preset st,
-            "preset_set_amps" .= preset_set_amps st,
-            "regen_volt_set" .= regen_volt_set st,
-            "screen_num" .= screen_num st,
-            "slaves_found" .= slaves_found st,
-            "slow_avg_amps" .= slow_avg_amps st,
-            "start_avg" .= start_avg st,
-            "start_supply_volts" .= start_supply_volts st,
-            "supply_amps" .= supply_amps st,
-            "supply_volts" .= supply_volts st,
-            "supply_volts_with_current" .= supply_volts_with_current st,
-            "sync_pwm_drive" .= sync_pwm_drive st,
-            "version" .= version st,
-            "vr_amps" .= vr_amps st,
-            "safety_charge" .= (\st -> let (r, _, _) = status_flags st in r) st,
-            "reduce_amps" .= (\st -> let (_, _, r) = status_flags st in r) st,
-            "discharge_running" .= (\st -> let (r, _, _, _) = rx_status st in r) st,
-            "regenerative_discharge" .= (\st -> let (_, r, _, _) = rx_status st in r) st,
-            "charge_running" .= (\st -> let (_, _, r, _) = rx_status st in r) st,
-            "balancers_running" .= (\st -> let (_, _, _, r) = rx_status st in r) st
+    object ["avg_amps"                   .= avgAmps st,
+            "avg_cell"                   .= avgCell st,
+            "battery_neg"                .= batteryNeg st,
+            "battery_pos"                .= batteryPos st,
+            "cells"                      .= cells st,
+            "charge_complete"            .= chargeComplete st,
+            "charge_current"             .= chargeCurrent st,
+            "charge_sec"                 .= (diffTimeToPicoseconds (chargeDuration st) `div` pico),
+            "charge_time"                .= show (chargeDuration st),
+            "chemistry"                  .= chemistry st,
+            "cpu_temp"                   .= cpuTemp st,
+            "cycle_num"                  .= cycleNum st,
+            "detected_cell_count"        .= detectedCellCount st,
+            "discharge_amp_set"          .= dischargeAmpSet st,
+            "discharge_pwm"              .= dischargePwm st,
+            "error_code"                 .= errorCode st,
+            "fast_amps"                  .= fastAmps st,
+            "high_temp"                  .= highTemp st,
+            "irs"                        .= irs st,
+            "mah_in"                     .= mahIn st,
+            "mah_out"                    .= mahOut st,
+            "max_cell"                   .= maxCell st,
+            "mode"                       .= mode st,
+            "nicd_fallback_v"            .= nicdFallbackV st,
+            "out_positive"               .= outPositive st,
+            "packs"                      .= packs st,
+            "power_reduction_reason"     .= powerReductionReason st,
+            "preset"                     .= preset st,
+            "preset_set_amps"            .= presetSetAmps st,
+            "regen_volt_set"             .= regenVoltSet st,
+            "screen_num"                 .= screenNum st,
+            "slaves_found"               .= slavesFound st,
+            "slow_avg_amps"              .= slowAvgAmps st,
+            "start_avg"                  .= startAvg st,
+            "start_supply_volts"         .= startSupplyVolts st,
+            "supply_amps"                .= supplyAmps st,
+            "supply_volts"               .= supplyVolts st,
+            "supply_volts_with_current"  .= supplyVoltsWithCurrent st,
+            "sync_pwm_drive"             .= syncPwmDrive st,
+            "version"                    .= version st,
+            "vr_amps"                    .= vrAmps st,
+            "safety_charge"              .= (\st -> let (r, _, _) = statusFlags st in r) st,
+            "reduce_amps"                .= (\st -> let (_, _, r) = statusFlags st in r) st,
+            "discharge_running"          .= (\st -> let (r, _, _, _) = rxStatus st in r) st,
+            "regenerative_discharge"     .= (\st -> let (_, r, _, _) = rxStatus st in r) st,
+            "charge_running"             .= (\st -> let (_, _, r, _) = rxStatus st in r) st,
+            "balancers_running"          .= (\st -> let (_, _, _, r) = rxStatus st in r) st
            ]
 
 version :: Status -> String
@@ -179,130 +179,130 @@ ir :: Status -> Int -> Double
 ir st n
   | n <= 0 || n > 8 = error "invalid cell number"
   | otherwise = let x = read2f (50 + (2* (toEnum . fromEnum)n)) st in
-                  x / 6.3984 / (vr_amps st)
+                  x / 6.3984 / vrAmps st
 
-vr_amps :: Status -> Double
-vr_amps = (/ 600) . read2f 68
+vrAmps :: Status -> Double
+vrAmps = (/ 600) . read2f 68
 
 irs :: Status -> [Double]
 irs st = map (ir st) [1..(detectedCellCount st)]
 
-avg_amps :: Status -> Double
-avg_amps = (/ 600) . read2f 42
+avgAmps :: Status -> Double
+avgAmps = (/ 600) . read2f 42
 
-avg_cell :: Status -> Double
-avg_cell = (/ 10) . read2f 38
+avgCell :: Status -> Double
+avgCell = (/ 10) . read2f 38
 
-battery_neg :: Status -> Double
-battery_neg = (* (46.96 / 4095)) . read2f 100
+batteryNeg :: Status -> Double
+batteryNeg = (* (46.96 / 4095)) . read2f 100
 
-battery_pos :: Status -> Double
-battery_pos = (/ 12797) . read2f 82
+batteryPos :: Status -> Double
+batteryPos = (/ 12797) . read2f 82
 
-cpu_temp :: Status -> Double
-cpu_temp st = (2.5*(read2f 26 st)/4095 - 0.986) / 0.00355
+cpuTemp :: Status -> Double
+cpuTemp st = (2.5*(read2f 26 st)/4095 - 0.986) / 0.00355
 
 -- Weird one-based bit thing from the powerlab spec
 bit :: Word16 -> Int -> Bool
 bit b n = (b .&. (1 `shiftL` (16 - n))) /= 0
 
 -- safetyCharge, chargeComplete, reduceAmps
-status_flags :: Status -> (Bool, Bool, Bool)
-status_flags st = let b = read2 44 st in (bit b 1, bit b 8, bit b 11)
+statusFlags :: Status -> (Bool, Bool, Bool)
+statusFlags st = let b = read2 44 st in (bit b 1, bit b 8, bit b 11)
 
 -- discharge running, regenerative discharge, charge running, balancers running
-rx_status :: Status -> (Bool, Bool, Bool, Bool)
-rx_status st = let b = read2 46 st in (bit b 1, bit b 4, bit b 6, bit b 7)
+rxStatus :: Status -> (Bool, Bool, Bool, Bool)
+rxStatus st = let b = read2 46 st in (bit b 1, bit b 4, bit b 6, bit b 7)
 
-charge_complete :: Status -> Bool
-charge_complete st = let (_, r, _) = status_flags st in r
+chargeComplete :: Status -> Bool
+chargeComplete st = let (_, r, _) = statusFlags st in r
 
 chemistry :: Status -> Chemistry
-chemistry st = (toEnum $ (fromEnum $ read1 135 st) - 1)
+chemistry st = toEnum $ fromEnum (read1 135 st) - 1
 
-power_reduction_reason :: Status -> PowerReductionReason
-power_reduction_reason st = (toEnum $ fromEnum $ read1 143 st)
+powerReductionReason :: Status -> PowerReductionReason
+powerReductionReason st = toEnum $ fromEnum $ read1 143 st
 
-charge_duration :: Status -> DiffTime
-charge_duration st = secondsToDiffTime $ toEnum . fromEnum $ read2 28 st
+chargeDuration :: Status -> DiffTime
+chargeDuration st = secondsToDiffTime $ toEnum . fromEnum $ read2 28 st
 
 mode :: Status -> Mode
 mode = mode' . read1 133
 
-sync_pwm_drive :: Status -> PWMType
-sync_pwm_drive st
+syncPwmDrive :: Status -> PWMType
+syncPwmDrive st
   | x > 8192 = Boost
   | otherwise = Buck
     where x = read2 18 st
 
-slaves_found :: Status -> [Int]
-slaves_found st = filter (bit b) [1..16] where b = read2 120 st
+slavesFound :: Status -> [Int]
+slavesFound st = filter (bit b) [1..16] where b = read2 120 st
 
-charge_current :: Status -> Double
-charge_current = (/ 1666) . read2f 20
+chargeCurrent :: Status -> Double
+chargeCurrent = (/ 1666) . read2f 20
 
-supply_volts_with_current :: Status -> Double
-supply_volts_with_current st = (read2f 22 st) * 46.96 / 4095 / 16
+supplyVoltsWithCurrent :: Status -> Double
+supplyVoltsWithCurrent st = (read2f 22 st) * 46.96 / 4095 / 16
 
-supply_volts :: Status -> Double
-supply_volts st = (read2f 24 st) * 46.96 / 4095.0
+supplyVolts :: Status -> Double
+supplyVolts st = (read2f 24 st) * 46.96 / 4095.0
 
-supply_amps :: Status -> Double
-supply_amps = (/ 150) . read2f 80
+supplyAmps :: Status -> Double
+supplyAmps = (/ 150) . read2f 80
 
-cycle_num :: Status -> Int
-cycle_num st = fromEnum $ read1 142 st
+cycleNum :: Status -> Int
+cycleNum st = fromEnum $ read1 142 st
 
-slow_avg_amps :: Status -> Double
-slow_avg_amps = (/ 600) . read2f 116
+slowAvgAmps :: Status -> Double
+slowAvgAmps = (/ 600) . read2f 116
 
 packs :: Status -> Int
 packs = fromEnum . read1 136
 
-mah_in :: Status -> Int
-mah_in = (`div` 2160) . fromEnum . read4 34
+mahIn :: Status -> Int
+mahIn = (`div` 2160) . fromEnum . read4 34
 
-mah_out :: Status -> Int
-mah_out = (`div` 2160) . fromEnum . read4 84
+mahOut :: Status -> Int
+mahOut = (`div` 2160) . fromEnum . read4 84
 
-discharge_amp_set :: Status -> Double
-discharge_amp_set = (/ 600) . read2f 92
+dischargeAmpSet :: Status -> Double
+dischargeAmpSet = (/ 600) . read2f 92
 
-discharge_pwm :: Status -> Int
-discharge_pwm st = fromEnum $ read2 94 st
+dischargePwm :: Status -> Int
+dischargePwm st = fromEnum $ read2 94 st
 
-error_code :: Status -> Int
-error_code st = fromEnum $ read1 134 st
+errorCode :: Status -> Int
+errorCode st = fromEnum $ read1 134 st
 
-fast_amps :: Status -> Double
-fast_amps = (/ 600) . read2f 30
+fastAmps :: Status -> Double
+fastAmps = (/ 600) . read2f 30
 
-high_temp :: Status -> Bool
-high_temp st = bit (read2 50 st) 2
+highTemp :: Status -> Bool
+highTemp st = bit (read2 50 st) 2
 
-max_cell :: Status -> Double
-max_cell = (/ 12797) . read2f 74
+maxCell :: Status -> Double
+maxCell = (/ 12797) . read2f 74
 
-nicd_fallback_v :: Status -> Double
-nicd_fallback_v st = (read2f 70 st) / 12797 - (max_cell st)
+nicdFallbackV :: Status -> Double
+nicdFallbackV st = (read2f 70 st) / 12797 - maxCell st
 
-out_positive :: Status -> Double
-out_positive = (/ 4095) . read2f 32
+outPositive :: Status -> Double
+outPositive = (/ 4095) . read2f 32
 
 preset :: Status -> Int
 preset st = fromEnum $ read1 137 st
 
-preset_set_amps :: Status -> Double
-preset_set_amps = (/ 600) . read2f 118
+presetSetAmps :: Status -> Double
+presetSetAmps = (/ 600) . read2f 118
 
-regen_volt_set :: Status -> Double
-regen_volt_set st = (read2f 90 st) * 46.96 / 4095
+regenVoltSet :: Status -> Double
+regenVoltSet st = (read2f 90 st) * 46.96 / 4095
 
-screen_num :: Status -> Int
-screen_num st = fromEnum $ read1 139 st
+screenNum :: Status -> Int
+screenNum st = fromEnum $ read1 139 st
 
-start_avg :: Status -> Double
-start_avg = (/ 10) . read2f 40
+startAvg :: Status -> Double
+startAvg = (/ 10) . read2f 40
 
-start_supply_volts :: Status -> Double
-start_supply_volts st = (read2f 104 st) * 46.96 / 4095
+startSupplyVolts :: Status -> Double
+startSupplyVolts st = (read2f 104 st) * 46.96 / 4095
