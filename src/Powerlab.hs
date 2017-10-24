@@ -12,13 +12,14 @@ import Data.Word
 import Data.Int
 import Data.Binary.Get
 import qualified Data.ByteString.Lazy as B
-import qualified Data.ByteString.Char8 as BC
 
 class PktWrap a where
   unwrap :: a -> B.ByteString
 
 -- logical symbols since haskell doesn't have them.
+(≫) :: Word16 -> Int -> Word16
 (≫) = Data.Bits.shiftR
+(⊕) :: Word16 -> Word16 -> Word16
 (⊕) = Data.Bits.xor
 
 -- Not yet needed, but since I was typing...
@@ -28,10 +29,10 @@ class PktWrap a where
 
 -- This was ported from https://github.com/dustin/powerlab/blob/master/crc.go
 crc16 :: B.ByteString -> Word16
-crc16 x = let
+crc16 = let
   perbit a b = (a ≫ 1) ⊕ if odd (b ⊕ a) then 33800 else 0
-  perbyte n b = foldl perbit n [b ≫ x | x <- [0..7]] in
-    B.foldl ((. toEnum . fromEnum) . perbyte) 4742 x
+  perbyte n b = foldl perbit n [b ≫ x' | x' <- [0..7]] in
+    B.foldl ((. toEnum . fromEnum) . perbyte) 4742
 
 read1 :: PktWrap t => Int64 -> t -> Word8
 read1 n x = B.index (unwrap x) (4+n)

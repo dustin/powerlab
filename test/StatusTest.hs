@@ -4,21 +4,15 @@ import Powerlab
 import qualified Powerlab.Status as St
 
 import Data.Time
-import Data.Word
-import Data.List
 import Data.Either
 import qualified Data.ByteString.Lazy as B
-import System.Environment (getArgs)
 
-import Test.HUnit
-import Test.HUnit.Approx
-import Test.QuickCheck
-import Test.QuickCheck.Arbitrary
-import Test.Framework (defaultMainWithOpts, interpretArgsOrExit, testGroup)
-import Test.Framework.Runners.Options
+import Test.HUnit (Assertion, assertBool, (@?=))
+import Test.HUnit.Approx (assertApproxEqual)
+import Test.Framework (Test, testGroup)
 import Test.Framework.Providers.HUnit
-import Test.Framework.Providers.QuickCheck2 (testProperty)
 
+exemplar :: B.ByteString
 exemplar = B.pack [
   82, 97, 109, 0,-- 'R', 'a', 'm', 0,
   1, 0x3a, -- Version
@@ -84,23 +78,30 @@ exemplar = B.pack [
   0x8c, 0xa0 -- Checksum
   ]
 
+exemplarSt :: St.Status
 exemplarSt = case St.parse exemplar of
                Left ex -> error ex
                Right st -> st
 
+capturedSt :: St.Status
 capturedSt = case St.parse capturedExemplar of
                Left ex -> error ex
                Right st -> st
 
+approxl :: (Fractional a, Ord a) => [a] -> [a] -> Bool
 approxl [] [] = True
 approxl (a:as) (b:bs)
   | abs (a - b) > 0.001 = False
   | otherwise = approxl as bs
+approxl _ _ = error "Length mismatch"
 
+ε :: Double
 ε = 0.001
 
+duration :: Integer -> DiffTime
 duration = secondsToDiffTime
 
+exemplarTests :: [Assertion]
 exemplarTests = [
   St.version exemplarSt @?= "3.14",
   assertApproxEqual "cell(1)" ε 4.2 $ St.cell exemplarSt 1,
@@ -149,6 +150,7 @@ exemplarTests = [
   assertBool "high temp" $ St.highTemp exemplarSt
                 ]
 
+capturedExemplar :: B.ByteString
 capturedExemplar = B.pack [
   0x52, 0x61, 0x6d, 0x0, 0x0, 0x6f, 0xc7, 0xa0, 0xc7, 0xa0,
   0xc7, 0x90, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
@@ -165,6 +167,7 @@ capturedExemplar = B.pack [
   0x0, 0x1, 0x1, 0x2, 0x0, 0x2, 0x0, 0xc, 0x0, 0x0, 0x0, 0x0,
   0x0, 0x32, 0x3]
 
+tests :: [Test]
 tests = [
   testCase "verify exemplar" (isRight (verifyPkt exemplar St.statusLen) @?= True),
   testCase "verify captured" (isRight (verifyPkt capturedExemplar St.statusLen) @?= True),

@@ -1,4 +1,4 @@
-module CRCTest (tests) where
+module CRCTest (tests, genCrcData) where
 
 import Powerlab
 
@@ -8,12 +8,11 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.ByteString.Char8 as BC
 
-import Test.HUnit
 import Test.QuickCheck
-import Test.QuickCheck.Arbitrary
-import Test.Framework (testGroup)
-import Test.Framework.Providers.HUnit
-import Test.Framework.Providers.QuickCheck2 (testProperty)
+import Test.QuickCheck.Arbitrary ()
+import Test.Framework.Providers.HUnit (testCase)
+import Test.Framework (Test, testGroup)
+import Test.HUnit (assertEqual)
 
 instance Arbitrary B.ByteString where
   arbitrary = do
@@ -25,11 +24,12 @@ randBytes n = B.pack `fmap` vectorOf n (choose (0, 255))
 
 genCrcData :: Int -> IO ()
 genCrcData n =
-  let r = mapM (const (generate arbitrary :: IO B.ByteString)) [1..1000] in
+  let r = mapM (const (generate arbitrary :: IO B.ByteString)) [1..n] in
     do
       b <- fmap (map $ show . B.unpack) r
       putStrLn $ intercalate ",\n" b
 
+crcTestResults :: [Word16]
 crcTestResults = [31577, 63691, 54044, 57954, 54069, 51210, 45283, 4742, 29774, 40320,
                   8474, 59700, 41697, 43176, 44742, 44300, 52189, 65444, 38679, 31188,
                   44750, 41753, 63883, 12401, 1962, 45871, 39600, 14318, 14129, 24091,
@@ -131,6 +131,7 @@ crcTestResults = [31577, 63691, 54044, 57954, 54069, 51210, 45283, 4742, 29774, 
                   5299, 35506, 53445, 34837, 8779, 37848, 36285, 37837, 8430, 59440,
                   44965, 57918, 910, 44790, 36061, 56119, 55891, 43822, 64447]
 
+crcTestData :: [[Word8]]
 crcTestData = [
   [156,21,140,219,224,167,131,13,147,162,190,199,81],
   [27,244,73,92,228,210,49,145,109,238,137,96,187,178,58,39,228,146,208,8,236,216,105,91,193,54,224,38,195,132,120,73],
@@ -1134,15 +1135,18 @@ crcTestData = [
   [205,152,88,230,181,164,222,63,238,10,74,19,0,100]
   ] :: [[Word8]]
 
+testCRCRef :: [Test]
 testCRCRef =
   map (\(a, b) -> testCase (show a) $ assertEqual "" b $ crc16 $ LB.pack a) $ zip crcTestData crcTestResults
 
+testCRC16 :: [Test]
 testCRC16 =
   map (\(a, b) -> testCase (show a) $ assertEqual "" b $ crc16 $ (LB.fromStrict . BC.pack) a) [
   ("testing", 10243),
   ("", 0x1286),
   (['\0'], 0xe12c)]
 
+tests :: [Test]
 tests = [
   testGroup "crc16" testCRC16,
   testGroup "crc16 ref" testCRCRef

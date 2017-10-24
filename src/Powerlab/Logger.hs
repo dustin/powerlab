@@ -24,6 +24,7 @@ logItem logger@Logger{interesting = filt} t a =
 
 logItem' :: Logger a -> UTCTime -> a -> IO ()
 logItem' Logger{logFile = Just f, write = w} t a = w t a f
+logItem' Logger{logFile = Nothing} _ _ = pure ()
 
 withOpenLogger :: Logger a -> UTCTime -> a -> IO (Logger a)
 withOpenLogger logger@Logger{logFile = Just _} t a = logItem logger t a >> return logger

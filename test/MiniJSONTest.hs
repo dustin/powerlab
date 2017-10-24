@@ -7,12 +7,11 @@ import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString.Char8 as BC
 
 
-import Test.HUnit
 import Test.QuickCheck
-import Test.QuickCheck.Arbitrary
-import Test.Framework (defaultMain, testGroup)
-import Test.Framework.Providers.HUnit
+import Test.QuickCheck.Arbitrary ()
 import Test.Framework.Providers.QuickCheck2 (testProperty)
+import Test.Framework (Test)
+
 
 newtype JStr = JStr String
 
@@ -24,6 +23,7 @@ instance Arbitrary JStr where
     s <- arbitrary :: Gen String
     return $ JStr $ "\"" ++ s ++ "\""
 
+prop_valid_chars :: JStr -> Bool
 prop_valid_chars (JStr i) =
   let s = BC.unpack . B.toStrict $ encode i
       h = head s
@@ -39,12 +39,13 @@ prop_valid_chars (JStr i) =
           | x `elem` "\"\\/bfnrt" = True
           | x == 'u' = take 4 xs \\ "012345689AaBbCcDdEeFf" == ""
           | otherwise = False
+        valid_escape _ = False
         skip_escape (x:xs)
           | x `elem` "\"\\/bfnrt" = xs
           | x == 'u' = drop 4 xs
+        skip_escape _ = error "Invalid escape"
 
+tests :: [Test]
 tests = [
   testProperty "valid string" (prop_valid_chars :: JStr -> Bool)
   ]
-
-

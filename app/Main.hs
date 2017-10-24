@@ -7,14 +7,10 @@ import WaiAppStatic.Types (unsafeToPiece)
 import Network.Wai.Application.Static (StaticSettings(..)
                                       , staticApp
                                       , ssIndices
-                                      , defaultFileServerSettings
                                       , defaultWebAppSettings )
 
 
 import Data.Time
-import Data.Time.Format
-import Control.Exception
-import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Concurrent.STM
 import System.Environment
@@ -23,13 +19,12 @@ import System.Console.GetOpt
 import Control.Monad
 import qualified Data.ByteString.Lazy as B
 
-import Powerlab
 import Powerlab.Serial
 import Powerlab.Logger
 import MiniJSON
 import qualified Powerlab.Status as St
 
-data TSRec = TSRec { ts :: !UTCTime, st :: !St.Status }
+data TSRec = TSRec { _ts :: !UTCTime, _st :: !St.Status }
 
 instance ToJSON TSRec where
 
@@ -71,7 +66,7 @@ updater tv lf serial =
   withPort serial (\st -> do
                       putStrLn $ "Updating with " ++ show (encode st)
                       now <- getCurrentTime
-                      logItem lf now st
+                      _ <- logItem lf now st
                       atomically $ setState now st tv)
 
 newState :: STM (TVar State)
@@ -111,9 +106,9 @@ options =
 main :: IO ()
 main = do
   args <- getArgs
-  let (opts, misc, errs) = getOpt RequireOrder options args
+  let (opts', _misc, errs) = getOpt RequireOrder options args
   when (errs /= []) $ ioError (userError (concat errs ++ usageInfo "Usage: " options))
-  opts <- foldl (>>=) (return startOptions) opts
+  opts <- foldl (>>=) (return startOptions) opts'
 
   let statApp = staticApp $ (defaultWebAppSettings (optStatic opts)) {ssIndices = [unsafeToPiece "index.html"]}
 

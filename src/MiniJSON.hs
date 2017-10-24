@@ -1,8 +1,5 @@
 module MiniJSON (ToJSON(..), object, encode, (.=)) where
 
-import Data.Char (intToDigit)
-import Data.List (intercalate)
-import Data.Maybe
 import Data.Text (Text, unpack)
 import Data.Time
 import Numeric (showHex)
@@ -13,21 +10,22 @@ import qualified Data.ByteString.Lazy.Char8 as BC
 e :: String -> B.ByteString
 e = BC.pack
 
+(+++) :: BC.ByteString -> BC.ByteString -> BC.ByteString
 (+++) = B.append
 
 esc :: String -> B.ByteString
 esc [] = B.empty
 esc (x:xs)
-  | x == '\n' = b 'n'  xs
-  | x == '\\' = b '\\' xs
-  | x == '\r' = b 'r'  xs
-  | x == '/'  = b '/'  xs
-  | x == '\f' = b 'f'  xs
-  | x == '\t' = b 't'  xs
-  | x == '"'  = b '"'  xs
+  | x == '\n' = b 'n'
+  | x == '\\' = b '\\'
+  | x == '\r' = b 'r'
+  | x == '/'  = b '/'
+  | x == '\f' = b 'f'
+  | x == '\t' = b 't'
+  | x == '"'  = b '"'
   | d < 0x1f  = bs '\\' +++ bs 'u' +++ leftpad (showHex d "") +++ esc xs
   | otherwise = bs x +++ esc xs
-  where b c xs = bs '\\' +++ bs c +++ esc xs
+  where b c = bs '\\' +++ bs c +++ esc xs
         leftpad :: String -> B.ByteString
         leftpad s
           | length s == 4 = e s

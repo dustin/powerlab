@@ -24,8 +24,6 @@ import Data.Bits (shiftL, (.&.))
 import Data.Int
 import Data.Time.Clock
 import Data.Word
-import Data.Time
-import Data.Text (Text)
 
 import qualified Data.ByteString.Lazy as B
 
@@ -101,13 +99,17 @@ newtype Status = Status B.ByteString
 instance PktWrap Status where
   unwrap (Status b) = b
 
-statusLen = 149 :: Int64
+statusLen :: Int64
+statusLen = 149
 
+parse :: B.ByteString -> Either String Status
 parse b = case verifyPkt b statusLen of
             Left x -> Left x
             Right True -> Right $ Status b
+            Right False -> error "Right false is unhandled in status parsing"
 
 -- pico is 1/thismany
+pico :: Integer
 pico = 1000000000000
 
 instance ToJSON Status where
@@ -153,12 +155,12 @@ instance ToJSON Status where
             "sync_pwm_drive"             .= syncPwmDrive st,
             "version"                    .= version st,
             "vr_amps"                    .= vrAmps st,
-            "safety_charge"              .= (\st -> let (r, _, _) = statusFlags st in r) st,
-            "reduce_amps"                .= (\st -> let (_, _, r) = statusFlags st in r) st,
-            "discharge_running"          .= (\st -> let (r, _, _, _) = rxStatus st in r) st,
-            "regenerative_discharge"     .= (\st -> let (_, r, _, _) = rxStatus st in r) st,
-            "charge_running"             .= (\st -> let (_, _, r, _) = rxStatus st in r) st,
-            "balancers_running"          .= (\st -> let (_, _, _, r) = rxStatus st in r) st
+            "safety_charge"              .= (\st' -> let (r, _, _) = statusFlags st' in r) st,
+            "reduce_amps"                .= (\st' -> let (_, _, r) = statusFlags st' in r) st,
+            "discharge_running"          .= (\st' -> let (r, _, _, _) = rxStatus st' in r) st,
+            "regenerative_discharge"     .= (\st' -> let (_, r, _, _) = rxStatus st' in r) st,
+            "charge_running"             .= (\st' -> let (_, _, r, _) = rxStatus st' in r) st,
+            "balancers_running"          .= (\st' -> let (_, _, _, r) = rxStatus st' in r) st
            ]
 
 version :: Status -> String
