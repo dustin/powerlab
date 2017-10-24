@@ -9,10 +9,13 @@ import qualified Data.ByteString.Lazy as B
 import Criterion
 import Criterion.Main
 
+crcTestData :: B.ByteString
 crcTestData = B.pack [108,180,233,208,195,11,228,20,129,16,113,67,174,120,47,137,145,128,240,223,218,199,130,211,220,113,252,181,18]
 
+benchCrc16 :: Benchmark
 benchCrc16 = bench "crc test" $ whnf crc16 crcTestData
 
+statusTestData :: B.ByteString
 statusTestData = B.pack [
   0x52, 0x61, 0x6d, 0x0, 0x0, 0x6f, 0xc7, 0xa0, 0xc7, 0xa0,
   0xc7, 0x90, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
@@ -29,12 +32,16 @@ statusTestData = B.pack [
   0x0, 0x1, 0x1, 0x2, 0x0, 0x2, 0x0, 0xc, 0x0, 0x0, 0x0, 0x0,
   0x0, 0x32, 0x3]
 
+statusTestSt :: St.Status
 statusTestSt = case St.parse statusTestData of
                  Left ex -> error ex
                  Right st -> st
 
+benchVerify :: Benchmark
 benchVerify = bench "status verification test" $ whnf verifyPkt statusTestData
 
+benchStatusJson :: Benchmark
 benchStatusJson = bench "Status -> JSON" $ whnf encode statusTestSt
 
+main :: IO ()
 main = defaultMain [benchCrc16, benchVerify, benchStatusJson]
