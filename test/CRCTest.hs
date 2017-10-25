@@ -14,19 +14,21 @@ import Test.Framework.Providers.HUnit (testCase)
 import Test.Framework (Test, testGroup)
 import Test.HUnit (assertEqual)
 
-instance Arbitrary B.ByteString where
+newtype CRCGen = CRCGen B.ByteString
+
+instance Arbitrary CRCGen where
   arbitrary = do
     len <- choose (0, 32)
     randBytes len
 
-randBytes :: Int -> Gen B.ByteString
-randBytes n = B.pack `fmap` vectorOf n (choose (0, 255))
+randBytes :: Int -> Gen CRCGen
+randBytes n = (CRCGen . B.pack) `fmap` vectorOf n (choose (0, 255))
 
 genCrcData :: Int -> IO ()
 genCrcData n =
-  let r = mapM (const (generate arbitrary :: IO B.ByteString)) [1..n] in
+  let r = mapM (const (generate arbitrary :: IO CRCGen)) [1..n] in
     do
-      b <- fmap (map $ show . B.unpack) r
+      b <- map (\(CRCGen x) -> (show . B.unpack) x) <$> r
       putStrLn $ intercalate ",\n" b
 
 crcTestResults :: [Word16]
