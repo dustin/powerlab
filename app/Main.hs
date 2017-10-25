@@ -13,11 +13,10 @@ import Network.Wai.Application.Static (StaticSettings(..)
 import Data.Time
 import Control.Concurrent.Async
 import Control.Concurrent.STM
-import System.Environment
 import System.IO
-import System.Console.GetOpt
-import Control.Monad
 import qualified Data.ByteString.Lazy as B
+import Options.Applicative
+import Data.Semigroup ((<>))
 
 import Powerlab.Serial
 import Powerlab.Logger
@@ -72,49 +71,31 @@ updater tv lf serial =
 newState :: STM (TVar State)
 newState = newTVar $ State Nothing []
 
-data Options = Options  { optPort :: Int
-                        , optStatic :: FilePath
-                        , optSerial :: FilePath
-                        , optLogfile :: String } deriving Show
+data Options = Options  { _optPort :: Int
+                        , _optStatic :: FilePath
+                        , _optSerial :: FilePath
+                        , _optLogfile :: String }
 
-startOptions :: Options
-startOptions = Options  { optPort = 8080
-                        , optStatic = "static"
-                        , optSerial = ""
-                        , optLogfile = "/tmp/%Y%m%dT%H%M%S" }
+options :: Parser Options
+options = Options
+  <$> option auto (long "port" <> showDefault <> value 8080 <> help "listen port")
+  <*> option auto (long "static" <> showDefault <> value "static" <> help "path to static web content")
+  <*> option auto (long "serial" <> help "path to serial port")
+  <*> option auto (long "logflie" <> showDefault <> value "/tmp/%Y%m%dT%H%M%S" <> help "path to timestamped log file")
 
-options :: [ OptDescr (Options -> IO Options) ]
-options =
-  [ Option "p" ["port"]
-    (ReqArg
-      (\arg opt -> return opt { optPort = read arg }) "port")
-    "Port Number",
-    Option "s" ["static"]
-    (ReqArg
-     (\arg opt -> return opt { optStatic = arg }) "static")
-    "Path to static files",
-    Option "S" ["serial"]
-    (ReqArg
-     (\arg opt -> return opt { optSerial = arg }) "serial")
-    "Path to serial port",
-    Option "L" ["logfile"]
-    (ReqArg
-     (\arg opt -> return opt { optSerial = arg }) "logfile")
-    "Path to timestamped logfile"
-  ]
+main' :: Options -> IO ()
+main' (Options oPort oStat oSer oLog) = do
+  let statApp = staticApp $ (defaultWebAppSettings oStat) {ssIndices = [unsafeToPiece "index.html"]}
+
+  tv <- atomically newState
+  let lf = newLogger (formatTime defaultTimeLocale oLog) (const . const True) logWriter
+
+  putStrLn $ "http://localhost:" ++ show oPort
+
+  race_ (updater tv lf oSer) (run oPort $ app statApp tv)
 
 main :: IO ()
 main = do
-  args <- getArgs
-  let (opts', _misc, errs) = getOpt RequireOrder options args
-  when (errs /= []) $ ioError (userError (concat errs ++ usageInfo "Usage: " options))
-  opts <- foldl (>>=) (return startOptions) opts'
-
-  let statApp = staticApp $ (defaultWebAppSettings (optStatic opts)) {ssIndices = [unsafeToPiece "index.html"]}
-
-  tv <- atomically newState
-  let lf = newLogger (formatTime defaultTimeLocale $ optLogfile opts) (const . const True) logWriter
-
-  putStrLn $ "http://localhost:" ++ show (optPort opts)
-
-  race_ (updater tv lf (optSerial opts)) (run (optPort opts) $ app statApp tv)
+  main' =<< execParser opts
+    where opts = info (options <**> helper)
+            ( fullDesc <> progDesc "Monitor the powerlab.")
