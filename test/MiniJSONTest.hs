@@ -47,5 +47,5 @@ prop_valid_chars (JStr i) =
 
 tests :: [Test]
 tests = [
-  testProperty "valid string" (prop_valid_chars :: JStr -> Bool)
+  testProperty "valid string" prop_valid_chars
   ]
