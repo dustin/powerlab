@@ -23,13 +23,13 @@ instance Arbitrary JStr where
     s <- arbitrary :: Gen String
     return $ JStr s
 
-prop_valid_chars :: JStr -> Bool
+prop_valid_chars :: JStr -> Property
 prop_valid_chars (JStr i) =
   let s = BC.unpack . B.toStrict $ encode i
       h = head s
       t = last s
       m = take (length s - 1) (drop 1 s) in
-    (h == '"') && (t == '"') && valid m
+    collect escapes $ (h == '"') && (t == '"') && valid m
   where valid [] = True
         valid (x:xs)
           | fromEnum x < 0x1f = False
@@ -45,6 +45,9 @@ prop_valid_chars (JStr i) =
           | x `elem` "\"\\/bfnrt" = xs
           | x == 'u' = drop 4 xs
         skip_escape _ = error "Invalid escape"
+        escapes = case dropWhile (/= '\\') (BC.unpack . B.toStrict $ encode i) of
+                    (_:c:_) -> [c]
+                    _ -> ""
 
 tests :: [Test]
 tests = [
