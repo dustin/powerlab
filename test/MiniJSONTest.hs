@@ -21,7 +21,7 @@ instance Show JStr where
 instance Arbitrary JStr where
   arbitrary = do
     s <- arbitrary :: Gen String
-    return $ JStr $ "\"" ++ s ++ "\""
+    return $ JStr s
 
 prop_valid_chars :: JStr -> Bool
 prop_valid_chars (JStr i) =
