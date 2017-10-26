@@ -1,4 +1,4 @@
-module MiniJSONTest (tests) where
+module MiniJSONTest (tests, prop_valid_chars) where
 
 import MiniJSON
 
@@ -29,7 +29,10 @@ prop_valid_chars (JStr i) =
       h = head s
       t = last s
       m = take (length s - 1) (drop 1 s) in
-    collect escapes $ (h == '"') && (t == '"') && valid m
+    collect escapes $
+    classify (numescs == 0) "no escapes" $
+    classify (numescs > 1) "multiple escapes" $
+    (h == '"') && (t == '"') && valid m
   where valid [] = True
         valid (x:xs)
           | fromEnum x < 0x1f = False
@@ -48,6 +51,8 @@ prop_valid_chars (JStr i) =
         escapes = case dropWhile (/= '\\') (BC.unpack . B.toStrict $ encode i) of
                     (_:c:_) -> [c]
                     _ -> ""
+        numescs :: Int
+        numescs = (length.elemIndices '\\') (BC.unpack . B.toStrict $ encode i)
 
 tests :: [Test]
 tests = [
