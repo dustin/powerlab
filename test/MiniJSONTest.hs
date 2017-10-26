@@ -34,10 +34,11 @@ prop_valid_chars (JStr i) =
         valid (x:xs)
           | fromEnum x < 0x1f = False
           | x == '\\' && valid_escape xs = valid $ skip_escape xs
+          | x == '\\' = False
           | otherwise = valid xs
         valid_escape (x:xs)
           | x `elem` "\"\\/bfnrt" = True
-          | x == 'u' = take 4 xs \\ "012345689AaBbCcDdEeFf" == ""
+          | x == 'u' = nub (take 4 xs) \\ "0123456789AaBbCcDdEeFf" == ""
           | otherwise = False
         valid_escape _ = False
         skip_escape (x:xs)
