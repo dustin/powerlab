@@ -27,15 +27,13 @@ instance Arbitrary JStr where
 
 prop_valid_chars :: JStr -> Property
 prop_valid_chars (JStr i) =
-  let s = BC.unpack . B.toStrict $ encode i
-      h = head s
-      t = last s
-      m = take (length s - 1) (drop 1 s) in
+  let m = take (length s - 1) (drop 1 s) in
     collect escapes $
     classify (numescs == 0) "no escapes" $
     classify (numescs > 1) "multiple escapes" $
-    (h == '"') && (t == '"') && valid m
-  where valid [] = True
+    (head s == '"') && (last s == '"') && valid m
+  where s = BC.unpack . B.toStrict $ encode i
+        valid [] = True
         valid (x:xs)
           | fromEnum x < 0x1f = False
           | x == '\\' && valid_escape xs = valid $ skip_escape xs
@@ -50,11 +48,10 @@ prop_valid_chars (JStr i) =
           | x `elem` "\"\\/bfnrt" = xs
           | x == 'u' = drop 4 xs
         skip_escape _ = error "Invalid escape"
-        escapes = case dropWhile (/= '\\') (BC.unpack . B.toStrict $ encode i) of
+        escapes = case dropWhile (/= '\\') s of
                     (_:c:_) -> [c]
                     _ -> ""
-        numescs :: Int
-        numescs = (length.elemIndices '\\') (BC.unpack . B.toStrict $ encode i)
+        numescs = (length.elemIndices '\\') s
 
 tests :: [Test]
 tests = [
