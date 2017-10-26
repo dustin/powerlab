@@ -23,6 +23,8 @@ instance Arbitrary JStr where
     s <- arbitrary :: Gen String
     return $ JStr s
 
+  shrink (JStr s) = map JStr (shrink s)
+
 prop_valid_chars :: JStr -> Property
 prop_valid_chars (JStr i) =
   let s = BC.unpack . B.toStrict $ encode i
