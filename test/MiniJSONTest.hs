@@ -90,8 +90,9 @@ prop_valid_chars (JStr i) =
                     _ -> ""
         numescs = (length.elemIndices '\\') s
 
-prop_roundtrips :: (Eq a, ToJSON a) => (String -> Either String a) -> a -> Bool
-prop_roundtrips f o = case f (BC.unpack . B.toStrict $ encode o) of
+prop_roundtrips :: (Eq a, ToJSON a) => (String -> Either String a) -> Maybe a -> Property
+prop_roundtrips _ v@Nothing = collect "nothing" $ encode v == (B.fromStrict . BC.pack) "null"
+prop_roundtrips f (Just o) = collect "something" $ case f (BC.unpack . B.toStrict $ encode o) of
                         Left x -> error x
                         Right o' -> o == o'
 
