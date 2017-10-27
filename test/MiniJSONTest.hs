@@ -75,13 +75,13 @@ prop_valid_chars (JStr i) =
                     _ -> ""
         numescs = (length.elemIndices '\\') s
 
-prop_str_roundtrips :: JStr -> Bool
-prop_str_roundtrips (JStr i) = case parseJSONStr (BC.unpack . B.toStrict $ encode i) of
-                                 Left x -> error x
-                                 Right i' -> i == i'
+prop_roundtrips :: (Eq a, ToJSON a) => (String -> Either String a) -> a -> Bool
+prop_roundtrips f o = case f (BC.unpack . B.toStrict $ encode o) of
+                        Left x -> error x
+                        Right o' -> o == o'
 
 tests :: [Test]
 tests = [
   testProperty "valid string" prop_valid_chars,
-  testProperty "round trips" prop_str_roundtrips
+  testProperty "string round trips" $ prop_roundtrips parseJSONStr
   ]
