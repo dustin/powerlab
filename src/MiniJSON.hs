@@ -54,10 +54,10 @@ instance ToJSON Double where
   toJSON d = e $ if isNaN d then "null" else show d
 
 instance ToJSON Int where
-  toJSON d = e $ show d
+  toJSON = e . show
 
 instance ToJSON Integer where
-  toJSON d = e $ show d
+  toJSON = e . show
 
 instance ToJSON a => ToJSON [a] where
   toJSON = toJSONList
