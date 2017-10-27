@@ -1,8 +1,9 @@
-module MiniJSONTest (tests, prop_valid_chars) where
+module MiniJSONTest (tests, prop_valid_chars, parseJSONStr) where
 
 import MiniJSON
 
 import Data.List
+import Text.Read (readEither)
 import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString.Char8 as BC
 
@@ -24,6 +25,27 @@ instance Arbitrary JStr where
     return $ JStr s
 
   shrink (JStr s) = map JStr (shrink s)
+
+parseJSONStr :: String -> Either String String
+parseJSONStr s
+  | head s == '"' && last s == '"' = sequence $ chars m
+  | otherwise = Left "missing quotes"
+  where m = take (length s - 2) (drop 1 s)
+        chars :: String -> [Either String Char]
+        chars []                    = []
+        chars ('\\':'\\':xs)        = Right '\\' : chars xs
+        chars ('\\':'n':xs)         = Right '\n' : chars xs
+        chars ('\\':'r':xs)         = Right '\r' : chars xs
+        chars ('\\':'b':xs)         = Right '\b' : chars xs
+        chars ('\\':'f':xs)         = Right '\f' : chars xs
+        chars ('\\':'t':xs)         = Right '\t' : chars xs
+        chars ('\\':'/':xs)         = Right '/' : chars xs
+        chars ('\\':'"':xs)         = Right '"' : chars xs
+        chars ('\\':'u':a:b:c:d:xs) = parseHex [a,b,c,d] : chars xs
+        chars a@('\\':_)            = [Left ("error near \\" ++ take 3 a)]
+        chars (x:xs)                = Right x : chars xs
+        parseHex :: String -> Either String Char
+        parseHex n = toEnum <$> (readEither ("0x" ++ n) :: Either String Int)
 
 prop_valid_chars :: JStr -> Property
 prop_valid_chars (JStr i) =
@@ -53,7 +75,13 @@ prop_valid_chars (JStr i) =
                     _ -> ""
         numescs = (length.elemIndices '\\') s
 
+prop_str_roundtrips :: JStr -> Bool
+prop_str_roundtrips (JStr i) = case parseJSONStr (BC.unpack . B.toStrict $ encode i) of
+                                 Left x -> error x
+                                 Right i' -> i == i'
+
 tests :: [Test]
 tests = [
-  testProperty "valid string" prop_valid_chars
+  testProperty "valid string" prop_valid_chars,
+  testProperty "round t rips" prop_str_roundtrips
   ]
