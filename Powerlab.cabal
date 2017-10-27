@@ -43,7 +43,7 @@ test-suite Powerlab-test
   build-depends:       base
                      , Powerlab
                      , time
-                     , bytestring, text
+                     , bytestring, text, ieee754
                      , HUnit, HUnit-approx
                      , QuickCheck
                      , test-framework

@@ -5,15 +5,17 @@ import MiniJSON
 import Data.List
 import Data.Text (Text, pack, unpack)
 import Control.Monad (liftM)
+import Numeric.IEEE (nan)
 import Text.Read (readEither)
 import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString.Char8 as BC
 
-
+import Test.Framework (Test)
+import Test.Framework.Providers.HUnit (testCase)
+import Test.Framework.Providers.QuickCheck2 (testProperty)
+import Test.HUnit (assertEqual)
 import Test.QuickCheck
 import Test.QuickCheck.Arbitrary ()
-import Test.Framework.Providers.QuickCheck2 (testProperty)
-import Test.Framework (Test)
 
 
 newtype JStr = JStr String
@@ -112,5 +114,8 @@ tests = [
   testProperty "int round trips" $ prop_roundtrips (readEither :: String -> Either String Int),
   testProperty "[Int] round trips" $ prop_roundtrips (readEither :: String -> Either String [Int]),
   testProperty "integer round trips" $ prop_roundtrips (readEither :: String -> Either String Integer),
-  testProperty "Double round trips" $ prop_roundtrips (readEither :: String -> Either String Double)
+  testProperty "Double round trips" $ prop_roundtrips (readEither :: String -> Either String Double),
+
+  -- one-offs
+  testCase "NaN doubles" $ assertEqual "" (B.fromStrict $ BC.pack "null") (encode (nan :: Double))
   ]
