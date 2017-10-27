@@ -42,7 +42,7 @@ parseJSONStr s
         chars ('\\':'/':xs)         = Right '/' : chars xs
         chars ('\\':'"':xs)         = Right '"' : chars xs
         chars ('\\':'u':a:b:c:d:xs) = parseHex [a,b,c,d] : chars xs
-        chars a@('\\':_)            = [Left ("error near \\" ++ take 3 a)]
+        chars a@('\\':_)            = [Left ("error near " ++ take 3 a)]
         chars (x:xs)                = Right x : chars xs
         parseHex :: String -> Either String Char
         parseHex n = toEnum <$> (readEither ("0x" ++ n) :: Either String Int)
