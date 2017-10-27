@@ -83,5 +83,5 @@ prop_str_roundtrips (JStr i) = case parseJSONStr (BC.unpack . B.toStrict $ encod
 tests :: [Test]
 tests = [
   testProperty "valid string" prop_valid_chars,
-  testProperty "round t rips" prop_str_roundtrips
+  testProperty "round trips" prop_str_roundtrips
   ]
