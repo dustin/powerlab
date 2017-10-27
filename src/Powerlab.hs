@@ -2,7 +2,7 @@ module Powerlab (
     crc16
   , verifyPkt
   , read1
-  , read2, read2s, read2f
+  , read2, read2f
   , read4
   , PktWrap, unwrap
   ) where
@@ -42,9 +42,6 @@ readn f n l = runGet f (B.drop (n+4) $ unwrap l)
 
 read2 :: PktWrap t => Int64 -> t -> Word16
 read2 = readn getWord16be
-
-read2s :: PktWrap t => Int64 -> t -> Int16
-read2s = readn getInt16be
 
 read2f :: PktWrap t => Int64 -> t -> Double
 read2f n x = fromIntegral $ read2 n x
