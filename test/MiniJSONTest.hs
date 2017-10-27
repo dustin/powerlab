@@ -1,4 +1,4 @@
-module MiniJSONTest (tests, prop_valid_chars, parseJSONStr) where
+module MiniJSONTest (tests) where
 
 import MiniJSON
 
