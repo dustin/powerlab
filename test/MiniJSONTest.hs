@@ -62,6 +62,12 @@ parseJSONBool "false" = Right False
 parseJSONBool "true" = Right True
 parseJSONBool x = Left ("invalid bool representation: " ++ x)
 
+parseJSONChar :: String -> Either String Char
+parseJSONChar s
+  | (length <$> h) == Right 1 = head <$> h
+  | otherwise = Left "bad parse"
+  where h = parseJSONStr s
+
 prop_valid_chars :: JStr -> Property
 prop_valid_chars (JStr i) =
   let m = take (length s - 1) (drop 1 s) in
@@ -102,6 +108,7 @@ tests = [
   testProperty "string round trips" $ prop_roundtrips parseJSONStr,
   testProperty "text round trips" $ prop_roundtrips parseJSONText,
   testProperty "bool round trips" $ prop_roundtrips parseJSONBool,
+  testProperty "char round trips" $ prop_roundtrips parseJSONChar,
   testProperty "int round trips" $ prop_roundtrips (readEither :: String -> Either String Int),
   testProperty "integer round trips" $ prop_roundtrips (readEither :: String -> Either String Integer),
   testProperty "Double round trips" $ prop_roundtrips (readEither :: String -> Either String Double)
