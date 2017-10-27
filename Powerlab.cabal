@@ -39,7 +39,7 @@ test-suite Powerlab-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Main.hs
-  other-modules:       CRCTest, StatusTest, MiniJSONTest
+  other-modules:       CRCTest, StatusTest, MiniJSONTest, PowerlabTest
   build-depends:       base
                      , Powerlab
                      , time
