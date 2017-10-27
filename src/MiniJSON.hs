@@ -48,7 +48,7 @@ instance ToJSON UTCTime where
   toJSON = toJSON . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S"
 
 instance ToJSON Text where
-  toJSON s = e "\"" +++ e (unpack s) +++ e "\""
+  toJSON s = e "\"" +++ esc (unpack s) +++ e "\""
 
 instance ToJSON Double where
   toJSON d = e $ if isNaN d then "null" else show d

@@ -3,6 +3,8 @@ module MiniJSONTest (tests, prop_valid_chars, parseJSONStr) where
 import MiniJSON
 
 import Data.List
+import Data.Text (Text, pack, unpack)
+import Control.Monad (liftM)
 import Text.Read (readEither)
 import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString.Char8 as BC
@@ -26,6 +28,11 @@ instance Arbitrary JStr where
 
   shrink (JStr s) = map JStr (shrink s)
 
+instance Arbitrary Text where
+  arbitrary = pack `liftM` (arbitrary :: Gen String)
+
+  shrink t = map pack (shrink $ unpack t)
+
 parseJSONStr :: String -> Either String String
 parseJSONStr s
   | head s == '"' && last s == '"' = sequence $ chars m
@@ -46,6 +53,9 @@ parseJSONStr s
         chars (x:xs)                = Right x : chars xs
         parseHex :: String -> Either String Char
         parseHex n = toEnum <$> (readEither ("0x" ++ n) :: Either String Int)
+
+parseJSONText :: String -> Either String Text
+parseJSONText t = pack <$> parseJSONStr t
 
 prop_valid_chars :: JStr -> Property
 prop_valid_chars (JStr i) =
@@ -83,5 +93,9 @@ prop_roundtrips f o = case f (BC.unpack . B.toStrict $ encode o) of
 tests :: [Test]
 tests = [
   testProperty "valid string" prop_valid_chars,
-  testProperty "string round trips" $ prop_roundtrips parseJSONStr
+  testProperty "string round trips" $ prop_roundtrips parseJSONStr,
+  testProperty "text round trips" $ prop_roundtrips parseJSONText,
+  testProperty "int round trips" $ prop_roundtrips (readEither :: String -> Either String Int),
+  testProperty "integer round trips" $ prop_roundtrips (readEither :: String -> Either String Integer),
+  testProperty "Double round trips" $ prop_roundtrips (readEither :: String -> Either String Double)
   ]
