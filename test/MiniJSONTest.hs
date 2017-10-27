@@ -110,6 +110,7 @@ tests = [
   testProperty "bool round trips" $ prop_roundtrips parseJSONBool,
   testProperty "char round trips" $ prop_roundtrips parseJSONChar,
   testProperty "int round trips" $ prop_roundtrips (readEither :: String -> Either String Int),
+  testProperty "[Int] round trips" $ prop_roundtrips (readEither :: String -> Either String [Int]),
   testProperty "integer round trips" $ prop_roundtrips (readEither :: String -> Either String Integer),
   testProperty "Double round trips" $ prop_roundtrips (readEither :: String -> Either String Double)
   ]
