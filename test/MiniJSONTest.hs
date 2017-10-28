@@ -4,6 +4,7 @@ import MiniJSON
 
 import Data.List
 import Data.Text (Text, pack, unpack)
+import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import Control.Monad (liftM)
 import Numeric.IEEE (nan)
 import Text.Read (readEither)
@@ -117,5 +118,7 @@ tests = [
   testProperty "Double round trips" $ prop_roundtrips (readEither :: String -> Either String Double),
 
   -- one-offs
-  testCase "NaN doubles" $ assertEqual "" (B.fromStrict $ BC.pack "null") (encode (nan :: Double))
+  testCase "NaN doubles" $ assertEqual "" (e "null") (encode (nan :: Double)),
+  testCase "time" $ assertEqual "" (e "\"2017-10-28T01:51:21\"") (encode $ posixSecondsToUTCTime 1509155481)
   ]
+  where e = B.fromStrict . BC.pack
