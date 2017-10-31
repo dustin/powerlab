@@ -94,7 +94,16 @@ mode' 11 = PackCoolDown
 mode' 99 = SystemStopError
 mode' _  = Unknown
 
-newtype Status = Status B.ByteString deriving (Show)
+newtype Status = Status B.ByteString deriving (Eq)
+
+instance Show Status where show (Status st) = (show.B.unpack) st
+
+instance Read Status where
+  readsPrec _ s = let parsed = reads s :: [([Word8], String)] in
+                    map parse' parsed
+    where must (Right x) = x
+          must (Left x) = error x
+          parse' (byts, rest) = ((must.parse.B.pack) byts, rest)
 
 instance PktWrap Status where
   unwrap (Status b) = b

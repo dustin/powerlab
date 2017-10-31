@@ -259,11 +259,15 @@ propArbitaryJSON x = case decode (encode x) :: Maybe Value of
                        Nothing -> False
                        Just _ -> True
 
+propRoundTrip :: (Show a, Read a, Eq a) => a -> Bool
+propRoundTrip x = x == (read.show) x
+
 tests :: [Test]
 tests = [
   testCase "verify exemplar" (isRight (verifyPkt exemplar St.statusLen) @?= True),
   testCase "verify captured" (isRight (verifyPkt capturedExemplar St.statusLen) @?= True),
   testGroup "validate exemplar" $ map (testCase "") exemplarTests,
 
-  testProperty "arbitary JSON" propArbitaryJSON
+  testProperty "arbitary JSON" propArbitaryJSON,
+  testProperty "round trip status string" (propRoundTrip :: St.Status -> Bool)
   ]
