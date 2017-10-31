@@ -51,7 +51,12 @@ instance ToJSON Text where
   toJSON s = e "\"" +++ esc (unpack s) +++ e "\""
 
 instance ToJSON Double where
-  toJSON d = e $ if isNaN d then "null" else show d
+  toJSON d
+    | isNaN d = nil
+    | d == 1/0 = nil
+    | d == -1/0 = nil
+    | otherwise = (e.show) d
+    where nil = e "null"
 
 instance ToJSON Int where
   toJSON = e . show

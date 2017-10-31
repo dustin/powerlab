@@ -6,6 +6,7 @@ import qualified Powerlab.Status as St
 
 import Data.Time
 import Data.Either
+import Data.Aeson (decode, Value)
 import Data.Word (Word8)
 import Data.Binary.Put (runPut, putWord16be)
 import qualified Data.ByteString.Lazy as B
@@ -254,7 +255,9 @@ capturedExemplar = B.pack [
   0x0, 0x32, 0x3]
 
 propArbitaryJSON :: St.Status -> Bool
-propArbitaryJSON x = B.length (encode x) > 0
+propArbitaryJSON x = case decode (encode x) :: Maybe Value of
+                       Nothing -> False
+                       Just _ -> True
 
 tests :: [Test]
 tests = [
