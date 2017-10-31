@@ -94,7 +94,7 @@ mode' 11 = PackCoolDown
 mode' 99 = SystemStopError
 mode' _  = Unknown
 
-newtype Status = Status B.ByteString
+newtype Status = Status B.ByteString deriving (Show)
 
 instance PktWrap Status where
   unwrap (Status b) = b

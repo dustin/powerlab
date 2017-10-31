@@ -1,16 +1,22 @@
 module StatusTest (tests, exemplar) where
 
 import Powerlab
+import MiniJSON (encode)
 import qualified Powerlab.Status as St
 
 import Data.Time
 import Data.Either
+import Data.Word (Word8)
+import Data.Binary.Put (runPut, putWord16be)
 import qualified Data.ByteString.Lazy as B
 
 import Test.HUnit (Assertion, assertBool, (@?=))
 import Test.HUnit.Approx (assertApproxEqual)
 import Test.Framework (Test, testGroup)
-import Test.Framework.Providers.HUnit
+import Test.Framework.Providers.HUnit (testCase)
+import Test.Framework.Providers.QuickCheck2 (testProperty)
+import Test.QuickCheck
+import Test.QuickCheck.Arbitrary ()
 
 exemplar :: B.ByteString
 exemplar = B.pack [
@@ -87,6 +93,86 @@ capturedSt :: St.Status
 capturedSt = case St.parse capturedExemplar of
                Left ex -> error ex
                Right st -> st
+
+instance Arbitrary St.Status where
+  arbitrary = do
+    let stuff = [lit [82, 97, 109, 0],                    -- "Ram\0"
+                 lit [1, 0x3a],                           -- version
+                 someBytes 4,                             -- cells 1, 2
+                 someBytes 4,                             -- cells 3, 4
+                 someBytes 4,                             -- cells 5, 6
+                 someBytes 4,                             -- cells 7, 8
+                 someBytes 2,                             -- pwm type
+                 someBytes 2,                             -- charge current
+                 someBytes 2,                             -- supply volts with current
+                 someBytes 2,                             -- supply volts
+                 someBytes 2,                             -- CPU Temp
+                 someBytes 2,                             -- charge sec
+                 someBytes 2,                             -- fast amps
+                 someBytes 2,                             -- output postive
+                 someBytes 4,                             -- mAh in
+                 someBytes 2,                             -- avg cell
+                 someBytes 2,                             -- start avg
+                 someBytes 2,                             -- avg amps
+                 someBytes 2,                             -- status flags
+                 someBytes 2,                             -- rx status
+                 lit [0, 0],                              -- unused
+                 someBytes 2,                             -- status2
+                 someBytes 4,                             -- ir 1, ir 2
+                 someBytes 4,                             -- ir 3, ir 4
+                 someBytes 4,                             -- ir 5, ir 6
+                 someBytes 4,                             -- ir 7, ir 8
+                 someBytes 2,                             -- VRamps -- 68
+                 someBytes 2,                             -- NiCdFallbackV
+                 lit [0, 0],                              -- unused
+                 someBytes 2,                             -- MaxCell volts -- 74-75 -- Volts = 16bit / 12797
+                 someBytes 2,                             -- status6 -- 76-77
+                 someBytes 2,                             -- ChgMin -- 78-79
+                 someBytes 2,                             -- supply amps -- 80-81
+                 someBytes 2,                             -- battery pos -- 82-83
+                 someBytes 4,                             -- AHr Out -- 84-87
+                 lit [0, 0],                              -- unused -- 88-89
+                 someBytes 2,                             -- RegenVoltSet -- 90-91
+                 someBytes 2,                             -- DischAmpsSet -- 92-93
+                 someBytes 2,                             -- DischargePWM -- 94-95
+                 lit [0, 0, 0, 0],                        -- unused -- 96-99
+                 someBytes 2,                             -- BatNeg -- 100-101
+                 lit [0, 0],                              -- unused -- 102-103
+                 someBytes 2,                             -- start supply volts -- 104-105
+                 lit [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],      -- unused -- 106-115
+                 someBytes 2,                             -- SlowAvgAmps -- 116-117
+                 someBytes 2,                             -- PresetSetAmps -- 118-119
+                 someBytes 2,                             -- SlavesFound -- 120-121
+                 lit [0, 0],                              -- unused -- 122-123
+                 someBytes 8,                             -- Bal*PWM -- 124-131
+                 cho (1, 6),                              -- DetectedCellCount -- 132
+                 cho (1, 9),                              -- Mode -- 133
+                 oneOf [0, 1, 6, 7, 8, 9, 10, 11, 99],     -- ErrorCode -- 134
+                 cho (1, 11),                             -- Chemistry -- 135
+                 cho (1, 255),                            -- Packs -- 136
+                 someBytes 1,                             -- Preset
+                 lit [0],                                 -- unused
+                 someBytes 1,                             -- Screen Number
+                 lit [0, 0],                              -- unused
+                 someBytes 1,                             -- CycleNumber
+                 cho (0, 16),                             -- PowerReductionReason
+                 lit [0, 0, 0]] :: [Gen [Word8]]          -- unused
+    let sstuff = sequence stuff
+    ws <- sstuff
+    let bs = B.pack $ concat ws
+    let c = (bytes.crc16) (B.drop 4 bs)
+    return $ must.St.parse $ B.append bs c
+      where lit :: [Word8] -> Gen [Word8]
+            lit = sequence . map pure
+            someBytes :: Int -> Gen [Word8]
+            someBytes n = vectorOf n (arbitrary :: Gen Word8)
+            cho :: (Word8,Word8) -> Gen [Word8]
+            cho x@(_,_) = vectorOf 1 (choose x)
+            oneOf :: [Word8] -> Gen [Word8]
+            oneOf v = vectorOf 1 (elements v)
+            bytes w = runPut (putWord16be w)
+            must (Left x) = error x
+            must (Right x) = x
 
 approxl :: (Fractional a, Ord a) => [a] -> [a] -> Bool
 approxl [] [] = True
@@ -167,9 +253,14 @@ capturedExemplar = B.pack [
   0x0, 0x1, 0x1, 0x2, 0x0, 0x2, 0x0, 0xc, 0x0, 0x0, 0x0, 0x0,
   0x0, 0x32, 0x3]
 
+propArbitaryJSON :: St.Status -> Bool
+propArbitaryJSON x = B.length (encode x) > 0
+
 tests :: [Test]
 tests = [
   testCase "verify exemplar" (isRight (verifyPkt exemplar St.statusLen) @?= True),
   testCase "verify captured" (isRight (verifyPkt capturedExemplar St.statusLen) @?= True),
-  testGroup "validate exemplar" $ map (testCase "") exemplarTests
+  testGroup "validate exemplar" $ map (testCase "") exemplarTests,
+
+  testProperty "arbitary JSON" propArbitaryJSON
   ]

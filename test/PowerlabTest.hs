@@ -2,21 +2,18 @@ module PowerlabTest (tests) where
 
 import Powerlab
 
-import Data.Time
-import Data.Either
 import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString.Char8 as BC
 
 import Test.HUnit (Assertion, (@?=))
-import Test.HUnit.Approx (assertApproxEqual)
-import Test.Framework (Test, testGroup)
+import Test.Framework (Test)
 import Test.Framework.Providers.HUnit
 
 e :: String -> B.ByteString
 e = B.fromStrict . BC.pack
 
 testShortPkt :: Assertion
-testShortPkt = fl (verifyPkt B.empty 4) @?= "invalid length"
+testShortPkt = fl (verifyPkt B.empty 4) @?= "invalid length: 0 want 8"
   where fl (Left x) = x
         fl _ = error "not from left"
 

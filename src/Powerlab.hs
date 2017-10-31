@@ -54,7 +54,7 @@ instance PktWrap B.ByteString where
 
 verifyPkt :: (PktWrap t) => t -> Int64 -> Either String Bool
 verifyPkt p n
-  | B.length d /= n + 4 = Left "invalid length"
+  | B.length d /= n + 4 = Left ("invalid length: " ++ show (B.length d) ++ " want " ++ show (n + 4))
   | crc16 r == c = Right True
   | otherwise = Left ("computed crc = " ++ show (crc16 r) ++ " wanted " ++ show c)
   where d = unwrap p
