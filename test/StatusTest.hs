@@ -111,7 +111,7 @@ instance Arbitrary St.Status where
                  someBytes 2,                             -- charge sec
                  someBytes 2,                             -- fast amps
                  someBytes 2,                             -- output postive
-                 someBytes 4,                             -- mAh in
+                 cho (0, 127), someBytes 3,               -- mAh in
                  someBytes 2,                             -- avg cell
                  someBytes 2,                             -- start avg
                  someBytes 2,                             -- avg amps
@@ -131,7 +131,7 @@ instance Arbitrary St.Status where
                  someBytes 2,                             -- ChgMin -- 78-79
                  someBytes 2,                             -- supply amps -- 80-81
                  someBytes 2,                             -- battery pos -- 82-83
-                 someBytes 4,                             -- AHr Out -- 84-87
+                 cho (0, 127), someBytes 3,               -- AHr Out -- 84-87
                  lit [0, 0],                              -- unused -- 88-89
                  someBytes 2,                             -- RegenVoltSet -- 90-91
                  someBytes 2,                             -- DischAmpsSet -- 92-93
