@@ -2,6 +2,7 @@ module CRCTest (tests, genCrcData) where
 
 import Powerlab
 
+import Control.Monad (foldM)
 import Data.Word
 import Data.List
 import qualified Data.ByteString as B
@@ -1137,8 +1138,12 @@ crcTestData = [
   ] :: [[Word8]]
 
 testCRCRef :: TestTree
-testCRCRef = testCase "CRC Ref" $ do
-  mapM_ (\(a, b) -> assertEqual "" b $ crc16 $ LB.pack a) $ zip crcTestData crcTestResults
+testCRCRef = testCaseInfo "CRC Ref" $ do
+  n <- foldM (\n (a, b) -> do
+                 assertEqual (show a) b $ crc16 $ LB.pack a
+                 return $ n + 1
+             ) (0::Int) $ zip crcTestData crcTestResults
+  return $ "ran " ++ show n ++ " tests"
 
 testCRC16 :: [TestTree]
 testCRC16 =
