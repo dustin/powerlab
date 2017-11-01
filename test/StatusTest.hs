@@ -187,8 +187,8 @@ approxl _ _ = error "Length mismatch"
 duration :: Integer -> DiffTime
 duration = secondsToDiffTime
 
-exemplarTests :: [Assertion]
-exemplarTests = [
+exemplarTests :: Assertion
+exemplarTests = mapM_ id [
   St.version exemplarSt @?= "3.14",
   assertApproxEqual "cell(1)" ε 4.2 $ St.cell exemplarSt 1,
   assertBool "cells" (approxl [4.2, 3.7, 0] $ St.cells exemplarSt),
@@ -234,7 +234,7 @@ exemplarTests = [
   St.rxStatus exemplarSt @?= (True, True, False, True),
   assertBool "not high temp" $ not $ St.highTemp capturedSt,
   assertBool "high temp" $ St.highTemp exemplarSt
-                ]
+  ]
 
 capturedExemplar :: B.ByteString
 capturedExemplar = B.pack [
@@ -265,7 +265,7 @@ tests :: TestTree
 tests = testGroup "Status" [
   testCase "verify exemplar" (isRight (verifyPkt exemplar St.statusLen) @?= True),
   testCase "verify captured" (isRight (verifyPkt capturedExemplar St.statusLen) @?= True),
-  testGroup "validate exemplar" $ map (testCase "") exemplarTests,
+  testCase "validate exemplar" exemplarTests,
 
   testProperty "arbitary JSON" propArbitaryJSON,
   testProperty "round trip status string" (propRoundTrip :: St.Status -> Bool)
