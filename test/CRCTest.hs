@@ -1136,9 +1136,9 @@ crcTestData = [
   [205,152,88,230,181,164,222,63,238,10,74,19,0,100]
   ] :: [[Word8]]
 
-testCRCRef :: [TestTree]
-testCRCRef =
-  map (\(a, b) -> testCase (show a) $ assertEqual "" b $ crc16 $ LB.pack a) $ zip crcTestData crcTestResults
+testCRCRef :: TestTree
+testCRCRef = testCase "CRC Ref" $ do
+  mapM_ (\(a, b) -> assertEqual "" b $ crc16 $ LB.pack a) $ zip crcTestData crcTestResults
 
 testCRC16 :: [TestTree]
 testCRC16 =
@@ -1150,5 +1150,5 @@ testCRC16 =
 tests :: TestTree
 tests = testGroup "CRC" [
   testGroup "crc16" testCRC16,
-  testGroup "crc16 ref" testCRCRef
+  testCRCRef
   ]
