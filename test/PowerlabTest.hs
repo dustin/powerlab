@@ -5,9 +5,8 @@ import Powerlab
 import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString.Char8 as BC
 
-import Test.HUnit (Assertion, (@?=))
-import Test.Framework (Test)
-import Test.Framework.Providers.HUnit
+import Test.Tasty
+import Test.Tasty.HUnit
 
 e :: String -> B.ByteString
 e = B.fromStrict . BC.pack
@@ -22,8 +21,8 @@ testBadCRC = fl (verifyPkt (e "hello") 1) @?= "computed crc = 4742 wanted 27759"
   where fl (Left x) = x
         fl _ = error "not from left"
 
-tests :: [Test]
-tests = [
+tests :: TestTree
+tests = testGroup "PowerLab" [
   testCase "empty" testShortPkt,
   testCase "bad crc" testBadCRC
   ]

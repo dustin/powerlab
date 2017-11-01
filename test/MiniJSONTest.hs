@@ -11,13 +11,11 @@ import Text.Read (readEither)
 import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString.Char8 as BC
 
-import Test.Framework (Test)
-import Test.Framework.Providers.HUnit (testCase)
-import Test.Framework.Providers.QuickCheck2 (testProperty)
-import Test.HUnit (assertEqual)
 import Test.QuickCheck
 import Test.QuickCheck.Arbitrary ()
-
+import Test.Tasty
+import Test.Tasty.QuickCheck as QC
+import Test.Tasty.HUnit
 
 newtype JStr = JStr String
 
@@ -105,8 +103,8 @@ prop_roundtrips f v@(Just o) = collect "something" $ case f (BC.unpack . B.toStr
                         Left x -> error x
                         Right o' -> o == o'
 
-tests :: [Test]
-tests = [
+tests :: TestTree
+tests = testGroup "MiniJSON" [
   testProperty "valid string" prop_valid_chars,
   testProperty "string round trips" $ prop_roundtrips parseJSONStr,
   testProperty "text round trips" $ prop_roundtrips parseJSONText,

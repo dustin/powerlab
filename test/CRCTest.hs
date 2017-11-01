@@ -10,9 +10,8 @@ import qualified Data.ByteString.Char8 as BC
 
 import Test.QuickCheck
 import Test.QuickCheck.Arbitrary ()
-import Test.Framework.Providers.HUnit (testCase)
-import Test.Framework (Test, testGroup)
-import Test.HUnit (assertEqual)
+import Test.Tasty
+import Test.Tasty.HUnit
 
 newtype CRCGen = CRCGen B.ByteString
 
@@ -1137,19 +1136,19 @@ crcTestData = [
   [205,152,88,230,181,164,222,63,238,10,74,19,0,100]
   ] :: [[Word8]]
 
-testCRCRef :: [Test]
+testCRCRef :: [TestTree]
 testCRCRef =
   map (\(a, b) -> testCase (show a) $ assertEqual "" b $ crc16 $ LB.pack a) $ zip crcTestData crcTestResults
 
-testCRC16 :: [Test]
+testCRC16 :: [TestTree]
 testCRC16 =
   map (\(a, b) -> testCase (show a) $ assertEqual "" b $ crc16 $ (LB.fromStrict . BC.pack) a) [
   ("testing", 10243),
   ("", 0x1286),
   (['\0'], 0xe12c)]
 
-tests :: [Test]
-tests = [
+tests :: TestTree
+tests = testGroup "CRC" [
   testGroup "crc16" testCRC16,
   testGroup "crc16 ref" testCRCRef
   ]

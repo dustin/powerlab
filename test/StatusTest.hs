@@ -11,13 +11,12 @@ import Data.Word (Word8)
 import Data.Binary.Put (runPut, putWord16be)
 import qualified Data.ByteString.Lazy as B
 
-import Test.HUnit (Assertion, assertBool, (@?=))
-import Test.HUnit.Approx (assertApproxEqual)
-import Test.Framework (Test, testGroup)
-import Test.Framework.Providers.HUnit (testCase)
-import Test.Framework.Providers.QuickCheck2 (testProperty)
 import Test.QuickCheck
 import Test.QuickCheck.Arbitrary ()
+import Test.HUnit.Approx (assertApproxEqual)
+import Test.Tasty
+import Test.Tasty.QuickCheck as QC
+import Test.Tasty.HUnit
 
 exemplar :: B.ByteString
 exemplar = B.pack [
@@ -262,8 +261,8 @@ propArbitaryJSON x = case decode (encode x) :: Maybe Value of
 propRoundTrip :: (Show a, Read a, Eq a) => a -> Bool
 propRoundTrip x = x == (read.show) x
 
-tests :: [Test]
-tests = [
+tests :: TestTree
+tests = testGroup "Status" [
   testCase "verify exemplar" (isRight (verifyPkt exemplar St.statusLen) @?= True),
   testCase "verify captured" (isRight (verifyPkt capturedExemplar St.statusLen) @?= True),
   testGroup "validate exemplar" $ map (testCase "") exemplarTests,
