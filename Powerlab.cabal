@@ -57,10 +57,6 @@ benchmark Powerlab-bench
   build-depends:      base
                     , Powerlab
                     , bytestring
-                    , HUnit
-                    , QuickCheck
-                    , test-framework
-                    , test-framework-hunit, test-framework-quickcheck2
                     , criterion
   ghc-options:        -Wall -O2
 
