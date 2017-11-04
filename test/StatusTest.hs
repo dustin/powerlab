@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-orphans #-}
+
 module StatusTest (tests, exemplar) where
 
 import Powerlab
@@ -6,6 +8,7 @@ import qualified Powerlab.Status as St
 
 import Data.Time
 import Data.Either
+import Data.Maybe (isJust)
 import Data.Aeson (decode, Value)
 import Data.Word (Word8)
 import Data.Binary.Put (runPut, putWord16be)
@@ -165,9 +168,9 @@ instance Arbitrary St.Status where
       where lit :: [Word8] -> Gen [Word8]
             lit = sequence . map pure
             someBytes :: Int -> Gen [Word8]
-            someBytes n = vectorOf n (arbitrary :: Gen Word8)
+            someBytes n = vectorOf n arbitrary
             cho :: (Word8,Word8) -> Gen [Word8]
-            cho x@(_,_) = vectorOf 1 (choose x)
+            cho x = vectorOf 1 (choose x)
             oneOf :: [Word8] -> Gen [Word8]
             oneOf v = vectorOf 1 (elements v)
             bytes w = runPut (putWord16be w)
@@ -254,9 +257,7 @@ capturedExemplar = B.pack [
   0x0, 0x32, 0x3]
 
 propArbitaryJSON :: St.Status -> Bool
-propArbitaryJSON x = case decode (encode x) :: Maybe Value of
-                       Nothing -> False
-                       Just _ -> True
+propArbitaryJSON x = isJust (decode (encode x) :: Maybe Value)
 
 propRoundTrip :: (Show a, Read a, Eq a) => a -> Bool
 propRoundTrip x = x == (read.show) x

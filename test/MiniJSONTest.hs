@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-orphans #-}
+
 module MiniJSONTest (tests) where
 
 import MiniJSON
@@ -17,22 +19,10 @@ import Test.Tasty
 import Test.Tasty.QuickCheck as QC
 import Test.Tasty.HUnit
 
-newtype JStr = JStr String
-
-instance Show JStr where
-  show (JStr a) = show a ++ " " ++ show (map fromEnum a)
-
-instance Arbitrary JStr where
-  arbitrary = do
-    s <- arbitrary :: Gen String
-    return $ JStr s
-
-  shrink (JStr s) = map JStr (shrink s)
-
 instance Arbitrary Text where
   arbitrary = pack `liftM` (arbitrary :: Gen String)
 
-  shrink t = map pack (shrink $ unpack t)
+  shrink = map pack . shrink . unpack
 
 parseJSONStr :: String -> Either String String
 parseJSONStr s
@@ -69,8 +59,8 @@ parseJSONChar s
   | otherwise = Left "bad parse"
   where h = parseJSONStr s
 
-prop_valid_chars :: JStr -> Property
-prop_valid_chars (JStr i) =
+prop_valid_chars :: String -> Property
+prop_valid_chars i =
   let m = take (length s - 1) (drop 1 s) in
     collect escapes $
     classify (numescs == 0) "no escapes" $
