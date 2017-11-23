@@ -7,20 +7,20 @@ module Powerlab (
   , PktWrap, unwrap
   ) where
 
-import Data.Bits
-import Data.Word
-import Data.Int
-import Data.Binary.Get
+import Data.Bits (Bits, shiftR, xor)
+import Data.Word (Word8, Word16, Word32)
+import Data.Int (Int64)
+import Data.Binary.Get (Get, runGet, getWord16be, getWord32be)
 import qualified Data.ByteString.Lazy as B
 
 class PktWrap a where
   unwrap :: a -> B.ByteString
 
 -- logical symbols since haskell doesn't have them.
-(≫) :: Word16 -> Int -> Word16
-(≫) = Data.Bits.shiftR
-(⊕) :: Word16 -> Word16 -> Word16
-(⊕) = Data.Bits.xor
+(≫) :: Bits a => a -> Int -> a
+(≫) = shiftR
+(⊕) :: Bits a => a -> a -> a
+(⊕) = xor
 
 -- Not yet needed, but since I was typing...
 -- (∧) = Data.Bits.(.&.)
