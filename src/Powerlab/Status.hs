@@ -24,6 +24,7 @@ import Data.Bits (shiftL, (.&.))
 import Data.Int
 import Data.Time.Clock
 import Data.Word
+import Data.Either (either)
 
 import qualified Data.ByteString.Lazy as B
 
@@ -101,8 +102,7 @@ instance Show Status where show (Status st) = (show.B.unpack) st
 instance Read Status where
   readsPrec _ s = let parsed = reads s :: [([Word8], String)] in
                     map parse' parsed
-    where must (Right x) = x
-          must (Left x) = error x
+    where must = either error id
           parse' (byts, rest) = ((must.parse.B.pack) byts, rest)
 
 instance PktWrap Status where
