@@ -50,7 +50,7 @@ read4 :: PktWrap t => Int64 -> t -> Word32
 read4 = readn getWord32be
 
 instance PktWrap B.ByteString where
-  unwrap x = x
+  unwrap = id
 
 verifyPkt :: (PktWrap t) => t -> Int64 -> Either String Bool
 verifyPkt p n
