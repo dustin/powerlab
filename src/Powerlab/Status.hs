@@ -18,7 +18,7 @@ module Powerlab.Status (
   ) where
 
 import Powerlab
-import MiniJSON
+import Data.Aeson (ToJSON(..), object, (.=))
 
 import Data.Bits (shiftL, (.&.))
 import Data.Int

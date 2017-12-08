@@ -15,9 +15,10 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Powerlab, MiniJSON, Powerlab.Status, Powerlab.Serial, Powerlab.Logger
+  exposed-modules:     Powerlab, Powerlab.Status, Powerlab.Serial, Powerlab.Logger
   build-depends:       base >= 4.7 && < 5
                      , bytestring
+                     , aeson
                      , time
                      , binary
                      , text
@@ -31,7 +32,7 @@ executable powerserver
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base >= 4.7 && < 5
                      , Powerlab, wai, wai-app-static, warp, http-types, bytestring
-                     , time, stm, async, optparse-applicative
+                     , aeson, time, stm, async, optparse-applicative
   default-language:    Haskell2010
   ghc-options:        -O2 -Wall
 
@@ -39,7 +40,7 @@ test-suite Powerlab-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Main.hs
-  other-modules:       CRCTest, StatusTest, MiniJSONTest, PowerlabTest
+  other-modules:       CRCTest, StatusTest, PowerlabTest
   build-depends:       base
                      , Powerlab
                      , time

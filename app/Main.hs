@@ -20,7 +20,7 @@ import Data.Semigroup ((<>))
 
 import Powerlab.Serial
 import Powerlab.Logger
-import MiniJSON
+import Data.Aeson (ToJSON(..), object, (.=), encode)
 import qualified Powerlab.Status as St
 
 data TSRec = TSRec { _ts :: !UTCTime, _st :: !St.Status }

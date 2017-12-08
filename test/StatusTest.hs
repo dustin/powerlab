@@ -3,13 +3,12 @@
 module StatusTest (tests, exemplar) where
 
 import Powerlab
-import MiniJSON (encode)
 import qualified Powerlab.Status as St
 
 import Data.Time
 import Data.Either
 import Data.Maybe (isJust)
-import Data.Aeson (decode, Value)
+import Data.Aeson (decode, encode, Value)
 import Data.Word (Word8)
 import Data.Binary.Put (runPut, putWord16be)
 import qualified Data.ByteString.Lazy as B
