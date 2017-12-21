@@ -1,7 +1,6 @@
 module Main (main) where
 
 import Powerlab
-import MiniJSON
 import qualified Powerlab.Status as St
 
 import qualified Data.ByteString.Lazy as B
@@ -40,8 +39,5 @@ statusTestSt = case St.parse statusTestData of
 benchVerify :: Benchmark
 benchVerify = bench "status verification test" $ whnf verifyPkt statusTestData
 
-benchStatusJson :: Benchmark
-benchStatusJson = bench "Status -> JSON" $ whnf encode statusTestSt
-
 main :: IO ()
-main = defaultMain [benchCrc16, benchVerify, benchStatusJson]
+main = defaultMain [benchCrc16, benchVerify]
