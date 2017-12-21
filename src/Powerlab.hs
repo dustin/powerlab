@@ -8,6 +8,7 @@ module Powerlab (
   ) where
 
 import Data.Bits (Bits, shiftR, xor)
+import Data.Foldable (foldl')
 import Data.Word (Word8, Word16, Word32)
 import Data.Int (Int64)
 import Data.Binary.Get (Get, runGet, getWord16be, getWord32be)
@@ -31,8 +32,8 @@ class PktWrap a where
 crc16 :: B.ByteString -> Word16
 crc16 = let
   perbit a b = (a ≫ 1) ⊕ if odd (b ⊕ a) then 33800 else 0
-  perbyte n b = foldl perbit n [b ≫ x' | x' <- [0..7]] in
-    B.foldl ((. toEnum . fromEnum) . perbyte) 4742
+  perbyte n b = foldl' perbit n [b ≫ x' | x' <- [0..7]] in
+    B.foldl' ((. toEnum . fromEnum) . perbyte) 4742
 
 read1 :: PktWrap t => Int64 -> t -> Word8
 read1 n x = B.index (unwrap x) (4+n)
