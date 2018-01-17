@@ -4,4 +4,4 @@ packages:
 - '.'
 extra-deps:
 - serialport-0.4.7
-resolver: lts-10.0
+resolver: lts-10.3
