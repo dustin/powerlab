@@ -7,6 +7,7 @@ import qualified Powerlab.Status as St
 
 import Data.Time
 import Data.Either
+import Data.Semigroup ((<>))
 import Data.Maybe (isJust)
 import Data.Aeson (decode, encode, Value)
 import Data.Word (Word8)
@@ -159,11 +160,10 @@ instance Arbitrary St.Status where
                  someBytes 1,                             -- CycleNumber
                  cho (0, 16),                             -- PowerReductionReason
                  lit [0, 0, 0]] :: [Gen [Word8]]          -- unused
-    let sstuff = sequence stuff
-    ws <- sstuff
+    ws <- sequence stuff
     let bs = B.pack $ concat ws
     let c = (bytes.crc16) (B.drop 4 bs)
-    return $ must.St.parse $ B.append bs c
+    pure $ must.St.parse $ bs <> c
       where lit :: [Word8] -> Gen [Word8]
             lit = sequence . map pure
             someBytes :: Int -> Gen [Word8]
