@@ -79,9 +79,9 @@ data Options = Options  { _optPort :: Int
 options :: Parser Options
 options = Options
   <$> option auto (long "port" <> showDefault <> value 8080 <> help "listen port")
-  <*> option auto (long "static" <> showDefault <> value "static" <> help "path to static web content")
-  <*> option auto (long "serial" <> help "path to serial port")
-  <*> option auto (long "logfile" <> showDefault <> value "/tmp/%Y%m%dT%H%M%S" <> help "path to timestamped log file")
+  <*> strOption (long "static" <> showDefault <> value "static" <> help "path to static web content")
+  <*> strOption (long "serial" <> help "path to serial port")
+  <*> strOption (long "logfile" <> showDefault <> value "/tmp/%Y%m%dT%H%M%S" <> help "path to timestamped log file")
 
 main' :: Options -> IO ()
 main' (Options oPort oStat oSer oLog) = do
