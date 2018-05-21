@@ -43,22 +43,22 @@ function updateStatus(dees) {
 
     $(".modesec").hide();
 
-    if (statuses.length > 0 && statuses[statuses.length-1].ST.charge_sec > dees[0].ST.charge_sec) {
+    if (statuses.length > 0 && statuses[statuses.length-1].st.charge_sec > dees[0].st.charge_sec) {
         console.log("Resetting the statuses since charge time dropped from",
-                    statuses[statuses.length-1].ST.charge_time, "to",
-                    dees[0].ST.charge_time);
+                    statuses[statuses.length-1].st.charge_time, "to",
+                    dees[0].st.charge_time);
         statuses = [];
     }
 
     statuses = statuses.concat(dees);
-    statuses.sort(function(a, b) { return a.TS < b.TS ? -1 : 1; });
+    statuses.sort(function(a, b) { return a.ts < b.ts ? -1 : 1; });
     if (statuses.length > maxStatuses) {
         statuses = statuses.splice(statuses.length-maxStatuses);
     }
 
     var last = dees[dees.length-1];
-    var d = last.ST;
-    lastStatus = last.TS;
+    var d = last.st;
+    lastStatus = last.ts;
 
     var mode = d.mode.replace(/ /g, '-');
 
@@ -160,7 +160,7 @@ function makeCellChart() {
     cellchart = function() {
         var values = [];
         for (var i = 0; i < statuses.length; i++) {
-            var st = statuses[i].ST;
+            var st = statuses[i].st;
             if (st.mode == 'detecting pack') {
                 continue;
             }
