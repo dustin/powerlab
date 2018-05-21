@@ -199,7 +199,7 @@ irs :: Status -> [Double]
 irs st = map (ir st) [1..(detectedCellCount st)]
 
 avgAmps :: Status -> Double
-avgAmps = (/ 600) . read2f 42
+avgAmps = (/ 600) . read2fs 42
 
 avgCell :: Status -> Double
 avgCell = (/ 10) . read2f 38
@@ -265,7 +265,7 @@ cycleNum :: Status -> Int
 cycleNum st = fromEnum $ read1 142 st
 
 slowAvgAmps :: Status -> Double
-slowAvgAmps = (/ 600) . read2f 116
+slowAvgAmps = (/ 600) . read2fs 116
 
 packs :: Status -> Int
 packs = fromEnum . read1 136
@@ -286,7 +286,7 @@ errorCode :: Status -> Int
 errorCode st = fromEnum $ read1 134 st
 
 fastAmps :: Status -> Double
-fastAmps = (/ 600) . read2f 30
+fastAmps = (/ 600) . read2fs 30
 
 highTemp :: Status -> Bool
 highTemp st = bit (read2 50 st) 2

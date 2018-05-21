@@ -2,7 +2,7 @@ module Powerlab (
     crc16
   , verifyPkt
   , read1
-  , read2, read2f
+  , read2, read2f, read2fs
   , read4
   , PktWrap, unwrap
   ) where
@@ -11,7 +11,7 @@ import Data.Bits (Bits, shiftR, xor)
 import Data.Foldable (foldl')
 import Data.Word (Word8, Word16, Word32)
 import Data.Int (Int64)
-import Data.Binary.Get (Get, runGet, getWord16be, getWord32be)
+import Data.Binary.Get (Get, runGet, getInt16be, getWord16be, getWord32be)
 import qualified Data.ByteString.Lazy as B
 
 class PktWrap a where
@@ -43,6 +43,9 @@ readn f n l = runGet f (B.drop (n+4) $ unwrap l)
 
 read2 :: PktWrap t => Int64 -> t -> Word16
 read2 = readn getWord16be
+
+read2fs :: PktWrap t => Int64 -> t -> Double
+read2fs n x = fromIntegral $ readn getInt16be n x
 
 read2f :: PktWrap t => Int64 -> t -> Double
 read2f n x = fromIntegral $ read2 n x
