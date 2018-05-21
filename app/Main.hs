@@ -35,6 +35,7 @@ data State = State { current :: !(Maybe TSRec), recent :: ![TSRec] }
 app :: Application -> TVar State -> Application
 app stat tv request respond = case rawPathInfo request of
   "/status"   -> status respond tv
+  "/rawstatus"   -> rawstatus respond tv
   "/statuses" -> statuses respond tv
   _           -> stat request respond
 
@@ -45,6 +46,12 @@ status :: (Response -> IO ResponseReceived) -> TVar State -> IO ResponseReceived
 status respond tv = do
   st <- get tv
   respond $ responseLBS status200 [("Content-Type", "application/json")] $ encode $ current st
+
+rawstatus :: (Response -> IO ResponseReceived) -> TVar State -> IO ResponseReceived
+rawstatus respond tv = do
+  c <- get tv
+  let b = maybe B.empty id (St.unwrap <$> _st <$> current c)
+  respond $ responseLBS status200 [("Content-Type", "application/octet-stream")] b
 
 statuses :: (Response -> IO ResponseReceived) -> TVar State -> IO ResponseReceived
 statuses respond tv = do
