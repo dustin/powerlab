@@ -62,7 +62,7 @@ function updateStatus(dees) {
 
     var mode = d.mode.replace(/ /g, '-');
 
-    if (mode == 'charging' || mode == 'discharging' || mode == 'pack-cool-down' || mode == 'monitoring') {
+    if (mode == 'Charging' || mode == 'Discharging' || mode == 'PackCoolDown' || mode == 'Monitoring') {
         d3.select("#mode").text(d.mode + " " + sp(d) + " " + d.avg_cell.toFixed(1) + "%");
         if (d.charge_complete) {
             $("#mode").addClass('complete');
@@ -80,9 +80,9 @@ function updateStatus(dees) {
     d3.select("#" + mode + "-mah").text(d3.format(".3s")(d.mah_in / 1000) + "Ah");
     d3.select("#" + mode + "-mahout").text(d3.format(".3s")(d.mah_out / 1000) + "Ah");
     d3.select("#" + mode + "-maxcell").text(d3.format(".3s")(d.max_cell) + "V");
-    d3.select("#" + mode + "-volts").text(farray(d.voltage.splice(0, d.detected_cell_count),
+    d3.select("#" + mode + "-volts").text(farray(d.cells.splice(0, d.detected_cell_count),
                                                 function(x) { return d3.format(".3s")(x) + "V";}));
-    d3.select("#" + mode + "-ir").text(farray(d.ir.splice(0, d.detected_cell_count),
+    d3.select("#" + mode + "-ir").text(farray(d.irs.splice(0, d.detected_cell_count),
                                              function(x) { return d3.format(".3s")(x / 1000) + "Ω";}));
     d3.select("#" + mode + "-time").text(d.charge_time);
 
@@ -165,14 +165,14 @@ function makeCellChart() {
                 continue;
             }
 
-            for (var j = 0; j < st.voltage.length; j++) {
+            for (var j = 0; j < st.cells.length; j++) {
                 if (j >= values.length) {
                     values.push({
                         key: 'Cell ' + (1+j),
                         values: [],
                     });
                 }
-                values[j].values.push({x: st.charge_sec, y: st.voltage[j] || st.max_cell});
+                values[j].values.push({x: st.charge_sec, y: st.cells[j] || st.max_cell});
             }
         }
         seriesData = values;
