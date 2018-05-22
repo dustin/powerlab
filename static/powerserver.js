@@ -62,7 +62,8 @@ function updateStatus(dees) {
 
     var mode = d.mode.replace(/ /g, '-');
 
-    if (mode == 'Charging' || mode == 'Discharging' || mode == 'PackCoolDown' || mode == 'Monitoring') {
+    if (mode == 'Charging' || mode == 'Discharging' || mode == 'PackCoolDown' || mode == 'Monitoring'
+        || mode == 'SystemStopError') {
         d3.select("#mode").text(d.mode + " " + sp(d) + " " + d.avg_cell.toFixed(1) + "%");
         if (d.charge_complete) {
             $("#mode").addClass('complete');
