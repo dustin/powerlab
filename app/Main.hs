@@ -50,7 +50,7 @@ status respond tv = do
 rawstatus :: (Response -> IO ResponseReceived) -> TVar State -> IO ResponseReceived
 rawstatus respond tv = do
   c <- get tv
-  let b = maybe B.empty id (St.unwrap <$> _st <$> current c)
+  let b = maybe B.empty (St.unwrap <$> _st) (current c)
   respond $ responseLBS status200 [("Content-Type", "application/octet-stream")] b
 
 statuses :: (Response -> IO ResponseReceived) -> TVar State -> IO ResponseReceived
@@ -102,7 +102,6 @@ main' (Options oPort oStat oSer oLog) = do
   race_ (updater tv lf oSer) (run oPort $ app statApp tv)
 
 main :: IO ()
-main = do
-  main' =<< execParser opts
-    where opts = info (options <**> helper)
-            ( fullDesc <> progDesc "Monitor the powerlab.")
+main =  main' =<< execParser opts
+  where opts = info (options <**> helper)
+               ( fullDesc <> progDesc "Monitor the powerlab.")
