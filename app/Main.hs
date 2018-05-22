@@ -10,13 +10,15 @@ import Network.Wai.Application.Static (StaticSettings(..)
                                       , defaultWebAppSettings )
 
 
-import Data.Time
 import Control.Concurrent.Async
 import Control.Concurrent.STM
+import Control.Exception.Safe (tryAny)
+import Control.Monad (forever)
+import Data.Semigroup ((<>))
+import Data.Time
+import Options.Applicative
 import System.IO
 import qualified Data.ByteString.Lazy as B
-import Options.Applicative
-import Data.Semigroup ((<>))
 
 import Powerlab.Serial
 import Powerlab.Logger
@@ -68,12 +70,14 @@ logWriter :: UTCTime -> St.Status -> Handle -> IO ()
 logWriter t st h = B.hPut h $ encode $ TSRec t st
 
 updater :: TVar State -> Logger St.Status -> FilePath -> IO ()
-updater tv lf serial =
-  withPort serial (\st -> do
-                      putStrLn $ "Updating with " ++ show (encode st)
-                      now <- getCurrentTime
-                      _ <- logItem lf now st
-                      atomically $ setState now st tv)
+updater tv lf serial = forever $ do
+  putStrLn $ "Opening " <> serial
+  tryAny $
+    withPort serial (\st -> do
+                        putStrLn $ "Updating with " ++ show (encode st)
+                        now <- getCurrentTime
+                        _ <- logItem lf now st
+                        atomically $ setState now st tv)
 
 newState :: STM (TVar State)
 newState = newTVar $ State Nothing []

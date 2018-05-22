@@ -5,6 +5,7 @@ module Powerlab.Serial (
 import qualified Powerlab.Status as St
 import Control.Concurrent
 import Control.Monad
+import Data.Either (isRight)
 import Data.Semigroup ((<>))
 
 import System.Hardware.Serialport
@@ -41,17 +42,24 @@ readStatus s _ = do
   let pkt = LB.fromStrict $ statusReq `B.append` d
   pure $! St.parse pkt
 
-loop :: MessageHandler -> SerialPort -> IO ()
-loop h s = forever $ do
+retryCount :: Int
+retryCount = 60
+
+loop :: MessageHandler -> Int -> SerialPort -> IO ()
+loop h n s = do
+  threadDelay 1000000
   _ <- send s statusReq
   r <- readStatus s h :: IO (Either String St.Status)
-  case r of
-    Left ex -> putStrLn $ "exception parsing data from serial: " ++ show ex
-    Right st -> h st
-  threadDelay 1000000
+  guard $ isRight r || n > 0
+  next r
+
+  where next (Left ex) = do
+          putStrLn $ "exception parsing data from serial: " ++ show ex
+          loop h (pred n) s
+        next (Right st) = h st >> loop h retryCount s
 
 withPort :: FilePath -> MessageHandler -> IO ()
 withPort path handler =
   withSerial path defaultSerialSettings {
   commSpeed = CS19200
-  , timeout = 50 } $ loop handler
+  , timeout = 50 } $ loop handler retryCount
